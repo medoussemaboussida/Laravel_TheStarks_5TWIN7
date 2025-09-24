@@ -12,7 +12,8 @@
     <title>SB Admin 2 - Dashboard</title>
 
     <!-- Custom fonts for this template-->
-    <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <!-- FontAwesome CDN -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" type="text/css">
     <link
         href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
         rel="stylesheet">
@@ -23,6 +24,15 @@
 </head>
 
 <body id="page-top">
+
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert" style="position:fixed;top:20px;right:20px;z-index:2000;min-width:300px;box-shadow:0 4px 12px rgba(0,0,0,0.15);">
+            <strong>Succès!</strong> {{ session('success') }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+        </div>
+    @endif
 
     <!-- Page Wrapper -->
     <div id="wrapper">
@@ -458,235 +468,27 @@
                     <!-- Content Row -->
 
                     <div class="row">
-
-                        <!-- Area Chart -->
-                        <div class="col-xl-8 col-lg-7">
-                            <div class="card shadow mb-4">
-                                <!-- Card Header - Dropdown -->
-                                <div
-                                    class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                    <h6 class="m-0 font-weight-bold text-primary">Earnings Overview</h6>
-                                    <div class="dropdown no-arrow">
-                                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
-                                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
-                                        </a>
-                                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
-                                            aria-labelledby="dropdownMenuLink">
-                                            <div class="dropdown-header">Dropdown Header:</div>
-                                            <a class="dropdown-item" href="#">Action</a>
-                                            <a class="dropdown-item" href="#">Another action</a>
-                                            <div class="dropdown-divider"></div>
-                                            <a class="dropdown-item" href="#">Something else here</a>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!-- Card Body -->
-                                <div class="card-body">
-                                    <div class="chart-area">
-                                        <canvas id="myAreaChart"></canvas>
+                        @forelse($publications as $publication)
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="card shadow h-100 publication-card" style="border-radius:20px;overflow:hidden;">
+                                <img src="{{ $publication->image ? asset('storage/' . $publication->image) : asset('img/undraw_posting_photo.svg') }}" class="card-img-top" alt="{{ $publication->titre }}" style="height:220px;object-fit:cover;">
+                                <div class="card-body d-flex flex-column">
+                                    <h5 class="card-title text-primary font-weight-bold">{{ $publication->titre }}</h5>
+                                    <p class="card-text" style="flex:1;color:#444;font-size:1.05rem;">{{ $publication->description }}</p>
+                                    <div class="mt-2 text-right">
+                                        <span class="badge badge-pill badge-info" style="font-size:0.95rem;">Ajouté le {{ $publication->created_at->format('d/m/Y') }}</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Pie Chart -->
-                        <div class="col-xl-4 col-lg-5">
-                            <div class="card shadow mb-4">
-                                <!-- Card Header - Dropdown -->
-                                <div
-                                    class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                    <h6 class="m-0 font-weight-bold text-primary">Revenue Sources</h6>
-                                    <div class="dropdown no-arrow">
-                                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
-                                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
-                                        </a>
-                                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
-                                            aria-labelledby="dropdownMenuLink">
-                                            <div class="dropdown-header">Dropdown Header:</div>
-                                            <a class="dropdown-item" href="#">Action</a>
-                                            <a class="dropdown-item" href="#">Another action</a>
-                                            <div class="dropdown-divider"></div>
-                                            <a class="dropdown-item" href="#">Something else here</a>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!-- Card Body -->
-                                <div class="card-body">
-                                    <div class="chart-pie pt-4 pb-2">
-                                        <canvas id="myPieChart"></canvas>
-                                    </div>
-                                    <div class="mt-4 text-center small">
-                                        <span class="mr-2">
-                                            <i class="fas fa-circle text-primary"></i> Direct
-                                        </span>
-                                        <span class="mr-2">
-                                            <i class="fas fa-circle text-success"></i> Social
-                                        </span>
-                                        <span class="mr-2">
-                                            <i class="fas fa-circle text-info"></i> Referral
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
+                        @empty
+                        <div class="col-12">
+                            <div class="alert alert-info text-center">Aucune publication trouvée.</div>
                         </div>
+                        @endforelse
                     </div>
 
-                    <!-- Content Row -->
-                    <div class="row">
-
-                        <!-- Content Column -->
-                        <div class="col-lg-6 mb-4">
-
-                            <!-- Project Card Example -->
-                            <div class="card shadow mb-4">
-                                <div class="card-header py-3">
-                                    <h6 class="m-0 font-weight-bold text-primary">Projects</h6>
-                                </div>
-                                <div class="card-body">
-                                    <h4 class="small font-weight-bold">Server Migration <span
-                                            class="float-right">20%</span></h4>
-                                    <div class="progress mb-4">
-                                        <div class="progress-bar bg-danger" role="progressbar" style="width: 20%"
-                                            aria-valuenow="20" aria-valuemin="0" aria-valuemax="100"></div>
-                                    </div>
-                                    <h4 class="small font-weight-bold">Sales Tracking <span
-                                            class="float-right">40%</span></h4>
-                                    <div class="progress mb-4">
-                                        <div class="progress-bar bg-warning" role="progressbar" style="width: 40%"
-                                            aria-valuenow="40" aria-valuemin="0" aria-valuemax="100"></div>
-                                    </div>
-                                    <h4 class="small font-weight-bold">Customer Database <span
-                                            class="float-right">60%</span></h4>
-                                    <div class="progress mb-4">
-                                        <div class="progress-bar" role="progressbar" style="width: 60%"
-                                            aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>
-                                    </div>
-                                    <h4 class="small font-weight-bold">Payout Details <span
-                                            class="float-right">80%</span></h4>
-                                    <div class="progress mb-4">
-                                        <div class="progress-bar bg-info" role="progressbar" style="width: 80%"
-                                            aria-valuenow="80" aria-valuemin="0" aria-valuemax="100"></div>
-                                    </div>
-                                    <h4 class="small font-weight-bold">Account Setup <span
-                                            class="float-right">Complete!</span></h4>
-                                    <div class="progress">
-                                        <div class="progress-bar bg-success" role="progressbar" style="width: 100%"
-                                            aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Color System -->
-                            <div class="row">
-                                <div class="col-lg-6 mb-4">
-                                    <div class="card bg-primary text-white shadow">
-                                        <div class="card-body">
-                                            Primary
-                                            <div class="text-white-50 small">#4e73df</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-6 mb-4">
-                                    <div class="card bg-success text-white shadow">
-                                        <div class="card-body">
-                                            Success
-                                            <div class="text-white-50 small">#1cc88a</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-6 mb-4">
-                                    <div class="card bg-info text-white shadow">
-                                        <div class="card-body">
-                                            Info
-                                            <div class="text-white-50 small">#36b9cc</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-6 mb-4">
-                                    <div class="card bg-warning text-white shadow">
-                                        <div class="card-body">
-                                            Warning
-                                            <div class="text-white-50 small">#f6c23e</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-6 mb-4">
-                                    <div class="card bg-danger text-white shadow">
-                                        <div class="card-body">
-                                            Danger
-                                            <div class="text-white-50 small">#e74a3b</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-6 mb-4">
-                                    <div class="card bg-secondary text-white shadow">
-                                        <div class="card-body">
-                                            Secondary
-                                            <div class="text-white-50 small">#858796</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-6 mb-4">
-                                    <div class="card bg-light text-black shadow">
-                                        <div class="card-body">
-                                            Light
-                                            <div class="text-black-50 small">#f8f9fc</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-6 mb-4">
-                                    <div class="card bg-dark text-white shadow">
-                                        <div class="card-body">
-                                            Dark
-                                            <div class="text-white-50 small">#5a5c69</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                        </div>
-
-                        <div class="col-lg-6 mb-4">
-
-                            <!-- Illustrations -->
-                            <div class="card shadow mb-4">
-                                <div class="card-header py-3">
-                                    <h6 class="m-0 font-weight-bold text-primary">Illustrations</h6>
-                                </div>
-                                <div class="card-body">
-                                    <div class="text-center">
-                                        <img class="img-fluid px-3 px-sm-4 mt-3 mb-4" style="width: 25rem;" src="{{ asset('img/undraw_posting_photo.svg') }}" alt="...">
-                                    </div>
-                                    <p>Add some quality, svg illustrations to your project courtesy of <a
-                                            target="_blank" rel="nofollow" href="https://undraw.co/">unDraw</a>, a
-                                        constantly updated collection of beautiful svg images that you can use
-                                        completely free and without attribution!</p>
-                                    <a target="_blank" rel="nofollow" href="https://undraw.co/">Browse Illustrations on
-                                        unDraw &rarr;</a>
-                                </div>
-                            </div>
-
-                            <!-- Approach -->
-                            <div class="card shadow mb-4">
-                                <div class="card-header py-3">
-                                    <h6 class="m-0 font-weight-bold text-primary">Development Approach</h6>
-                                </div>
-                                <div class="card-body">
-                                    <p>SB Admin 2 makes extensive use of Bootstrap 4 utility classes in order to reduce
-                                        CSS bloat and poor page performance. Custom CSS classes are used to create
-                                        custom components and custom utility classes.</p>
-                                    <p class="mb-0">Before working with this theme, you should become familiar with the
-                                        Bootstrap framework, especially the utility classes.</p>
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-
-                </div>
-                <!-- /.container-fluid -->
+                    
 
             </div>
             <!-- End of Main Content -->
@@ -733,22 +535,228 @@
     </div>
 
     <!-- Bootstrap core JavaScript-->
-    <script src="vendor/jquery/jquery.min.js"></script>
-    <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery CDN -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Bootstrap 4 JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery Easing CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"></script>
+    <!-- FontAwesome JS (optionnel) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"></script>
 
-    <!-- Core plugin JavaScript-->
-    <script src="vendor/jquery-easing/jquery.easing.min.js"></script>
+            <!-- Bouton Ajouter Publication -->
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPublicationModal" style="position:fixed;bottom:30px;right:30px;z-index:1050;display:flex;align-items:center;gap:8px;box-shadow:0 4px 12px rgba(0,0,0,0.15);">
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addPublicationModal" style="position:fixed;bottom:30px;right:30px;z-index:1050;display:flex;align-items:center;gap:8px;box-shadow:0 4px 12px rgba(0,0,0,0.15);">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-plus-circle" viewBox="0 0 16 16">
+                        <path d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14zm0 1A8 8 0 1 1 8 0a8 8 0 0 1 0 16z"/>
+                        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                    </svg>
+                    Ajouter une publication
+            </button>
 
-    <!-- Custom scripts for all pages-->
-    <script src="js/sb-admin-2.min.js"></script>
 
-    <!-- Page level plugins -->
-    <script src="vendor/chart.js/Chart.min.js"></script>
+            <!-- Modal Ajout Publication améliorée -->
+            <style>
+                .form-control.is-invalid {
+                    border-color: #e74a3b !important;
+                    box-shadow: 0 0 0 2px #e74a3b33 !important;
+                }
+                .input-error {
+                    font-size: 0.98rem;
+                    color: #e74a3b !important;
+                    font-weight: 500;
+                }
+                .modal-backdrop.show {
+                    backdrop-filter: blur(6px);
+                }
+                .modal-content.urban-modal {
+                    border-radius: 32px;
+                    box-shadow: 0 12px 48px rgba(78, 115, 223, 0.18), 0 2px 8px rgba(0,0,0,0.08);
+                    background: linear-gradient(135deg, #e3eafc 0%, #f8f9fa 100%);
+                    border: none;
+                    animation: modalPop 0.4s cubic-bezier(.68,-0.55,.27,1.55);
+                }
+                @keyframes modalPop {
+                    0% { transform: scale(0.8); opacity: 0; }
+                    100% { transform: scale(1); opacity: 1; }
+                }
+                .urban-modal-header {
+                    background: linear-gradient(90deg,#4e73df 0%,#1cc88a 100%);
+                    color: #fff;
+                    border-top-left-radius: 32px;
+                    border-top-right-radius: 32px;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    padding: 2rem 1rem 1rem 1rem;
+                }
+                .urban-modal-header .urban-illustration {
+                    width: 64px;
+                    height: 64px;
+                    margin-bottom: 0.5rem;
+                }
+                .urban-modal-title {
+                    font-size: 2rem;
+                    font-weight: 700;
+                    letter-spacing: 1px;
+                }
+                .urban-modal-body {
+                    background: transparent;
+                    padding: 2rem 2rem 1rem 2rem;
+                }
+                .urban-modal-body .form-label {
+                    font-weight: 600;
+                    color: #4e73df;
+                }
+                .urban-modal-body .form-control {
+                    border-radius: 12px;
+                    border: 1.5px solid #4e73df;
+                    box-shadow: 0 2px 8px rgba(78,115,223,0.08);
+                    transition: border-color 0.2s;
+                }
+                .urban-modal-body .form-control:focus {
+                    border-color: #1cc88a;
+                    box-shadow: 0 0 0 2px #4e73df33;
+                }
+                .urban-modal-footer {
+                    border-bottom-left-radius: 32px;
+                    border-bottom-right-radius: 32px;
+                    padding: 1.5rem 2rem;
+                    display: flex;
+                    justify-content: flex-end;
+                    gap: 1rem;
+                    background: #f8f9fa;
+                }
+                .urban-modal-footer .btn {
+                    min-width: 120px;
+                    font-size: 1.1rem;
+                    border-radius: 12px;
+                    font-weight: 600;
+                    box-shadow: 0 2px 8px rgba(34,197,94,0.08);
+                    transition: background 0.2s, color 0.2s;
+                }
+                .urban-modal-footer .btn-success {
+                    background: linear-gradient(90deg,#4e73df 0%,#1cc88a 100%);
+                    border: none;
+                }
+                .urban-modal-footer .btn-success:hover {
+                    background: linear-gradient(90deg,#1cc88a 0%,#4e73df 100%);
+                    color: #fff;
+                }
+                .urban-modal-footer .btn-secondary {
+                    background: #e3eafc;
+                    color: #4e73df;
+                    border: none;
+                }
+                .urban-modal-footer .btn-secondary:hover {
+                    background: #4e73df;
+                    color: #fff;
+                }
+            </style>
+            <div class="modal fade" id="addPublicationModal" tabindex="-1" aria-labelledby="addPublicationModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content urban-modal">
+                        <div class="urban-modal-header">
+                            <img src="{{ asset('img/undraw_posting_photo.svg') }}" alt="Illustration" class="urban-illustration">
+                            <span class="urban-modal-title" id="addPublicationModalLabel">Ajouter une publication</span>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="position:absolute;top:18px;right:24px;font-size:2rem;color:#fff;opacity:0.8;">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <form method="POST" action="{{ route('publications.store') }}" enctype="multipart/form-data" id="publicationForm" onsubmit="return validatePublicationForm(event)">
+                            @csrf
+                            <div class="urban-modal-body">
+                                <div class="mb-4">
+                                    <label for="titre" class="form-label">Titre</label>
+                                    <input type="text" class="form-control" id="titre" name="titre" placeholder="Titre de la publication">
+                                </div>
+                                <div class="mb-4">
+                                    <label for="image" class="form-label">Image</label>
+                                    <input type="file" class="form-control" id="image" name="image" accept="image/*" onchange="previewPublicationImage(event)">
+                                    <div id="imagePreviewContainer" style="margin-top:1rem;text-align:center;display:none;">
+                                        <img id="imagePreview" src="#" alt="Aperçu de l'image" style="max-width:180px;max-height:180px;border-radius:16px;box-shadow:0 2px 8px rgba(78,115,223,0.12);border:2px solid #4e73df;object-fit:cover;">
+                                    </div>
+                                </div>
+                                <div class="mb-4">
+                                    <label for="description" class="form-label">Description</label>
+                                    <textarea class="form-control" id="description" name="description" rows="4" placeholder="Décris ta publication..."></textarea>
+                                </div>
+                            </div>
+                            <div class="urban-modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                                <button type="submit" class="btn btn-success">Publier</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
 
-    <!-- Page level custom scripts -->
-    <script src="js/demo/chart-area-demo.js"></script>
-    <script src="js/demo/chart-pie-demo.js"></script>
+<script>
+function previewPublicationImage(event) {
+    const input = event.target;
+    const previewContainer = document.getElementById('imagePreviewContainer');
+    const preview = document.getElementById('imagePreview');
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.src = e.target.result;
+            previewContainer.style.display = 'block';
+        }
+        reader.readAsDataURL(input.files[0]);
+    } else {
+        preview.src = '#';
+        previewContainer.style.display = 'none';
+    }
+}
 
+function validatePublicationForm(event) {
+    let valid = true;
+    let titre = document.getElementById('titre');
+    let image = document.getElementById('image');
+    let description = document.getElementById('description');
+
+    // Remove previous errors
+    document.querySelectorAll('.input-error').forEach(e => e.remove());
+    [titre, image, description].forEach(el => el.classList.remove('is-invalid'));
+
+    // Titre
+    if (!titre.value.trim()) {
+        showInputError(titre, "Le titre est obligatoire.");
+        valid = false;
+    } else if (titre.value.length < 3) {
+        showInputError(titre, "Le titre doit contenir au moins 3 caractères.");
+        valid = false;
+    }
+
+    // Image
+    if (!image.value) {
+        showInputError(image, "L'image est obligatoire.");
+        valid = false;
+    } else if (image.files[0] && !image.files[0].type.match('image.*')) {
+        showInputError(image, "Le fichier doit être une image.");
+        valid = false;
+    }
+
+    // Description
+    if (!description.value.trim()) {
+        showInputError(description, "La description est obligatoire.");
+        valid = false;
+    } else if (description.value.length < 10) {
+        showInputError(description, "La description doit contenir au moins 10 caractères.");
+        valid = false;
+    }
+
+    return valid;
+}
+
+function showInputError(input, message) {
+    input.classList.add('is-invalid');
+    let error = document.createElement('div');
+    error.className = 'input-error text-danger mt-1';
+    error.innerText = message;
+    input.parentNode.appendChild(error);
+}
+</script>
 </body>
 
 </html>

@@ -9,7 +9,10 @@ Route::get('/', function () {
     return view('welcome');
 })->name('home');
 Route::get('/dashboard', function () {
-return view('pages.dashboard');
+    $publications = \App\Models\Publication::latest()->get();
+    return view('pages.dashboard', [
+        'publications' => $publications
+    ]);
 })->name('dashboard');
 
 // Route::view('dashboard', 'dashboard')
@@ -25,3 +28,7 @@ Route::middleware(['auth'])->group(function () {
 });
 
 require __DIR__.'/auth.php';
+
+// Route pour l'ajout de publication
+use App\Http\Controllers\PublicationController;
+Route::post('/publications', [PublicationController::class, 'store'])->name('publications.store');

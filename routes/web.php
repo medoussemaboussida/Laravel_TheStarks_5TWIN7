@@ -21,5 +21,5 @@ Route::middleware(['auth'])->group(function () {
     Route::get('settings/password', Password::class)->name('settings.password');
     Route::get('settings/appearance', Appearance::class)->name('settings.appearance');
 });
-Route::get('/espace-vert', [EspaceVertController::class, 'index'])->name('espaceVert.index');
+Route::resource('espace', EspaceVertController::class);
 require __DIR__.'/auth.php';

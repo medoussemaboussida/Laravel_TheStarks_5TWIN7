@@ -18,7 +18,7 @@ return new class extends Migration
             $table->float('superficie'); // Area in square meters, can adjust type if needed
             $table->enum('type', ['parc', 'jardin', 'toit vert', 'autre']); // Type of space
             $table->enum('etat', ['bon', 'moyen', 'mauvais']); // Condition
-            $table->json('besoin_specifique')->nullable(); // Specific needs: plantation, arrosage, etc.
+            $table->longText('besoin_specifique')->nullable(); // Specific needs: plantation, arrosage, etc.
             $table->timestamps();
         });
     }

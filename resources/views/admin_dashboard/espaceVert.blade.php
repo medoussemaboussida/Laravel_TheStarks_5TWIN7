@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="">
     <meta name="author" content="">
-    <title>UrbanGreen - Manage Green Spaces</title>
+    <title>UrbanGreen - Espaces verts</title>
     <!-- Custom fonts -->
     <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
     @vite(['resources/vendor/fontawesome-free/css/all.min.css', 'resources/css/sb-admin-2.min.css'])
@@ -43,7 +43,7 @@
 
                     <!-- Add Button -->
                     <div class="d-sm-flex align-items-center justify-content-between mb-4">
-                        <h1 class="h3 mb-0 text-gray-800">Green Spaces</h1>
+                        <h1 class="h3 mb-0 text-gray-800">Gestion des espaces verts</h1>
                         <button class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" data-toggle="modal" data-target="#addEspaceVertModal">
                             <i class="fas fa-plus fa-sm text-white-50"></i> Ajouter Espace Vert
                         </button>
@@ -51,28 +51,36 @@
 
                     <!-- Table of Espace Vert -->
                     <div class="card shadow mb-4">
-                        <div class="card-header py-3">
-                            <h6 class="m-0 font-weight-bold text-primary">List of Green Spaces</h6>
+                        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                            <h6 class="m-0 font-weight-bold text-primary">Liste des espaces</h6>
+                            <form method="GET" action="{{ route('espace.index') }}" style="display:inline;">
+                                <select class="btn btn-sm btn-primary" name="sort" onchange="this.form.submit()">
+                                    <option value="newest" {{ request('sort') == 'newest' ? 'selected' : '' }}>Newest</option>
+                                    <option value="oldest" {{ request('sort') == 'oldest' ? 'selected' : '' }}>Oldest</option>
+                                    <option value="superficie_asc" {{ request('sort') == 'superficie_asc' ? 'selected' : '' }}>Superficie Asc</option>
+                                    <option value="superficie_desc" {{ request('sort') == 'superficie_desc' ? 'selected' : '' }}>Superficie Desc</option>
+                                    <option value="name_asc" {{ request('sort') == 'name_asc' ? 'selected' : '' }}>Name Asc</option>
+                                    <option value="name_desc" {{ request('sort') == 'name_desc' ? 'selected' : '' }}>Name Desc</option>
+                                </select>
+                            </form>
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
                                 <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                                     <thead>
                                         <tr>
-                                            <th>ID</th>
-                                            <th>Name</th>
-                                            <th>Address</th>
-                                            <th>Area (m²)</th>
+                                            <th>Nom</th>
+                                            <th>Adresse</th>
+                                            <th>Superficie (m²)</th>
                                             <th>Type</th>
                                             <th>Condition</th>
-                                            <th>Specific Needs</th>
+                                            <th>Besoin specifique</th>
                                             <th>Action</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
+                                    <tbody id="tableBody">
                                         @foreach($espacesVerts as $espaceVert)
                                             <tr>
-                                                <td>{{ $espaceVert->id }}</td>
                                                 <td>{{ $espaceVert->nom }}</td>
                                                 <td>{{ $espaceVert->adresse }}</td>
                                                 <td>{{ $espaceVert->superficie }}</td>
@@ -209,7 +217,7 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
+                    <h1 class="modal-title" id="exampleModalLabel">Ready to Leave?</h1>
                     <button class="close" type="button" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -295,6 +303,152 @@
     </div>
 
     <!-- Scripts -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchInput');
+            const searchInputMobile = document.getElementById('searchInputMobile');
+            const tableBody = document.getElementById('tableBody');
+            const sortValue = document.querySelector('#searchInput')?.dataset.sort || 'newest';
+
+            function updateTable(searchTerm) {
+                fetch(`/espace?search=${encodeURIComponent(searchTerm)}&sort=${encodeURIComponent(sortValue)}`, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    tableBody.innerHTML = '';
+                    data.forEach(item => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${item.nom}</td>
+                            <td>${item.adresse}</td>
+                            <td>${item.superficie}</td>
+                            <td>${item.type}</td>
+                            <td>${item.etat}</td>
+                            <td>${item.besoin_specifique}</td>
+                            <td>
+                                <button type="button" class="btn btn-warning btn-sm mr-2" data-toggle="modal" data-target="#editModal-${item.id}">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModal-${item.id}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                <!-- Edit Modal -->
+                                <div class="modal fade" id="editModal-${item.id}" tabindex="-1" role="dialog" aria-labelledby="editModalLabel-${item.id}" aria-hidden="true">
+                                    <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="editModalLabel-${item.id}">Edit Green Space</h5>
+                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <form action="/espace/${item.id}" method="POST">
+                                                    @csrf
+                                                    @method('PUT')
+                                                    <div class="form-group">
+                                                        <label for="nom-${item.id}">Name</label>
+                                                        <input type="text" class="form-control" id="nom-${item.id}" name="nom" value="${item.nom}" required>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label for="adresse-${item.id}">Address</label>
+                                                        <input type="text" class="form-control" id="adresse-${item.id}" name="adresse" value="${item.adresse}" required>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label for="superficie-${item.id}">Area (m²)</label>
+                                                        <input type="number" step="0.01" class="form-control" id="superficie-${item.id}" name="superficie" value="${item.superficie}" required>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label for="type-${item.id}">Type</label>
+                                                        <select class="form-control" id="type-${item.id}" name="type" required>
+                                                            <option value="parc" ${item.type === 'parc' ? 'selected' : ''}>Parc</option>
+                                                            <option value="jardin" ${item.type === 'jardin' ? 'selected' : ''}>Jardin</option>
+                                                            <option value="toit vert" ${item.type === 'toit vert' ? 'selected' : ''}>Toit Vert</option>
+                                                            <option value="autre" ${item.type === 'autre' ? 'selected' : ''}>Autre</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label for="etat-${item.id}">Condition</label>
+                                                        <select class="form-control" id="etat-${item.id}" name="etat" required>
+                                                            <option value="bon" ${item.etat === 'bon' ? 'selected' : ''}>Bon</option>
+                                                            <option value="moyen" ${item.etat === 'moyen' ? 'selected' : ''}>Moyen</option>
+                                                            <option value="mauvais" ${item.etat === 'mauvais' ? 'selected' : ''}>Mauvais</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label for="besoin_specifique-${item.id}">Specific Needs</label>
+                                                        <textarea class="form-control" id="besoin_specifique-${item.id}" name="besoin_specifique" rows="3">${item.besoin_specifique}</textarea>
+                                                    </div>
+                                                    <button type="submit" class="btn btn-primary">Update</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Delete Confirmation Modal -->
+                                <div class="modal fade" id="deleteModal-${item.id}" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel-${item.id}" aria-hidden="true">
+                                    <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="deleteModalLabel-${item.id}">Confirm Deletion</h5>
+                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <div class="modal-body">
+                                                Are you sure you want to delete the green space "${item.nom}"?
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                                <form action="/espace/${item.id}" method="POST">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-danger">Delete</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                })
+                .catch(error => console.error('Error fetching data:', error));
+            }
+
+            // Debounce function to limit API calls
+            function debounce(func, wait) {
+                let timeout;
+                return function executedFunction(...args) {
+                    const later = () => {
+                        clearTimeout(timeout);
+                        func(...args);
+                    };
+                    clearTimeout(timeout);
+                    timeout = setTimeout(later, wait);
+                };
+            }
+
+            const debouncedUpdateTable = debounce(updateTable, 300);
+
+            // Initial load
+            updateTable('');
+
+            // Event listeners
+            searchInput.addEventListener('input', function() {
+                debouncedUpdateTable(this.value);
+            });
+
+            searchInputMobile.addEventListener('input', function() {
+                debouncedUpdateTable(this.value);
+            });
+        });
+    </script>
     @vite([
         'resources/vendor/jquery/jquery.min.js',
         'resources/vendor/bootstrap/js/bootstrap.bundle.min.js',

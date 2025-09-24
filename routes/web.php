@@ -22,4 +22,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('settings/appearance', Appearance::class)->name('settings.appearance');
 });
 Route::resource('espace', EspaceVertController::class);
+Route::get('/client', [EspaceVertController::class, 'displayClient'])->name('client.index');
+
 require __DIR__.'/auth.php';

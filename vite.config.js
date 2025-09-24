@@ -15,6 +15,10 @@ export default defineConfig({
                 'resources/vendor/chart.js/Chart.min.js', // Chart.js
                 'resources/js/demo/chart-area-demo.js', // Chart demos
                 'resources/js/demo/chart-pie-demo.js', // Chart demos
+                'resources/clientPageAssets/css/main.css',
+                'resources/clientPageAssets/js/main.js',
+                'resources/clientPageAssets/vendor/**/*.js',
+                'resources/clientPageAssets/vendor/**/*.css',
             ],
             refresh: true,
         }),

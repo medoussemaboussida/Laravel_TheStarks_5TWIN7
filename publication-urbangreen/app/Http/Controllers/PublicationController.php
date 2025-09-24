@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
+
 class PublicationController extends Controller
 {
     public function store(Request $request)
@@ -29,5 +30,17 @@ class PublicationController extends Controller
         ]);
 
         return redirect()->back()->with('success', 'Publication ajoutée avec succès!');
+    }
+
+    // Suppression d'une publication
+    public function destroy($id)
+    {
+        $publication = \App\Models\Publication::findOrFail($id);
+        // Supprimer l'image du disque si elle existe
+        if ($publication->image && \Storage::disk('public')->exists($publication->image)) {
+            \Storage::disk('public')->delete($publication->image);
+        }
+        $publication->delete();
+        return redirect()->back()->with('success', 'Publication supprimée avec succès!');
     }
 }

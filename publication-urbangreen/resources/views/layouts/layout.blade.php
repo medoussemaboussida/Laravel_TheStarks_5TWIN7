@@ -469,8 +469,56 @@
 
                     <div class="row">
                         @forelse($publications as $publication)
+
                         <div class="col-md-6 col-lg-4 mb-4">
-                            <div class="card shadow h-100 publication-card" style="border-radius:20px;overflow:hidden;">
+                            <div class="card shadow h-100 publication-card position-relative" style="border-radius:20px;overflow:hidden;">
+                                <!-- Delete Icon -->
+                                <form method="POST" action="{{ route('publications.destroy', $publication->id) }}" class="delete-publication-form" style="position:absolute;top:12px;right:16px;z-index:10;">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="button" class="btn btn-sm btn-danger delete-publication-btn" data-publication-id="{{ $publication->id }}" style="border-radius:50%;padding:6px 8px;line-height:1;box-shadow:0 2px 8px rgba(231,74,59,0.12);">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </form>
+<!-- Modal de confirmation suppression publication (à placer en dehors de la boucle) -->
+<div class="modal fade" id="deletePublicationModal" tabindex="-1" aria-labelledby="deletePublicationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius:24px;">
+            <div class="modal-header" style="background:linear-gradient(90deg,#e74a3b 0%,#f8f9fa 100%);color:#fff;border-top-left-radius:24px;border-top-right-radius:24px;">
+                <h5 class="modal-title" id="deletePublicationModalLabel">Confirmation de suppression</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color:#fff;font-size:2rem;opacity:0.8;">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body text-center">
+                <p style="font-size:1.15rem;color:#e74a3b;font-weight:500;">Voulez-vous vraiment supprimer cette publication ?</p>
+            </div>
+            <div class="modal-footer" style="border-bottom-left-radius:24px;border-bottom-right-radius:24px;justify-content:center;">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-danger" id="confirmDeletePublicationBtn">Supprimer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var publicationFormToDelete = null;
+    $(document).on('click', '.delete-publication-btn', function(e) {
+        e.preventDefault();
+        publicationFormToDelete = $(this).closest('form');
+        $('#deletePublicationModal').modal('show');
+    });
+
+    $('#confirmDeletePublicationBtn').on('click', function() {
+        if (publicationFormToDelete) {
+            publicationFormToDelete.submit();
+            publicationFormToDelete = null;
+            $('#deletePublicationModal').modal('hide');
+        }
+    });
+});
+</script>
                                 <img src="{{ $publication->image ? asset('storage/' . $publication->image) : asset('img/undraw_posting_photo.svg') }}" class="card-img-top" alt="{{ $publication->titre }}" style="height:220px;object-fit:cover;">
                                 <div class="card-body d-flex flex-column">
                                     <h5 class="card-title text-primary font-weight-bold">{{ $publication->titre }}</h5>

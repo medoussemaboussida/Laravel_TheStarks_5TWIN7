@@ -472,14 +472,21 @@
 
                         <div class="col-md-6 col-lg-4 mb-4">
                             <div class="card shadow h-100 publication-card position-relative" style="border-radius:20px;overflow:hidden;">
-                                <!-- Delete Icon -->
-                                <form method="POST" action="{{ route('publications.destroy', $publication->id) }}" class="delete-publication-form" style="position:absolute;top:12px;right:16px;z-index:10;">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="button" class="btn btn-sm btn-danger delete-publication-btn" data-publication-id="{{ $publication->id }}" style="border-radius:50%;padding:6px 8px;line-height:1;box-shadow:0 2px 8px rgba(231,74,59,0.12);">
-                                        <i class="fas fa-trash-alt"></i>
+                                <!-- Edit & Delete Icons -->
+                                <div style="position:absolute;top:12px;right:16px;z-index:10;display:flex;gap:8px;">
+                                    <!-- Edit Icon -->
+                                    <button type="button" class="btn btn-sm btn-info edit-publication-btn" data-publication-id="{{ $publication->id }}" data-publication-titre="{{ $publication->titre }}" data-publication-description="{{ $publication->description }}" data-publication-image="{{ $publication->image }}" style="border-radius:50%;padding:6px 8px;line-height:1;box-shadow:0 2px 8px rgba(78,115,223,0.12);">
+                                        <i class="fas fa-pencil-alt"></i>
                                     </button>
-                                </form>
+                                    <!-- Delete Icon -->
+                                    <form method="POST" action="{{ route('publications.destroy', $publication->id) }}" class="delete-publication-form" style="display:inline;">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="button" class="btn btn-sm btn-danger delete-publication-btn" data-publication-id="{{ $publication->id }}" style="border-radius:50%;padding:6px 8px;line-height:1;box-shadow:0 2px 8px rgba(231,74,59,0.12);">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </form>
+                                </div>
 <!-- Modal de confirmation suppression publication (à placer en dehors de la boucle) -->
 <div class="modal fade" id="deletePublicationModal" tabindex="-1" aria-labelledby="deletePublicationModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -581,6 +588,97 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
         </div>
     </div>
+
+
+    <!-- Edit Publication Modal -->
+    <div class="modal fade" id="editPublicationModal" tabindex="-1" aria-labelledby="editPublicationModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content urban-modal">
+                <div class="urban-modal-header" style="background: linear-gradient(90deg,#4e73df 0%,#1cc88a 100%); color: #fff; border-top-left-radius: 32px; border-top-right-radius: 32px; display: flex; flex-direction: column; align-items: center; padding: 2rem 1rem 1rem 1rem;">
+                    <img src="{{ asset('img/undraw_posting_photo.svg') }}" alt="Illustration" class="urban-illustration">
+                    <span class="urban-modal-title" id="editPublicationModalLabel">Modifier la publication</span>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="position:absolute;top:18px;right:24px;font-size:2rem;color:#fff;opacity:0.8;">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form method="POST" id="editPublicationForm" enctype="multipart/form-data">
+                    @csrf
+                    @method('PATCH')
+                    <div class="urban-modal-body">
+                        <input type="hidden" id="edit_publication_id" name="publication_id">
+                        <div class="mb-4">
+                            <label for="edit_titre" class="form-label">Titre</label>
+                            <input type="text" class="form-control" id="edit_titre" name="titre" placeholder="Titre de la publication">
+                        </div>
+                        <div class="mb-4">
+                            <label for="edit_image" class="form-label">Image</label>
+                            <input type="file" class="form-control" id="edit_image" name="image" accept="image/*" onchange="previewEditPublicationImage(event)">
+                            <div id="editImagePreviewContainer" style="margin-top:1rem;text-align:center;display:none;">
+                                <img id="editImagePreview" src="#" alt="Aperçu de l'image" style="max-width:180px;max-height:180px;border-radius:16px;box-shadow:0 2px 8px rgba(78,115,223,0.12);border:2px solid #4e73df;object-fit:cover;">
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label for="edit_description" class="form-label">Description</label>
+                            <textarea class="form-control" id="edit_description" name="description" rows="4" placeholder="Décris ta publication..."></textarea>
+                        </div>
+                    </div>
+                    <div class="urban-modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-success">Enregistrer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    function previewEditPublicationImage(event) {
+        const input = event.target;
+        const previewContainer = document.getElementById('editImagePreviewContainer');
+        const preview = document.getElementById('editImagePreview');
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+                previewContainer.style.display = 'block';
+            }
+            reader.readAsDataURL(input.files[0]);
+        } else {
+            preview.src = '#';
+            previewContainer.style.display = 'none';
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Edit icon click handler
+        $(document).on('click', '.edit-publication-btn', function(e) {
+            e.preventDefault();
+            // Get publication data from data attributes
+            var id = $(this).data('publication-id');
+            var titre = $(this).data('publication-titre');
+            var description = $(this).data('publication-description');
+            var image = $(this).data('publication-image');
+
+            // Fill modal fields
+            $('#edit_publication_id').val(id);
+            $('#edit_titre').val(titre);
+            $('#edit_description').val(description);
+            if (image) {
+                $('#editImagePreview').attr('src', '/storage/' + image);
+                $('#editImagePreviewContainer').show();
+            } else {
+                $('#editImagePreview').attr('src', '#');
+                $('#editImagePreviewContainer').hide();
+            }
+
+            // Set form action
+            $('#editPublicationForm').attr('action', '/publications/' + id);
+
+            // Show modal
+            $('#editPublicationModal').modal('show');
+        });
+    });
+    </script>
 
     <!-- Bootstrap core JavaScript-->
     <!-- jQuery CDN -->

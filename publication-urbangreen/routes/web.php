@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Route;
 
 // Route pour l'ajout de publication
 Route::post('/publications', [PublicationController::class, 'store'])->name('publications.store');
+// Route de modification de publication
+Route::patch('/publications/{publication}', [PublicationController::class, 'update'])->name('publications.update');
 // Route de suppression de publication
 Route::delete('/publications/{publication}', [PublicationController::class, 'destroy'])->name('publications.destroy');
 

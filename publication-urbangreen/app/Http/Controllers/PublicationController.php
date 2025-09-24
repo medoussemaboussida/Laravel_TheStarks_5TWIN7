@@ -32,6 +32,33 @@ class PublicationController extends Controller
         return redirect()->back()->with('success', 'Publication ajoutée avec succès!');
     }
 
+    // Modification d'une publication
+    public function update(Request $request, $id)
+    {
+        $publication = \App\Models\Publication::findOrFail($id);
+        $validated = $request->validate([
+            'titre' => 'required|string|max:255',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'description' => 'required|string',
+        ]);
+
+        // Si une nouvelle image est uploadée, remplacer l'ancienne
+        if ($request->hasFile('image')) {
+            // Supprimer l'ancienne image
+            if ($publication->image && \Storage::disk('public')->exists($publication->image)) {
+                \Storage::disk('public')->delete($publication->image);
+            }
+            $path = $request->file('image')->store('publications', 'public');
+            $publication->image = $path;
+        }
+
+        $publication->titre = $validated['titre'];
+        $publication->description = $validated['description'];
+        $publication->save();
+
+        return redirect()->back()->with('success', 'Publication modifiée avec succès!');
+    }
+
     // Suppression d'une publication
     public function destroy($id)
     {

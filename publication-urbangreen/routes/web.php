@@ -14,7 +14,10 @@ Route::patch('/publications/{publication}', [PublicationController::class, 'upda
 Route::delete('/publications/{publication}', [PublicationController::class, 'destroy'])->name('publications.destroy');
 
 Route::get('/', function () {
-    return view('welcome');
+    $publications = \App\Models\Publication::latest()->get();
+    return view('layouts.front', [
+        'publications' => $publications
+    ]);
 })->name('home');
 Route::get('/dashboard', function () {
     $publications = \App\Models\Publication::latest()->get();

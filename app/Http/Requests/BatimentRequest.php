@@ -8,18 +8,21 @@ class BatimentRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true; // autoriser tout le monde pour l’instant
+        return true; // autoriser pour tous
     }
 
     public function rules(): array
     {
         return [
-            'type_batiment' => 'required|string|in:Usine,Maison',
-            'nom_adresse' => 'required|string|max:150',
-            'emissionCO2' => 'required|numeric|min:0',
-            'nbHabitants' => 'nullable|integer|min:0',
-            'typeIndustrie' => 'nullable|string|max:50',
-            'pourcentageRenouvelable' => 'required|numeric|between:0,100',
+            'type_batiment'          => 'required|in:Maison,Usine',
+            'adresse'                => 'required|string|max:255',
+            'emissionCO2'            => 'required|numeric|min:0',
+            'pourcentageRenouvelable'=> 'required|numeric|min:0|max:100',
+
+            // Optionnels selon le type
+            'nbHabitants'    => 'nullable|integer|min:0',
+            'nbEmployes'     => 'nullable|integer|min:0',
+            'typeIndustrie'  => 'nullable|string|max:100',
         ];
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Entities\Batiment;
+use App\Entities\ZoneUrbaine;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Http\Requests\BatimentRequest;
 
@@ -26,6 +27,8 @@ class BatimentController extends Controller
     $b->setAdresse($request->adresse);
     $b->setEmissionCO2((float)$request->emissionCO2);
     $b->setPourcentageRenouvelable((float)$request->pourcentageRenouvelable);
+    $zone = $this->em->getRepository(ZoneUrbaine::class)->find(1); // ex : zone par défaut
+    $b->setZone($zone);
 
     if ($request->type_batiment === 'Maison') {
         $b->setNbHabitants($request->nbHabitants);

@@ -36,16 +36,120 @@
             <input type="text" id="adresse" name="adresse" class="form-control">
         </div>
 
-        <!-- Emission CO2 (Maison & Usine) -->
-        <div class="mb-3 common-field">
-            <label for="emissionCO2" class="form-label">Émission CO₂ (t/an)</label>
-            <input type="number" id="emissionCO2" name="emissionCO2" class="form-control" step="0.01">
+        <!-- Estimation des émissions -->
+        <h4>Estimation des émissions CO₂</h4>
+        <p>Sélectionnez les objets/activités et entrez leur nombre :</p>
+
+        <div class="row">
+            <!-- Exemple : voiture -->
+            <div class="col-md-3 mb-3">
+                <label class="form-check-label">
+                    <input type="checkbox" name="emissions[voiture][check]" value="1" class="form-check-input">
+                    🚗 Voitures
+                </label>
+                <input type="number" name="emissions[voiture][nb]" class="form-control mt-1" placeholder="Nombre">
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <label class="form-check-label">
+                    <input type="checkbox" name="emissions[moto][check]" value="1" class="form-check-input">
+                    🛵 Motos
+                </label>
+                <input type="number" name="emissions[moto][nb]" class="form-control mt-1" placeholder="Nombre">
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <label class="form-check-label">
+                    <input type="checkbox" name="emissions[bus][check]" value="1" class="form-check-input">
+                    🚍 Bus internes
+                </label>
+                <input type="number" name="emissions[bus][nb]" class="form-control mt-1" placeholder="Nombre">
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <label class="form-check-label">
+                    <input type="checkbox" name="emissions[avion][check]" value="1" class="form-check-input">
+                    ✈️ Déplacements aériens
+                </label>
+                <input type="number" name="emissions[avion][nb]" class="form-control mt-1" placeholder="Personnes">
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <label class="form-check-label">
+                    <input type="checkbox" name="emissions[fumeur][check]" value="1" class="form-check-input">
+                    🚬 Fumeurs
+                </label>
+                <input type="number" name="emissions[fumeur][nb]" class="form-control mt-1" placeholder="Nombre">
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <label class="form-check-label">
+                    <input type="checkbox" name="emissions[electricite][check]" value="1" class="form-check-input">
+                    💡 Consommation électrique
+                </label>
+                <input type="number" name="emissions[electricite][nb]" class="form-control mt-1" placeholder="Ménages">
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <label class="form-check-label">
+                    <input type="checkbox" name="emissions[gaz][check]" value="1" class="form-check-input">
+                    🔥 Chauffage au gaz
+                </label>
+                <input type="number" name="emissions[gaz][nb]" class="form-control mt-1" placeholder="Unités">
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <label class="form-check-label">
+                    <input type="checkbox" name="emissions[clim][check]" value="1" class="form-check-input">
+                    ❄️ Climatisations
+                </label>
+                <input type="number" name="emissions[clim][nb]" class="form-control mt-1" placeholder="Unités">
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <label class="form-check-label">
+                    <input type="checkbox" name="emissions[machine][check]" value="1" class="form-check-input">
+                    🏭 Machines industrielles
+                </label>
+                <input type="number" name="emissions[machine][nb]" class="form-control mt-1" placeholder="Nombre">
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <label class="form-check-label">
+                    <input type="checkbox" name="emissions[camion][check]" value="1" class="form-check-input">
+                    📦 Camions utilitaires
+                </label>
+                <input type="number" name="emissions[camion][nb]" class="form-control mt-1" placeholder="Nombre">
+            </div>
         </div>
 
-        <!-- Pourcentage Renouvelable (Maison & Usine) -->
-        <div class="mb-3 common-field">
-            <label for="pourcentageRenouvelable" class="form-label">% Énergie Renouvelable</label>
-            <input type="number" id="pourcentageRenouvelable" name="pourcentageRenouvelable" class="form-control" step="1" min="0" max="100">
+       <!-- Énergies Renouvelables utilisées -->
+        <div class="mb-3">
+            <label class="form-label">Énergies Renouvelables utilisées</label>
+
+            <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" id="energie_solaire" name="solaire_active" value="1">
+                <label class="form-check-label" for="energie_solaire">☀️ Panneaux solaires</label>
+                <input type="number" class="form-control mt-1" name="solaire_kw" placeholder="kW produits/an">
+            </div>
+
+            <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" id="energie_voiture" name="voiture_active" value="1">
+                <label class="form-check-label" for="energie_voiture">🚗 Voitures électriques</label>
+                <input type="number" class="form-control mt-1" name="voiture_nb" placeholder="Nombre de voitures">
+            </div>
+
+            <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" id="energie_biomasse" name="biomasse_active" value="1">
+                <label class="form-check-label" for="energie_biomasse">🌱 Biomasse</label>
+                <input type="number" class="form-control mt-1" name="biomasse_tonnes" placeholder="Tonnes utilisées/an">
+            </div>
+
+            <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" id="energie_eolien" name="eolien_active" value="1">
+                <label class="form-check-label" for="energie_eolien">🌬️ Éolien</label>
+                <input type="number" class="form-control mt-1" name="eolien_kw" placeholder="kW produits/an">
+            </div>
         </div>
 
         <!-- Maison spécifique -->

@@ -6,6 +6,8 @@ use App\Entities\Batiment;
 use App\Entities\ZoneUrbaine;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Http\Requests\BatimentRequest;
+use Illuminate\Http\Request;
+
 
 class BatimentController extends Controller
 {
@@ -22,22 +24,26 @@ public function create()
     $zones = $this->em->getRepository(ZoneUrbaine::class)->findAll();
     return view('batiments.create', compact('zones'));
 }
-
-    public function store(BatimentRequest $request)
+public function update(Request $request, $id)
 {
-    $b = new Batiment();
+    $b = $this->em->getRepository(Batiment::class)->find($id);
 
-    $b->setTypeBatiment($request->type_batiment);
-    $b->setAdresse($request->adresse);
-    $b->setEmissionCO2((float)$request->emissionCO2);
-    $b->setPourcentageRenouvelable((float)$request->pourcentageRenouvelable);
-  // Associer la zone choisie
+    if (!$b) {
+        return redirect()->route('batiments.index')->with('error', 'Bâtiment introuvable.');
+    }
+
+    // --- Zone associée ---
     if ($request->zone_id) {
         $zone = $this->em->getRepository(ZoneUrbaine::class)->find($request->zone_id);
         if ($zone) {
             $b->setZone($zone);
         }
     }
+
+    // --- Type de bâtiment ---
+    $b->setTypeBatiment($request->type_batiment);
+    $b->setAdresse($request->adresse);
+
     if ($request->type_batiment === 'Maison') {
         $b->setNbHabitants($request->nbHabitants);
         $b->setNbEmployes(null);
@@ -48,13 +54,144 @@ public function create()
         $b->setTypeIndustrie($request->typeIndustrie);
     }
 
+    // --- FACTEURS CO2 ---
+    $factors = [
+        'voiture'      => 2.3,
+        'moto'         => 0.5,
+        'bus'          => 10.0,
+        'avion'        => 0.5,
+        'fumeur'       => 0.15,
+        'electricite'  => 1.5,
+        'gaz'          => 1.2,
+        'clim'         => 1.0,
+        'machine'      => 3.0,
+        'camion'       => 3.5,
+    ];
+
+    $emission = 0.0;
+    if ($request->has('emissions')) {
+        foreach ($request->emissions as $key => $data) {
+            if (isset($data['check']) && $data['check'] == 1) {
+                $nb = (int)($data['nb'] ?? 0);
+                $emission += $nb * ($factors[$key] ?? 0);
+            }
+        }
+    }
+
+    $b->setEmissionCO2($emission);
+
     $this->em->persist($b);
     $this->em->flush();
 
     return redirect()->route('batiments.index')
-                     ->with('success', 'Bâtiment ajouté avec succès.');
+                     ->with('success', 'Bâtiment mis à jour avec succès.');
 }
 
+  public function store(Request $request)
+    {
+        $b = new Batiment();
+
+        // --- Associer la zone choisie ---
+        if ($request->zone_id) {
+            $zone = $this->em->getRepository(ZoneUrbaine::class)->find($request->zone_id);
+            if ($zone) {
+                $b->setZone($zone);
+            }
+        }
+
+        // --- Type de bâtiment ---
+        $b->setTypeBatiment($request->type_batiment);
+        $b->setAdresse($request->adresse);
+        $energie_evitee = 0;
+
+            if ($request->solaire_active && $request->solaire_kw) {
+                $energie_evitee += $request->solaire_kw * 0.0005; // 1000 kWh ≈ 0.5 tCO₂ évité
+            }
+            if ($request->voiture_active && $request->voiture_nb) {
+                $energie_evitee += $request->voiture_nb * 2; // 1 EV ≈ 2 tCO₂/an évité
+            }
+            if ($request->biomasse_active && $request->biomasse_tonnes) {
+                $energie_evitee += $request->biomasse_tonnes * 1.5;
+            }
+            if ($request->eolien_active && $request->eolien_kw) {
+                $energie_evitee += $request->eolien_kw * 0.0004;
+            }
+
+            $pctRenouvelable = min(100, ($energie_evitee / max(1, $b->getEmissionCO2())) * 100);
+            $b->setPourcentageRenouvelable($pctRenouvelable);
+
+        if ($request->type_batiment === 'Maison') {
+            $b->setNbHabitants($request->nbHabitants);
+            $b->setNbEmployes(null);
+            $b->setTypeIndustrie(null);
+        } elseif ($request->type_batiment === 'Usine') {
+            $b->setNbHabitants(null);
+            $b->setNbEmployes($request->nbEmployes);
+            $b->setTypeIndustrie($request->typeIndustrie);
+        }
+
+        // --- FACTEURS CO2 (t/an par unité) ---
+        $factors = [
+            'voiture'      => 2.3,
+            'moto'         => 0.5,
+            'bus'          => 10.0,
+            'avion'        => 0.5,
+            'fumeur'       => 0.15,
+            'electricite'  => 1.5,
+            'gaz'          => 1.2,
+            'clim'         => 1.0,
+            'machine'      => 3.0,
+            'camion'       => 3.5,
+        ];
+
+        // --- Calcul émission CO2 ---
+        $emission = 0.0;
+        if ($request->has('emissions')) {
+            foreach ($request->emissions as $key => $data) {
+                if (isset($data['check']) && $data['check'] == 1) {
+                    $nb = (int)($data['nb'] ?? 0);
+                    $emission += $nb * ($factors[$key] ?? 0);
+                }
+            }
+        }
+
+        // Sauvegarde de l’émission calculée
+        $b->setEmissionCO2($emission);
+
+        $this->em->persist($b);
+        $this->em->flush();
+
+        return redirect()->route('batiments.index')
+                         ->with('success', 'Bâtiment ajouté avec succès.');
+    }
 
     // edit, update, destroy: voir code complet déjà fourni dans la conversation
+    public function destroy($id)
+{
+    $batiment = $this->em->getRepository(Batiment::class)->find($id);
+
+    if (!$batiment) {
+        return redirect()->route('batiments.index')
+                         ->with('error', 'Bâtiment introuvable.');
+    }
+
+    $this->em->remove($batiment);
+    $this->em->flush();
+
+    return redirect()->route('batiments.index')
+                     ->with('success', 'Bâtiment supprimé avec succès.');
+}
+public function edit($id)
+{
+    $batiment = $this->em->getRepository(Batiment::class)->find($id);
+    $zones = $this->em->getRepository(ZoneUrbaine::class)->findAll();
+
+    if (!$batiment) {
+        return redirect()->route('batiments.index')
+                         ->with('error', 'Bâtiment introuvable.');
+    }
+
+    return view('batiments.edit', compact('batiment', 'zones'));
+}
+
 }

@@ -34,12 +34,16 @@
         <td>{{ number_format($b->getEmissionCO2(), 2) }}</td>
         <td>{{ $b->getPourcentageRenouvelable() }}%</td>
         <td>{{ number_format($b->getEmissionReelle(), 2) }}</td>
-        <td>{{ number_format($b->getNbArbresBesoin(), 2) }}</td>
-
-       
-
-        <!-- Nb d’arbres nécessaires -->
-        <td>{{ $b->getNbArbresBesoin() }}</td>
+        <td>{{ number_format($b->getNbArbresBesoin()) }}</td>
+<td>
+    @if ($b->getTypeBatiment() === 'Usine')
+        {{ number_format($b->getNbEmployes() ?? 0) }}
+    @elseif ($b->getTypeBatiment() === 'Maison')
+        {{ number_format($b->getNbHabitants() ?? 0) }}
+    @else
+        -
+    @endif
+</td>
 
         <td>
           <a href="{{ route('batiments.edit', $b->getId()) }}" class="btn btn-sm btn-warning">Edit</a>

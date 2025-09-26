@@ -19,7 +19,7 @@ class Batiment
     private string $adresse;
 
     #[ORM\Column(type: "float")]
-    private float $emissionCO2;
+    private float $emissionCO2 = 0.0;
 
     #[ORM\Column(type: "integer", nullable: true)]
     private ?int $nbHabitants = null;

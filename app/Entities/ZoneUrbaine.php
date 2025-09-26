@@ -18,19 +18,26 @@ class ZoneUrbaine
     private string $nom;
 
     #[ORM\Column(type: "integer")]
-    private int $population;
+    private int $population = 0;
 
     #[ORM\Column(type: "float")]
-    private float $surface;
+    private float $surface = 0;
 
     #[ORM\Column(type: "float")]
-    private float $niveauPollution;
+    private float $niveauPollution = 0;
 
     #[ORM\Column(type: "integer")]
-    private int $nbArbresExist;
+    private int $nbArbresExist = 0;
 
-    #[ORM\OneToMany(targetEntity: Batiment::class, mappedBy: "zone", cascade: ["persist", "remove"])]
-    private Collection $batiments;
+
+    #[ORM\OneToMany(
+    targetEntity: Batiment::class,
+    mappedBy: "zone",
+    cascade: ["persist", "remove"],
+    fetch: "EAGER"   // ← ça force le chargement direct
+)]
+private Collection $batiments;
+
 
     public function __construct()
     {
@@ -90,4 +97,9 @@ class ZoneUrbaine
         }
         return (int) ceil($totalEmission / 0.02);
     }
+    public function __toString(): string
+{
+    return $this->nom;
+}
+
 }

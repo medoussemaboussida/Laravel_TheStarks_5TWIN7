@@ -18,6 +18,17 @@
                 <option value="Usine">Usine</option>
             </select>
         </div>
+        <!-- Zone Urbaine -->
+        <div class="mb-3">
+            <label for="zone_id" class="form-label">État (Zone Urbaine)</label>
+            <select id="zone_id" name="zone_id" class="form-control" required>
+                <option value="">-- Choisir une zone --</option>
+                @foreach($zones as $z)
+                    <option value="{{ $z->getId() }}">{{ $z->getNom() }}</option>
+                @endforeach
+            </select>
+        </div>
+
 
         <!-- Adresse (Maison & Usine) -->
         <div class="mb-3 common-field">
@@ -54,6 +65,8 @@
             <input type="text" id="typeIndustrie" name="typeIndustrie" class="form-control">
         </div>
 
+        
+
         <button type="submit" class="btn btn-success">Enregistrer</button>
     </form>
 </div>
@@ -78,5 +91,6 @@ document.getElementById('type_batiment').addEventListener('change', function() {
         usineFields.forEach(el => el.classList.remove('d-none'));
     }
 });
+
 </script>
 @endsection

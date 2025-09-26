@@ -17,7 +17,11 @@ class BatimentController extends Controller
         return view('batiments.index', compact('batiments'));
     }
 
-    public function create() { return view('batiments.create'); }
+public function create()
+{
+    $zones = $this->em->getRepository(ZoneUrbaine::class)->findAll();
+    return view('batiments.create', compact('zones'));
+}
 
     public function store(BatimentRequest $request)
 {
@@ -27,9 +31,13 @@ class BatimentController extends Controller
     $b->setAdresse($request->adresse);
     $b->setEmissionCO2((float)$request->emissionCO2);
     $b->setPourcentageRenouvelable((float)$request->pourcentageRenouvelable);
-    $zone = $this->em->getRepository(ZoneUrbaine::class)->find(1); // ex : zone par défaut
-    $b->setZone($zone);
-
+  // Associer la zone choisie
+    if ($request->zone_id) {
+        $zone = $this->em->getRepository(ZoneUrbaine::class)->find($request->zone_id);
+        if ($zone) {
+            $b->setZone($zone);
+        }
+    }
     if ($request->type_batiment === 'Maison') {
         $b->setNbHabitants($request->nbHabitants);
         $b->setNbEmployes(null);

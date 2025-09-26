@@ -11,4 +11,10 @@ class Publication extends Model
         'image',
         'description',
     ];
+
+    // Relation avec l'utilisateur (auteur)
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

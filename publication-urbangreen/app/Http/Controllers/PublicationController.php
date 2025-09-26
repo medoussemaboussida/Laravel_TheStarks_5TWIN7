@@ -70,4 +70,10 @@ class PublicationController extends Controller
         $publication->delete();
         return redirect()->back()->with('success', 'Publication supprimée avec succès!');
     }
+    // Affichage des détails d'une publication
+    public function show($id)
+    {
+        $publication = \App\Models\Publication::with('user')->findOrFail($id);
+        return view('layouts.details', compact('publication'));
+    }
 }

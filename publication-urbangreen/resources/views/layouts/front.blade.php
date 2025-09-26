@@ -84,21 +84,23 @@
         <div class="row g-4">
           @forelse($publications as $publication)
             <div class="col-12 col-sm-6 col-md-4 col-lg-3 d-flex align-items-stretch" data-aos="zoom-in-up" data-aos-delay="{{ 100 + ($loop->index % 4) * 100 }}">
-              <div class="publication-card-glass position-relative w-100 h-100 d-flex flex-column">
-                <div class="publication-img-glass position-relative overflow-hidden">
-                  <img src="{{ $publication->image ? asset('storage/' . $publication->image) : asset('img/undraw_posting_photo.svg') }}" class="w-100" alt="{{ $publication->titre }}" style="height: 220px; object-fit: cover; border-top-left-radius: 1.5rem; border-top-right-radius: 1.5rem; transition: transform .4s cubic-bezier(.4,2,.6,1);">
-                  <span class="badge date-badge-glass position-absolute top-0 end-0 m-2 px-3 py-2 shadow" style="font-size: 0.95rem;">{{ $publication->created_at->format('d/m/Y') }}</span>
-                  <div class="img-gradient-overlay position-absolute top-0 start-0 w-100 h-100"></div>
-                </div>
-                <div class="card-body d-flex flex-column flex-grow-1 p-4">
-                  <h5 class="card-title fw-bold mb-2 text-dark" style="font-family:'Rubik',sans-serif;">{{ $publication->titre }}</h5>
-                  <p class="card-text text-secondary mb-3 flex-grow-1" style="font-size:1.05rem;">{{ $publication->description }}</p>
-                  <div class="d-flex align-items-center mt-auto gap-2">
-                    <img src="{{ asset('img/undraw_profile_1.svg') }}" alt="Auteur" class="rounded-circle border border-2 border-success" width="36" height="36">
-                    <span class="text-muted small">Par <b>{{ $publication->user->name ?? 'Admin' }}</b></span>
+              <a href="{{ route('publications.show', $publication->id) }}" class="text-decoration-none w-100 h-100 publication-link-card">
+                <div class="publication-card-glass position-relative w-100 h-100 d-flex flex-column">
+                  <div class="publication-img-glass position-relative overflow-hidden">
+                    <img src="{{ $publication->image ? asset('storage/' . $publication->image) : asset('img/undraw_posting_photo.svg') }}" class="w-100" alt="{{ $publication->titre }}" style="height: 220px; object-fit: cover; border-top-left-radius: 1.5rem; border-top-right-radius: 1.5rem; transition: transform .4s cubic-bezier(.4,2,.6,1);">
+                    <span class="badge date-badge-glass position-absolute top-0 end-0 m-2 px-3 py-2 shadow" style="font-size: 0.95rem;">{{ $publication->created_at->format('d/m/Y') }}</span>
+                    <div class="img-gradient-overlay position-absolute top-0 start-0 w-100 h-100"></div>
+                  </div>
+                  <div class="card-body d-flex flex-column flex-grow-1 p-4">
+                    <h5 class="card-title fw-bold mb-2 text-dark" style="font-family:'Rubik',sans-serif;">{{ $publication->titre }}</h5>
+                    <p class="card-text text-secondary mb-3 flex-grow-1" style="font-size:1.05rem;">{{ $publication->description }}</p>
+                    <div class="d-flex align-items-center mt-auto gap-2">
+                      <img src="{{ asset('img/undraw_profile_1.svg') }}" alt="Auteur" class="rounded-circle border border-2 border-success" width="36" height="36">
+                      <span class="text-muted small">Par <b>{{ $publication->user->name ?? 'Admin' }}</b></span>
+                    </div>
                   </div>
                 </div>
-              </div>
+              </a>
             </div>
           @empty
             <div class="col-12">
@@ -113,6 +115,15 @@
     </section>
 
     <style>
+      .publication-link-card {
+        display: block;
+        cursor: pointer;
+        transition: box-shadow .2s, transform .2s;
+      }
+      .publication-link-card:hover {
+        text-decoration: none;
+        box-shadow: none;
+      }
       .gradient-text {
         background: linear-gradient(90deg,#1cc88a 0%,#4e73df 100%);
         -webkit-background-clip: text;

@@ -1,4 +1,3 @@
-
 <?php
 use App\Http\Controllers\PublicationController;
 use App\Livewire\Settings\Appearance;
@@ -6,6 +5,8 @@ use App\Livewire\Settings\Password;
 use App\Livewire\Settings\Profile;
 use Illuminate\Support\Facades\Route;
 
+// Route pour afficher les détails d'une publication
+Route::get('/publications/{publication}', [PublicationController::class, 'show'])->name('publications.show');
 // Route pour l'ajout de publication
 Route::post('/publications', [PublicationController::class, 'store'])->name('publications.store');
 // Route de modification de publication
@@ -33,7 +34,3 @@ Route::get('settings/appearance', Appearance::class)->name('settings.appearance'
 require __DIR__.'/auth.php';
 
 
-// Route pour l'ajout de publication
-Route::post('/publications', [PublicationController::class, 'store'])->name('publications.store');
-// Route de suppression de publication
-Route::delete('/publications/{publication}', [PublicationController::class, 'destroy'])->name('publications.destroy');

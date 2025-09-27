@@ -6,6 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Publication extends Model
 {
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
+    }
     protected $fillable = [
         'titre',
         'image',

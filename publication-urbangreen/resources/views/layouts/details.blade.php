@@ -34,6 +34,68 @@
           </div>
           <p class="lead text-dark mb-4" style="font-size:1.25rem;">{{ $publication->description }}</p>
           <a href="{{ url()->previous() }}" class="btn btn-outline-primary rounded-pill px-4 mt-3"><i class="bi bi-arrow-left"></i> Retour</a>
+
+        <!-- Section Commentaires -->
+        <div class="container mt-5">
+          <div class="row justify-content-center">
+            <div class="col-lg-8">
+              <div class="card shadow-sm border-0 mb-4">
+                <div class="card-body">
+                  <h3 class="mb-4 gradient-text">Commentaires</h3>
+                  <!-- Formulaire d'ajout de commentaire (si connecté) -->
+                  @if(auth()->check())
+                    <form action="{{ route('publications.comment', $publication->id) }}" method="POST" class="mb-4">
+                      @csrf
+                      <div class="mb-3">
+                        <textarea name="content" class="form-control" rows="3" placeholder="Votre commentaire..." required></textarea>
+                        @error('content')
+                          <div class="text-danger small mt-1">{{ $message }}</div>
+                        @enderror
+                      </div>
+                      <button type="submit" class="btn btn-success rounded-pill px-4">Commenter</button>
+                    </form>
+                  @else
+                    <div class="alert alert-info">Vous devez être <a href="/login">connecté</a> pour commenter.</div>
+                  @endif
+
+                  <!-- Liste des commentaires -->
+                  @if($publication->comments->count())
+                    @foreach($publication->comments->sortByDesc('created_at') as $comment)
+                      <div class="d-flex mb-3 align-items-start">
+                        <img src="{{ asset('img/undraw_profile_1.svg') }}" alt="Avatar" class="rounded-circle me-3" width="40" height="40">
+                        <div class="flex-grow-1">
+                          <div class="fw-bold">{{ $comment->user->name ?? 'Utilisateur' }} <span class="text-muted small">{{ $comment->created_at->diffForHumans() }}</span></div>
+                          <div>{{ $comment->content }}</div>
+                        </div>
+                        @if(auth()->check() && auth()->id() === $comment->user_id)
+                          <!-- Formulaire d'édition inline -->
+                          <button class="btn btn-sm btn-outline-primary me-1" type="button" onclick="toggleEditForm({{ $comment->id }})" title="Modifier"><i class="bi bi-pencil"></i></button>
+                          <form action="{{ route('commentaires.destroy', $comment->id) }}" method="POST" onsubmit="return confirm('Supprimer ce commentaire ?');" class="d-inline">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Supprimer"><i class="bi bi-trash"></i></button>
+                          </form>
+                        @endif
+                      </div>
+                      @if(auth()->check() && auth()->id() === $comment->user_id)
+                        <form action="{{ route('commentaires.update', $comment->id) }}" method="POST" id="edit-form-{{ $comment->id }}" class="mb-2" style="display:none;">
+                          @csrf
+                          @method('PATCH')
+                          <div class="input-group">
+                            <textarea name="content" class="form-control" rows="2" required>{{ $comment->content }}</textarea>
+                            <button type="submit" class="btn btn-success">Enregistrer</button>
+                            <button type="button" class="btn btn-secondary" onclick="toggleEditForm({{ $comment->id }})">Annuler</button>
+                          </div>
+                        </form>
+                      @endif
+                    @endforeach
+                  @else
+                    <div class="text-muted">Aucun commentaire pour le moment.</div>
+                  @endif
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -69,6 +131,17 @@
   background-clip: text;
 }
 </style>
+</style>
+<script>
+function toggleEditForm(commentId) {
+  var form = document.getElementById('edit-form-' + commentId);
+  if (form.style.display === 'none' || form.style.display === '') {
+    form.style.display = 'block';
+  } else {
+    form.style.display = 'none';
+  }
+}
+</script>
 <script src="{{ asset('vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
 <script src="{{ asset('vendor/bootstrap-icons/bootstrap-icons.js') }}"></script>
 </body>

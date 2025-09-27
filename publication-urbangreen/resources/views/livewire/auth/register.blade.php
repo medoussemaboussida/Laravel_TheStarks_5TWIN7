@@ -5,15 +5,16 @@
     <x-auth-session-status class="text-center" :status="session('status')" />
 
     <form method="POST" wire:submit="register" class="flex flex-col gap-6">
-        <!-- Name -->
+
+        <!-- Nom complet -->
         <flux:input
             wire:model="name"
-            :label="__('Name')"
+            :label="__('Nom complet')"
             type="text"
             required
             autofocus
             autocomplete="name"
-            :placeholder="__('Full name')"
+            :placeholder="__('Votre nom complet')"
         />
 
         <!-- Email Address -->

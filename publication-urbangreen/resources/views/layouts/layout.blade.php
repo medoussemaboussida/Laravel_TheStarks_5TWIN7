@@ -1,3 +1,18 @@
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.comment-toggle-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var pubId = btn.getAttribute('data-publication-id');
+            var section = document.getElementById('comments-section-' + pubId);
+            if (section.style.display === 'none' || section.style.display === '') {
+                section.style.display = 'block';
+            } else {
+                section.style.display = 'none';
+            }
+        });
+    });
+});
+</script>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -486,6 +501,10 @@
                                             <i class="fas fa-trash-alt"></i>
                                         </button>
                                     </form>
+                                        <!-- Comment Icon -->
+                                        <button type="button" class="btn btn-sm btn-light comment-toggle-btn" data-publication-id="{{ $publication->id }}" style="border-radius:50%;padding:6px 8px;line-height:1;box-shadow:0 2px 8px rgba(40,167,69,0.12);" title="Voir les commentaires">
+                                            <i class="fas fa-comments text-success"></i>
+                                        </button>
                                 </div>
 <!-- Modal de confirmation suppression publication (à placer en dehors de la boucle) -->
 <div class="modal fade" id="deletePublicationModal" tabindex="-1" aria-labelledby="deletePublicationModalLabel" aria-hidden="true">
@@ -534,6 +553,24 @@ document.addEventListener('DOMContentLoaded', function() {
                                         <span class="badge badge-pill badge-info" style="font-size:0.95rem;">Ajouté le {{ $publication->created_at->format('d/m/Y') }}</span>
                                     </div>
                                 </div>
+                                    <!-- Bloc commentaires masqué/affiché -->
+                                    <div class="comments-section" id="comments-section-{{ $publication->id }}" style="display:none;background:#f8f9fa;border-top:1px solid #e3e6f0;padding:16px 20px;">
+                                        <h6 class="mb-3 text-success"><i class="fas fa-comments"></i> Commentaires</h6>
+                                        @php $comments = $publication->comments()->with('user')->latest()->get(); @endphp
+                                        @if($comments->count())
+                                            @foreach($comments as $comment)
+                                                <div class="d-flex mb-2 align-items-start">
+                                                    <img src="{{ asset('img/undraw_profile_1.svg') }}" alt="Avatar" class="rounded-circle me-2" width="32" height="32">
+                                                    <div>
+                                                        <div class="fw-bold small">{{ $comment->user->name ?? 'Utilisateur' }} <span class="text-muted small">{{ $comment->created_at->diffForHumans() }}</span></div>
+                                                        <div class="small">{{ $comment->content }}</div>
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                        @else
+                                            <div class="text-muted small">Aucun commentaire pour cette publication.</div>
+                                        @endif
+                                    </div>
                             </div>
                         </div>
                         @empty

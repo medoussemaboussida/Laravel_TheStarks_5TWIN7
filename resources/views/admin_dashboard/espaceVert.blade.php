@@ -105,26 +105,26 @@
                                                                     </button>
                                                                 </div>
                                                                 <div class="modal-body">
-                                                                    <form action="{{ route('espace.update', $espaceVert->id) }}" method="POST">
+                                                                    <form action="{{ route('espace.update', $espaceVert->id) }}" method="POST" id="editForm-{{ $espaceVert->id }}">
                                                                         @csrf
                                                                         @method('PUT')
                                                                         <div class="form-group">
                                                                             <label for="nom-{{ $espaceVert->id }}">Name</label>
-                                                                            <input type="text" class="form-control @error('nom', 'update') is-invalid @enderror" id="nom-{{ $espaceVert->id }}" name="nom" value="{{ old('nom', $espaceVert->nom) }}" required>
+                                                                            <input type="text" class="form-control @error('nom', 'update') is-invalid @enderror" id="nom-{{ $espaceVert->id }}" name="nom" value="{{ old('nom', $espaceVert->nom) }}" required minlength="3">
                                                                             @error('nom', 'update')
                                                                                 <div class="invalid-feedback">{{ $message }}</div>
                                                                             @enderror
                                                                         </div>
                                                                         <div class="form-group">
                                                                             <label for="adresse-{{ $espaceVert->id }}">Address</label>
-                                                                            <input type="text" class="form-control @error('adresse', 'update') is-invalid @enderror" id="adresse-{{ $espaceVert->id }}" name="adresse" value="{{ old('adresse', $espaceVert->adresse) }}" required>
+                                                                            <input type="text" class="form-control @error('adresse', 'update') is-invalid @enderror" id="adresse-{{ $espaceVert->id }}" name="adresse" value="{{ old('adresse', $espaceVert->adresse) }}" required minlength="5">
                                                                             @error('adresse', 'update')
                                                                                 <div class="invalid-feedback">{{ $message }}</div>
                                                                             @enderror
                                                                         </div>
                                                                         <div class="form-group">
                                                                             <label for="superficie-{{ $espaceVert->id }}">Area (m²)</label>
-                                                                            <input type="number" step="0.01" class="form-control @error('superficie', 'update') is-invalid @enderror" id="superficie-{{ $espaceVert->id }}" name="superficie" value="{{ old('superficie', $espaceVert->superficie) }}" required>
+                                                                            <input type="number" step="0.01" class="form-control @error('superficie', 'update') is-invalid @enderror" id="superficie-{{ $espaceVert->id }}" name="superficie" value="{{ old('superficie', $espaceVert->superficie) }}" required min="0">
                                                                             @error('superficie', 'update')
                                                                                 <div class="invalid-feedback">{{ $message }}</div>
                                                                             @enderror
@@ -242,25 +242,25 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form action="{{ route('espace.store') }}" method="POST">
+                    <form action="{{ route('espace.store') }}" method="POST" id="addForm">
                         @csrf
                         <div class="form-group">
                             <label for="nom">Name</label>
-                            <input type="text" class="form-control @error('nom') is-invalid @enderror" id="nom" name="nom" value="{{ old('nom') }}" required>
+                            <input type="text" class="form-control @error('nom') is-invalid @enderror" id="nom" name="nom" value="{{ old('nom') }}" required minlength="3">
                             @error('nom')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
                         <div class="form-group">
                             <label for="adresse">Address</label>
-                            <input type="text" class="form-control @error('adresse') is-invalid @enderror" id="adresse" name="adresse" value="{{ old('adresse') }}" required>
+                            <input type="text" class="form-control @error('adresse') is-invalid @enderror" id="adresse" name="adresse" value="{{ old('adresse') }}" required minlength="5">
                             @error('adresse')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
                         <div class="form-group">
                             <label for="superficie">Area (m²)</label>
-                            <input type="number" step="0.01" class="form-control @error('superficie') is-invalid @enderror" id="superficie" name="superficie" value="{{ old('superficie') }}" required>
+                            <input type="number" step="0.01" class="form-control @error('superficie') is-invalid @enderror" id="superficie" name="superficie" value="{{ old('superficie') }}" required min="0">
                             @error('superficie')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -310,6 +310,80 @@
             const tableBody = document.getElementById('tableBody');
             const sortValue = document.querySelector('#searchInput')?.dataset.sort || 'newest';
 
+            // Client-side validation for Add and Edit forms
+            const addForm = document.getElementById('addForm');
+            const editForms = document.querySelectorAll('form[id^="editForm-"]');
+
+            function validateForm(form) {
+                const nom = form.querySelector('input[name="nom"]');
+                const adresse = form.querySelector('input[name="adresse"]');
+                const superficie = form.querySelector('input[name="superficie"]');
+                const type = form.querySelector('select[name="type"]');
+                const etat = form.querySelector('select[name="etat"]');
+
+                let isValid = true;
+
+                // Reset validation states
+                [nom, adresse, superficie, type, etat].forEach(input => {
+                    input.classList.remove('is-invalid');
+                    const feedback = input.nextElementSibling;
+                    if (feedback && feedback.classList.contains('invalid-feedback')) {
+                        feedback.textContent = '';
+                    }
+                });
+
+                // Validate nom
+                if (nom.value.length < 3) {
+                    nom.classList.add('is-invalid');
+                    nom.nextElementSibling.textContent = 'Name must be at least 3 characters long.';
+                    isValid = false;
+                }
+
+                // Validate adresse
+                if (adresse.value.length < 5) {
+                    adresse.classList.add('is-invalid');
+                    adresse.nextElementSibling.textContent = 'Address must be at least 5 characters long.';
+                    isValid = false;
+                }
+
+                // Validate superficie
+                if (superficie.value < 0) {
+                    superficie.classList.add('is-invalid');
+                    superficie.nextElementSibling.textContent = 'Area must be a positive number.';
+                    isValid = false;
+                }
+
+                // Validate type
+                if (!type.value) {
+                    type.classList.add('is-invalid');
+                    type.nextElementSibling.textContent = 'Please select a type.';
+                    isValid = false;
+                }
+
+                // Validate etat
+                if (!etat.value) {
+                    etat.classList.add('is-invalid');
+                    etat.nextElementSibling.textContent = 'Please select a condition.';
+                    isValid = false;
+                }
+
+                return isValid;
+            }
+
+            addForm.addEventListener('submit', function(event) {
+                if (!validateForm(this)) {
+                    event.preventDefault();
+                }
+            });
+
+            editForms.forEach(form => {
+                form.addEventListener('submit', function(event) {
+                    if (!validateForm(this)) {
+                        event.preventDefault();
+                    }
+                });
+            });
+
             function updateTable(searchTerm) {
                 fetch(`/espace?search=${encodeURIComponent(searchTerm)}&sort=${encodeURIComponent(sortValue)}`, {
                     headers: {
@@ -347,20 +421,23 @@
                                                 </button>
                                             </div>
                                             <div class="modal-body">
-                                                <form action="/espace/${item.id}" method="POST">
+                                                <form action="/espace/${item.id}" method="POST" id="editForm-${item.id}">
                                                     @csrf
                                                     @method('PUT')
                                                     <div class="form-group">
                                                         <label for="nom-${item.id}">Name</label>
-                                                        <input type="text" class="form-control" id="nom-${item.id}" name="nom" value="${item.nom}" required>
+                                                        <input type="text" class="form-control" id="nom-${item.id}" name="nom" value="${item.nom}" required minlength="3">
+                                                        <div class="invalid-feedback"></div>
                                                     </div>
                                                     <div class="form-group">
                                                         <label for="adresse-${item.id}">Address</label>
-                                                        <input type="text" class="form-control" id="adresse-${item.id}" name="adresse" value="${item.adresse}" required>
+                                                        <input type="text" class="form-control" id="adresse-${item.id}" name="adresse" value="${item.adresse}" required minlength="5">
+                                                        <div class="invalid-feedback"></div>
                                                     </div>
                                                     <div class="form-group">
                                                         <label for="superficie-${item.id}">Area (m²)</label>
-                                                        <input type="number" step="0.01" class="form-control" id="superficie-${item.id}" name="superficie" value="${item.superficie}" required>
+                                                        <input type="number" step="0.01" class="form-control" id="superficie-${item.id}" name="superficie" value="${item.superficie}" required min="0">
+                                                        <div class="invalid-feedback"></div>
                                                     </div>
                                                     <div class="form-group">
                                                         <label for="type-${item.id}">Type</label>
@@ -370,6 +447,7 @@
                                                             <option value="toit vert" ${item.type === 'toit vert' ? 'selected' : ''}>Toit Vert</option>
                                                             <option value="autre" ${item.type === 'autre' ? 'selected' : ''}>Autre</option>
                                                         </select>
+                                                        <div class="invalid-feedback"></div>
                                                     </div>
                                                     <div class="form-group">
                                                         <label for="etat-${item.id}">Condition</label>
@@ -378,10 +456,12 @@
                                                             <option value="moyen" ${item.etat === 'moyen' ? 'selected' : ''}>Moyen</option>
                                                             <option value="mauvais" ${item.etat === 'mauvais' ? 'selected' : ''}>Mauvais</option>
                                                         </select>
+                                                        <div class="invalid-feedback"></div>
                                                     </div>
                                                     <div class="form-group">
                                                         <label for="besoin_specifique-${item.id}">Specific Needs</label>
                                                         <textarea class="form-control" id="besoin_specifique-${item.id}" name="besoin_specifique" rows="3">${item.besoin_specifique}</textarea>
+                                                        <div class="invalid-feedback"></div>
                                                     </div>
                                                     <button type="submit" class="btn btn-primary">Update</button>
                                                 </form>
@@ -440,13 +520,17 @@
             updateTable('');
 
             // Event listeners
-            searchInput.addEventListener('input', function() {
-                debouncedUpdateTable(this.value);
-            });
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    debouncedUpdateTable(this.value);
+                });
+            }
 
-            searchInputMobile.addEventListener('input', function() {
-                debouncedUpdateTable(this.value);
-            });
+            if (searchInputMobile) {
+                searchInputMobile.addEventListener('input', function() {
+                    debouncedUpdateTable(this.value);
+                });
+            }
         });
     </script>
     @vite([

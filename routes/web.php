@@ -5,6 +5,7 @@ use App\Livewire\Settings\Password;
 use App\Livewire\Settings\Profile;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EspaceVertController;
+use App\Http\Controllers\RapportBesoinController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -22,6 +23,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('settings/appearance', Appearance::class)->name('settings.appearance');
 });
 Route::resource('espace', EspaceVertController::class);
+Route::resource('rapport-besoins', RapportBesoinController::class);
 Route::get('/client', [EspaceVertController::class, 'displayClient'])->name('client.index');
-
+Route::get('/rapports/{id}', [RapportBesoinController::class, 'indexByEspace'])->name('rapport-besoins.index-by-espace');
 require __DIR__.'/auth.php';

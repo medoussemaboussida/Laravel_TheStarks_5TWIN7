@@ -35,12 +35,11 @@ class EspaceVertController extends Controller
             });
         }
 
-        $espacesVerts = $query->get();
+        $espacesVerts = $query->with('rapportBesoins')->get(); // Eager load rapports
 
         if ($request->ajax()) {
             return response()->json($espacesVerts);
         }
-
         return view('admin_dashboard.espaceVert', compact('espacesVerts'));
     }
 
@@ -60,8 +59,8 @@ class EspaceVertController extends Controller
     {
         // Validate the request data
         $validatedData = $request->validate([
-            'nom' => 'required|string|max:255',
-            'adresse' => 'required|string|max:255',
+            'nom' => 'required|string|max:|min:3',
+            'adresse' => 'required|string|max:25|min:5',
             'superficie' => 'required|numeric',
             'type' => 'required|in:parc,jardin,toit vert,autre',
             'etat' => 'required|in:bon,moyen,mauvais',

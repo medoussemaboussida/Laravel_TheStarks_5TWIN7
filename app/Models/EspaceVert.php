@@ -14,4 +14,8 @@ class EspaceVert extends Model
         'etat',
         'besoin_specifique',
     ];
+    public function rapportBesoins()
+    {
+return $this->hasMany(RapportBesoin::class, 'espace_vert_id');
+    }
 }

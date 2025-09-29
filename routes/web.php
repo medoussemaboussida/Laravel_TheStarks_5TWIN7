@@ -36,6 +36,7 @@ Route::get('/backoffice/editbatiment/{id}', function ($id) {
 
 Route::middleware('web')->group(function () {
     Route::resource('batiments', BatimentController::class)->except(['destroy']);
+    Route::put('/admin/batiments/{id}/update', [BatimentController::class, 'updateBackoffice'])->name('batiments.updateBackoffice');
     Route::delete('/admin/batiments/{id}/delete', [BatimentController::class, 'destroyBackoffice'])->name('batiments.destroyBackoffice');
     Route::delete('/batiments/{id}/delete', [BatimentController::class, 'destroyFrontoffice'])->name('batiments.destroyFrontoffice');
 });

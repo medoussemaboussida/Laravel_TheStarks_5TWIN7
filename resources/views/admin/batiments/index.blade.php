@@ -51,34 +51,98 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($batiments as $batiment)
-                            <tr>
-                                <td>{{ $batiment->getId() }}</td>
-                                <td>{{ $batiment->getTypeBatiment() }}</td>
-                                <td>{{ $batiment->getAdresse() }}</td>
-                                <td>{{ $batiment->getZone() ? $batiment->getZone()->getNom() : '-' }}</td>
-                                <td>{{ $batiment->getEmissionCO2() }}</td>
-                                <td>{{ $batiment->getNbHabitants() }}</td>
-                                <td>{{ $batiment->getNbEmployes() }}</td>
-                                <td>{{ $batiment->getTypeIndustrie() }}</td>
-                                <td>{{ $batiment->getPourcentageRenouvelable() }}%</td>
-                                <td>{{ $batiment->getEmissionReelle() }}</td>
-                                <td>{{ $batiment->getNbArbresBesoin() }}</td>
-                                <td>
-                                    <a href="{{ route('batiments.edit', $batiment->getId()) }}" class="btn btn-warning btn-sm mr-2">
+                                                @foreach($batiments as $batiment)
+                                                        <tr>
+                                                                <td>{{ $batiment->getId() }}</td>
+                                                                <td>{{ $batiment->getTypeBatiment() }}</td>
+                                                                <td>{{ $batiment->getAdresse() }}</td>
+                                                                <td>{{ $batiment->getZone() ? $batiment->getZone()->getNom() : '-' }}</td>
+                                                                <td>{{ $batiment->getEmissionCO2() }}</td>
+                                                                <td>{{ $batiment->getNbHabitants() }}</td>
+                                                                <td>{{ $batiment->getNbEmployes() }}</td>
+                                                                <td>{{ $batiment->getTypeIndustrie() }}</td>
+                                                                <td>{{ $batiment->getPourcentageRenouvelable() }}%</td>
+                                                                <td>{{ $batiment->getEmissionReelle() }}</td>
+                                                                <td>{{ $batiment->getNbArbresBesoin() }}</td>
+                                                                <td>
+                                    <button type="button" class="btn btn-warning btn-sm mr-2" data-toggle="modal" data-target="#editBatimentModal{{ $batiment->getId() }}">
                                         <i class="fas fa-edit"></i>
-                                    </a>
-                                    <form action="{{ route('batiments.destroyBackoffice', $batiment->getId()) }}" method="POST" style="display:inline-block;">
-                                        @csrf
-                                        @method('DELETE')
-                                        <input type="hidden" name="source" value="backoffice">
-                                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Supprimer ce bâtiment ?')">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
-                        @endforeach
+                                    </button>
+                                                                        <form action="{{ route('batiments.destroyBackoffice', $batiment->getId()) }}" method="POST" style="display:inline-block;">
+                                                                                @csrf
+                                                                                @method('DELETE')
+                                                                                <input type="hidden" name="source" value="backoffice">
+                                                                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Supprimer ce bâtiment ?')">
+                                                                                        <i class="fas fa-trash"></i>
+                                                                                </button>
+                                                                        </form>
+                                                                        <!-- Modal -->
+                                                                        <div class="modal fade" id="editBatimentModal{{ $batiment->getId() }}" tabindex="-1" role="dialog" aria-labelledby="editBatimentModalLabel{{ $batiment->getId() }}" aria-hidden="true">
+                                                                            <div class="modal-dialog" role="document">
+                                                                                <div class="modal-content">
+                                                                                    <form action="{{ route('batiments.updateBackoffice', $batiment->getId()) }}" method="POST">
+                                                                                        @csrf
+                                                                                        @method('PUT')
+                                                                                        <div class="modal-header">
+                                                                                            <h5 class="modal-title" id="editBatimentModalLabel{{ $batiment->getId() }}">Modifier Bâtiment #{{ $batiment->getId() }}</h5>
+                                                                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                                                                <span aria-hidden="true">&times;</span>
+                                                                                            </button>
+                                                                                        </div>
+                                                                                        <div class="modal-body">
+                                                                                            <input type="hidden" name="source" value="backoffice">
+                                                                                            <div class="form-group">
+                                                                                                <label for="type_batiment_{{ $batiment->getId() }}">Type</label>
+                                                                                                <select name="type_batiment" id="type_batiment_{{ $batiment->getId() }}" class="form-control" required>
+                                                                                                    <option value="Maison" @if($batiment->getTypeBatiment() == 'Maison') selected @endif>Maison</option>
+                                                                                                    <option value="Usine" @if($batiment->getTypeBatiment() == 'Usine') selected @endif>Usine</option>
+                                                                                                </select>
+                                                                                            </div>
+                                                                                            <div class="form-group">
+                                                                                                <label for="adresse_{{ $batiment->getId() }}">Adresse</label>
+                                                                                                <input type="text" name="adresse" id="adresse_{{ $batiment->getId() }}" class="form-control" value="{{ $batiment->getAdresse() }}" required>
+                                                                                            </div>
+                                                                                            <div class="form-group">
+                                                                                                <label for="zone_id_{{ $batiment->getId() }}">Zone Urbaine</label>
+                                                                                                <select name="zone_id" id="zone_id_{{ $batiment->getId() }}" class="form-control" required>
+                                                                                                    @foreach($batiment->getZone() ? [$batiment->getZone()] : [] as $zone)
+                                                                                                        <option value="{{ $zone->getId() }}" selected>{{ $zone->getNom() }}</option>
+                                                                                                    @endforeach
+                                                                                                    @foreach($batiments as $b)
+                                                                                                        @if($b->getZone() && (!$batiment->getZone() || $b->getZone()->getId() != $batiment->getZone()->getId()))
+                                                                                                            <option value="{{ $b->getZone()->getId() }}">{{ $b->getZone()->getNom() }}</option>
+                                                                                                        @endif
+                                                                                                    @endforeach
+                                                                                                </select>
+                                                                                            </div>
+                                                                                            <div class="form-group">
+                                                                                                <label for="nbHabitants_{{ $batiment->getId() }}">Nb Habitants</label>
+                                                                                                <input type="number" name="nbHabitants" id="nbHabitants_{{ $batiment->getId() }}" class="form-control" value="{{ $batiment->getNbHabitants() }}">
+                                                                                            </div>
+                                                                                            <div class="form-group">
+                                                                                                <label for="nbEmployes_{{ $batiment->getId() }}">Nb Employés</label>
+                                                                                                <input type="number" name="nbEmployes" id="nbEmployes_{{ $batiment->getId() }}" class="form-control" value="{{ $batiment->getNbEmployes() }}">
+                                                                                            </div>
+                                                                                            <div class="form-group">
+                                                                                                <label for="typeIndustrie_{{ $batiment->getId() }}">Type Industrie</label>
+                                                                                                <input type="text" name="typeIndustrie" id="typeIndustrie_{{ $batiment->getId() }}" class="form-control" value="{{ $batiment->getTypeIndustrie() }}">
+                                                                                            </div>
+                                                                                            <div class="form-group">
+                                                                                                <label for="pourcentageRenouvelable_{{ $batiment->getId() }}">% Renouvelable</label>
+                                                                                                <input type="number" step="0.01" name="pourcentageRenouvelable" id="pourcentageRenouvelable_{{ $batiment->getId() }}" class="form-control" value="{{ $batiment->getPourcentageRenouvelable() }}">
+                                                                                            </div>
+                                                                                        </div>
+                                                                                        <div class="modal-footer">
+                                                                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                                                                                            <button type="submit" class="btn btn-success">Mettre à jour</button>
+                                                                                        </div>
+                                                                                    </form>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                </td>
+                                                        </tr>
+                                                @endforeach
                     </tbody>
                 </table>
             </div>

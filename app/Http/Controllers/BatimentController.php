@@ -5,18 +5,78 @@ namespace App\Http\Controllers;
 use App\Entities\Batiment;
 use App\Entities\ZoneUrbaine;
 use Doctrine\ORM\EntityManagerInterface;
-use App\Http\Requests\BatimentRequest;
 use Illuminate\Http\Request;
-
 
 class BatimentController extends Controller
 {
-    public function __construct(private EntityManagerInterface $em) {}
+    private EntityManagerInterface $em;
 
-    public function index()
+    public function __construct(EntityManagerInterface $em)
     {
-        $batiments = $this->em->getRepository(Batiment::class)->findAll();
-        return view('batiments.index', compact('batiments'));
+        $this->em = $em;
+    }
+    // Mise à jour depuis le backoffice (modal admin)
+    public function updateBackoffice(Request $request, $id)
+    {
+        $b = $this->em->getRepository(Batiment::class)->find($id);
+
+        if (!$b) {
+            return redirect()->route('backoffice.indexbatiment')->with('error', 'Bâtiment introuvable.');
+        }
+
+        // --- Zone associée ---
+        if ($request->zone_id) {
+            $zone = $this->em->getRepository(ZoneUrbaine::class)->find($request->zone_id);
+            if ($zone) {
+                $b->setZone($zone);
+            }
+        }
+
+        // --- Type de bâtiment ---
+        $b->setTypeBatiment($request->type_batiment);
+        $b->setAdresse($request->adresse);
+
+        if ($request->type_batiment === 'Maison') {
+            $b->setNbHabitants($request->nbHabitants);
+            $b->setNbEmployes(null);
+            $b->setTypeIndustrie(null);
+        } elseif ($request->type_batiment === 'Usine') {
+            $b->setNbHabitants(null);
+            $b->setNbEmployes($request->nbEmployes);
+            $b->setTypeIndustrie($request->typeIndustrie);
+        }
+
+        // --- FACTEURS CO2 ---
+        $factors = [
+            'voiture'      => 2.3,
+            'moto'         => 0.5,
+            'bus'          => 10.0,
+            'avion'        => 0.5,
+            'fumeur'       => 0.15,
+            'electricite'  => 1.5,
+            'gaz'          => 1.2,
+            'clim'         => 1.0,
+            'machine'      => 3.0,
+            'camion'       => 3.5,
+        ];
+
+        $emission = 0.0;
+        if ($request->has('emissions')) {
+            foreach ($request->emissions as $key => $data) {
+                if (isset($data['check']) && $data['check'] == 1) {
+                    $nb = (int)($data['nb'] ?? 0);
+                    $emission += $nb * ($factors[$key] ?? 0);
+                }
+            }
+        }
+
+        $b->setEmissionCO2($emission);
+
+        $this->em->persist($b);
+        $this->em->flush();
+
+        return redirect()->route('backoffice.indexbatiment')
+                         ->with('success', 'Bâtiment mis à jour avec succès.');
     }
 
 public function create()

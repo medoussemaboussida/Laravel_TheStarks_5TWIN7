@@ -16,11 +16,18 @@ class BatimentController extends Controller
         $this->em = $em;
     }
 
+    // Affiche la vue frontoffice pour /batiments
+    // Affiche la vue frontoffice pour /batiments
     public function index()
     {
-    $batiments = $this->em->getRepository(Batiment::class)->findAll();
-    $zones = $this->em->getRepository(ZoneUrbaine::class)->findAll();
-    return view('admin.batiments.index', compact('batiments', 'zones'));
+        if (request()->is('backoffice/indexbatiment')) {
+            $batiments = $this->em->getRepository(Batiment::class)->findAll();
+            $zones = $this->em->getRepository(ZoneUrbaine::class)->findAll();
+            return view('admin.batiments.index', compact('batiments', 'zones'));
+        } else {
+            $batiments = $this->em->getRepository(Batiment::class)->findAll();
+            return view('batiments.index', compact('batiments'));
+        }
     }
     // Mise à jour depuis le backoffice (modal admin)
     public function updateBackoffice(Request $request, $id)

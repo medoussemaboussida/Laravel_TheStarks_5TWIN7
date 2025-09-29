@@ -13,6 +13,10 @@
         <a class="nav-link" href="/espace">
             <i class="fas fa-tree"></i>
             <span>Gestion des espaces</span></a>
+
+            <a class="nav-link" href="/adminpublication">
+            <i class="fas fa-tree"></i>
+            <span>Gestion Publciation</span></a>
     </li>
     <!-- Divider -->
     <hr class="sidebar-divider">

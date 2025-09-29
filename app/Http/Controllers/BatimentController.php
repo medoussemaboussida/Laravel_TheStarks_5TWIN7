@@ -15,6 +15,13 @@ class BatimentController extends Controller
     {
         $this->em = $em;
     }
+
+    public function index()
+    {
+    $batiments = $this->em->getRepository(Batiment::class)->findAll();
+    $zones = $this->em->getRepository(ZoneUrbaine::class)->findAll();
+    return view('admin.batiments.index', compact('batiments', 'zones'));
+    }
     // Mise à jour depuis le backoffice (modal admin)
     public function updateBackoffice(Request $request, $id)
     {
@@ -225,7 +232,15 @@ public function update(Request $request, $id)
                          ->with('success', 'Bâtiment ajouté avec succès.');
     }
 
-    // edit, update, destroy: voir code complet déjà fourni dans la conversation
+    public function edit($id)
+    {
+        $batiment = $this->em->getRepository(Batiment::class)->find($id);
+        if (!$batiment) {
+            abort(404);
+        }
+        $zones = $this->em->getRepository(ZoneUrbaine::class)->findAll();
+        return view('batiments.edit', compact('batiment', 'zones'));
+    }
     // Suppression depuis le backoffice
     public function destroyBackoffice($id)
     {

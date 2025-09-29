@@ -15,11 +15,7 @@ Route::get('/backOffice', [AdminController::class, 'dashboard'])->name('admin.da
 
 use Doctrine\ORM\EntityManagerInterface;
 
-Route::get('/backoffice/indexbatiment', function () {
-    $em = app(EntityManagerInterface::class);
-    $batiments = $em->getRepository(\App\Entities\Batiment::class)->findAll();
-    return view('admin.batiments.index', compact('batiments'));
-})->name('backoffice.indexbatiment');
+Route::get('/backoffice/indexbatiment', [BatimentController::class, 'index'])->name('backoffice.indexbatiment');
 
 Route::get('/backoffice/createbatiment', function () {
     $em = app(EntityManagerInterface::class);

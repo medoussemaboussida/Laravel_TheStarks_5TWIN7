@@ -166,32 +166,32 @@ public function update(Request $request, $id)
     }
 
     // edit, update, destroy: voir code complet déjà fourni dans la conversation
-    public function destroy($id)
-{
-    $batiment = $this->em->getRepository(Batiment::class)->find($id);
-
-    if (!$batiment) {
-        return redirect()->route('batiments.index')
-                         ->with('error', 'Bâtiment introuvable.');
+    // Suppression depuis le backoffice
+    public function destroyBackoffice($id)
+    {
+        $batiment = $this->em->getRepository(Batiment::class)->find($id);
+        if (!$batiment) {
+            return redirect()->route('backoffice.indexbatiment')
+                             ->with('error', 'Bâtiment introuvable.');
+        }
+        $this->em->remove($batiment);
+        $this->em->flush();
+        return redirect()->route('backoffice.indexbatiment')
+                         ->with('success', 'Bâtiment supprimé avec succès.');
     }
 
-    $this->em->remove($batiment);
-    $this->em->flush();
-
-    return redirect()->route('batiments.index')
-                     ->with('success', 'Bâtiment supprimé avec succès.');
-}
-public function edit($id)
-{
-    $batiment = $this->em->getRepository(Batiment::class)->find($id);
-    $zones = $this->em->getRepository(ZoneUrbaine::class)->findAll();
-
-    if (!$batiment) {
+    // Suppression depuis le frontoffice
+    public function destroyFrontoffice($id)
+    {
+        $batiment = $this->em->getRepository(Batiment::class)->find($id);
+        if (!$batiment) {
+            return redirect()->route('batiments.index')
+                             ->with('error', 'Bâtiment introuvable.');
+        }
+        $this->em->remove($batiment);
+        $this->em->flush();
         return redirect()->route('batiments.index')
-                         ->with('error', 'Bâtiment introuvable.');
+                         ->with('success', 'Bâtiment supprimé avec succès.');
     }
-
-    return view('batiments.edit', compact('batiment', 'zones'));
-}
-
+    // ...existing code...
 }

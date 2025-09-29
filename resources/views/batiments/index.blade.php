@@ -47,7 +47,7 @@
 
         <td>
           <a href="{{ route('batiments.edit', $b->getId()) }}" class="btn btn-sm btn-warning">Edit</a>
-          <form action="{{ route('batiments.destroy', $b->getId()) }}" method="POST" style="display:inline;">
+          <form action="{{ route('batiments.destroyFrontoffice', $b->getId()) }}" method="POST" style="display:inline;">
             @csrf
             @method('DELETE')
             <button class="btn btn-sm btn-danger" onclick="return confirm('Supprimer ?')">Suppr</button>

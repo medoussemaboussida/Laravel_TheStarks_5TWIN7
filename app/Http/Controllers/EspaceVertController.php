@@ -59,7 +59,7 @@ class EspaceVertController extends Controller
     {
         // Validate the request data
         $validatedData = $request->validate([
-            'nom' => 'required|string|max:|min:3',
+            'nom' => 'required|string|max:50|min:3',
             'adresse' => 'required|string|max:25|min:5',
             'superficie' => 'required|numeric',
             'type' => 'required|in:parc,jardin,toit vert,autre',

@@ -42,11 +42,17 @@
                     @endif
 
                     <!-- Add Button -->
+                    <!-- Add Button -->
                     <div class="d-sm-flex align-items-center justify-content-between mb-4">
                         <h1 class="h3 mb-0 text-gray-800">Gestion des espaces verts</h1>
-                        <button class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" data-toggle="modal" data-target="#addEspaceVertModal">
-                            <i class="fas fa-plus fa-sm text-white-50"></i> Ajouter Espace Vert
-                        </button>
+                        <div class="d-flex">
+                            <button class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm mr-2" data-toggle="modal" data-target="#addEspaceVertModal">
+                                <i class="fas fa-plus fa-sm text-white-50"></i> Ajouter Espace Vert
+                            </button>
+                            <a href="{{ route('rapport-besoins.index') }}" class="d-none d-sm-inline-block btn btn-sm btn-info shadow-sm">
+                                <i class="fas fa-eye fa-sm text-white-50"></i> Voir Rapports
+                            </a>
+                        </div>
                     </div>
 
                     <!-- Table of Espace Vert -->

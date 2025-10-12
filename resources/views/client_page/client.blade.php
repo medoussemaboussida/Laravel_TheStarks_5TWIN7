@@ -155,6 +155,81 @@
                             </div>
                         </div>
                     </section>
+
+                    <!-- Publications Section -->
+                    <section id="publications" class="section py-5" style="background: #f8f9fa;">
+                        <div class="container">
+                            <h2 class="text-center mb-4" style="font-family: 'Rubik', sans-serif; color: #1cc88a;">Nos Publications</h2>
+                            <div class="d-flex flex-wrap justify-content-center gap-4">
+                                @forelse($publications as $publication)
+                                    <a href="{{ route('publications.show', $publication->id) }}" class="publication-modern-card d-flex flex-column align-items-start text-decoration-none" style="color:inherit;">
+                                        <div class="publication-modern-img position-relative w-100">
+                                            <img src="{{ $publication->image ? asset('storage/' . $publication->image) : asset('img/undraw_posting_photo.svg') }}" alt="{{ $publication->titre }}" class="w-100" style="height: 220px; object-fit: cover; border-radius: 1.25rem 1.25rem 0 0;">
+                                            <span class="badge publication-modern-date position-absolute top-0 end-0 m-2 px-3 py-2 shadow">{{ $publication->created_at->format('d/m/Y') }}</span>
+                                        </div>
+                                        <div class="p-4 w-100 flex-grow-1 d-flex flex-column">
+                                            <h5 class="fw-bold mb-2" style="font-family:'Rubik',sans-serif; color:#222;">{{ $publication->titre }}</h5>
+                                            <p class="text-secondary mb-3 flex-grow-1" style="font-size:1.05rem;">{{ $publication->description }}</p>
+                                            <div class="d-flex align-items-center mt-auto gap-2">
+                                                <img src="{{ asset('img/undraw_profile_1.svg') }}" alt="Auteur" class="rounded-circle border border-2 border-success" width="36" height="36">
+                                                <span class="text-muted small">Par <b>{{ $publication->user->name ?? 'Admin' }}</b></span>
+                                            </div>
+                                        </div>
+                                    </a>
+                                @empty
+                                    <div class="col-12">
+                                        <div class="alert alert-info text-center py-5">
+                                            <i class="bi bi-info-circle fs-2 mb-2"></i><br>
+                                            Aucune publication trouvée pour le moment.
+                                        </div>
+                                    </div>
+                                @endforelse
+                            </div>
+                        </div>
+                    </section>
+
+                    <style>
+                        .publication-modern-card {
+                            background: #fff;
+                            border-radius: 1.25rem;
+                            box-shadow: 0 4px 24px rgba(44,62,80,0.10), 0 1.5px 8px rgba(78,115,223,0.08);
+                            transition: box-shadow .25s, transform .18s;
+                            width: 320px;
+                            min-width: 280px;
+                            max-width: 100%;
+                            margin-bottom: 1.5rem;
+                            overflow: hidden;
+                            position: relative;
+                            border: 1.5px solid #e0f7fa;
+                        }
+                        .publication-modern-card:hover {
+                            box-shadow: 0 12px 36px rgba(44,62,80,0.16), 0 4px 16px rgba(78,115,223,0.13);
+                            transform: translateY(-6px) scale(1.025);
+                            border-color: #1cc88a;
+                        }
+                        .publication-modern-img {
+                            width: 100%;
+                            border-radius: 1.25rem 1.25rem 0 0;
+                            overflow: hidden;
+                            position: relative;
+                        }
+                        .publication-modern-date {
+                            background: linear-gradient(90deg,#1cc88a 0%,#4e73df 100%)!important;
+                            color: #fff;
+                            border-radius: 1rem;
+                            font-weight: 500;
+                            letter-spacing: 0.02em;
+                            box-shadow: 0 2px 8px rgba(44,62,80,0.08);
+                            z-index: 3;
+                            font-size: 0.98rem;
+                        }
+                        @media (max-width: 600px) {
+                            .publication-modern-card {
+                                width: 98vw;
+                                min-width: unset;
+                            }
+                        }
+                    </style>
                 </main>
             </div>
         </div>

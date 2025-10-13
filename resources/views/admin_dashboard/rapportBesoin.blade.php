@@ -135,55 +135,55 @@
                                                                         @method('PUT')
                                                                         <div class="form-group">
                                                                             <label for="date_rapport-{{ $rapportBesoin->id }}">Date Rapport</label>
-                                                                            <input type="date" class="form-control @error('date_rapport', 'update') is-invalid @enderror" id="date_rapport-{{ $rapportBesoin->id }}" name="date_rapport" value="{{ old('date_rapport', $rapportBesoin->date_rapport) }}" required>
-                                                                            @error('date_rapport', 'update')
+                                                                            <input type="date" class="form-control @error('date_rapport') is-invalid @enderror" id="date_rapport-{{ $rapportBesoin->id }}" name="date_rapport" value="{{ old('date_rapport', $rapportBesoin->date_rapport) }}" required>
+                                                                            @error('date_rapport')
                                                                                 <div class="invalid-feedback">{{ $message }}</div>
                                                                             @enderror
                                                                         </div>
                                                                         <div class="form-group">
                                                                             <label for="description-{{ $rapportBesoin->id }}">Description</label>
-                                                                            <textarea class="form-control @error('description', 'update') is-invalid @enderror" id="description-{{ $rapportBesoin->id }}" name="description" rows="3" required>{{ old('description', $rapportBesoin->description) }}</textarea>
-                                                                            @error('description', 'update')
+                                                                            <textarea class="form-control @error('description') is-invalid @enderror" id="description-{{ $rapportBesoin->id }}" name="description" rows="3" required>{{ old('description', $rapportBesoin->description) }}</textarea>
+                                                                            @error('description')
                                                                                 <div class="invalid-feedback">{{ $message }}</div>
                                                                             @enderror
                                                                         </div>
                                                                         <div class="form-group">
                                                                             <label for="priorite-{{ $rapportBesoin->id }}">Priorité</label>
-                                                                            <select class="form-control @error('priorite', 'update') is-invalid @enderror" id="priorite-{{ $rapportBesoin->id }}" name="priorite" required>
+                                                                            <select class="form-control @error('priorite') is-invalid @enderror" id="priorite-{{ $rapportBesoin->id }}" name="priorite" required>
                                                                                 <option value="faible" {{ old('priorite', $rapportBesoin->priorite) == 'faible' ? 'selected' : '' }}>Faible</option>
                                                                                 <option value="moyenne" {{ old('priorite', $rapportBesoin->priorite) == 'moyenne' ? 'selected' : '' }}>Moyenne</option>
                                                                                 <option value="élevée" {{ old('priorite', $rapportBesoin->priorite) == 'élevée' ? 'selected' : '' }}>Élevée</option>
                                                                             </select>
-                                                                            @error('priorite', 'update')
+                                                                            @error('priorite')
                                                                                 <div class="invalid-feedback">{{ $message }}</div>
                                                                             @enderror
                                                                         </div>
                                                                         <div class="form-group">
-                                                                            <label for="cout_estime-{{ $rapportBesoin->id }}">Coût Estimé (€)</label>
-                                                                            <input type="number" step="0.01" class="form-control @error('cout_estime', 'update') is-invalid @enderror" id="cout_estime-{{ $rapportBesoin->id }}" name="cout_estime" value="{{ old('cout_estime', $rapportBesoin->cout_estime) }}" required min="0">
-                                                                            @error('cout_estime', 'update')
+                                                                            <label for="cout_estime-{{ $rapportBesoin->id }}">Coût Estimé (DT)</label>
+                                                                            <input type="number" step="0.01" class="form-control @error('cout_estime') is-invalid @enderror" id="cout_estime-{{ $rapportBesoin->id }}" name="cout_estime" value="{{ old('cout_estime', $rapportBesoin->cout_estime) }}" required min="0">
+                                                                            @error('cout_estime')
                                                                                 <div class="invalid-feedback">{{ $message }}</div>
                                                                             @enderror
                                                                         </div>
                                                                         <div class="form-group">
                                                                             <label for="statut-{{ $rapportBesoin->id }}">Statut</label>
-                                                                            <select class="form-control @error('statut', 'update') is-invalid @enderror" id="statut-{{ $rapportBesoin->id }}" name="statut" required>
+                                                                            <select class="form-control @error('statut') is-invalid @enderror" id="statut-{{ $rapportBesoin->id }}" name="statut" required>
                                                                                 <option value="en attente" {{ old('statut', $rapportBesoin->statut) == 'en attente' ? 'selected' : '' }}>En Attente</option>
                                                                                 <option value="en cours" {{ old('statut', $rapportBesoin->statut) == 'en cours' ? 'selected' : '' }}>En Cours</option>
                                                                                 <option value="réalisé" {{ old('statut', $rapportBesoin->statut) == 'réalisé' ? 'selected' : '' }}>Réalisé</option>
                                                                             </select>
-                                                                            @error('statut', 'update')
+                                                                            @error('statut')
                                                                                 <div class="invalid-feedback">{{ $message }}</div>
                                                                             @enderror
                                                                         </div>
                                                                         <div class="form-group">
                                                                             <label for="espace_vert_id-{{ $rapportBesoin->id }}">Espace Vert</label>
-                                                                            <select class="form-control @error('espace_vert_id', 'update') is-invalid @enderror" id="espace_vert_id-{{ $rapportBesoin->id }}" name="espace_vert_id" required>
+                                                                            <select class="form-control @error('espace_vert_id') is-invalid @enderror" id="espace_vert_id-{{ $rapportBesoin->id }}" name="espace_vert_id" required>
                                                                                 @foreach($espaceVerts as $espaceVert)
                                                                                     <option value="{{ $espaceVert->id }}" {{ old('espace_vert_id', $rapportBesoin->espace_vert_id) == $espaceVert->id ? 'selected' : '' }}>{{ $espaceVert->nom }}</option>
                                                                                 @endforeach
                                                                             </select>
-                                                                            @error('espace_vert_id', 'update')
+                                                                            @error('espace_vert_id')
                                                                                 <div class="invalid-feedback">{{ $message }}</div>
                                                                             @enderror
                                                                         </div>
@@ -278,60 +278,48 @@
                         @csrf
                         <div class="form-group">
                             <label for="date_rapport">Date Rapport</label>
-                            <input type="date" class="form-control @error('date_rapport') is-invalid @enderror" id="date_rapport" name="date_rapport" value="{{ old('date_rapport') }}" required>
-                            @error('date_rapport')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                            <input type="date" class="form-control" id="date_rapport" name="date_rapport" value="{{ old('date_rapport') }}" required>
+                            <div class="invalid-feedback" style="display: none;">La date est obligatoire ou doit être aujourd'hui ou une date future.</div>
                         </div>
                         <div class="form-group">
                             <label for="description">Description</label>
-                            <textarea class="form-control @error('description') is-invalid @enderror" id="description" name="description" rows="3" required>{{ old('description') }}</textarea>
-                            @error('description')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                            <textarea class="form-control" id="description" name="description" rows="3" required>{{ old('description') }}</textarea>
+                            <div class="invalid-feedback" style="display: none;">La description est obligatoire ou ne doit pas dépasser 1000 caractères.</div>
                         </div>
                         <div class="form-group">
                             <label for="priorite">Priorité</label>
-                            <select class="form-control @error('priorite') is-invalid @enderror" id="priorite" name="priorite" required>
+                            <select class="form-control" id="priorite" name="priorite" required>
                                 <option value="">Sélectionner</option>
                                 <option value="faible" {{ old('priorite') == 'faible' ? 'selected' : '' }}>Faible</option>
                                 <option value="moyenne" {{ old('priorite') == 'moyenne' ? 'selected' : '' }}>Moyenne</option>
                                 <option value="élevée" {{ old('priorite') == 'élevée' ? 'selected' : '' }}>Élevée</option>
                             </select>
-                            @error('priorite')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                            <div class="invalid-feedback" style="display: none;">La priorité est obligatoire ou doit être faible, moyenne ou élevée.</div>
                         </div>
                         <div class="form-group">
-                            <label for="cout_estime">Coût Estimé (€)</label>
-                            <input type="number" step="0.01" class="form-control @error('cout_estime') is-invalid @enderror" id="cout_estime" name="cout_estime" value="{{ old('cout_estime') }}" required min="0">
-                            @error('cout_estime')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                            <label for="cout_estime">Coût Estimé (DT)</label>
+                            <input type="number" step="0.01" class="form-control" id="cout_estime" name="cout_estime" value="{{ old('cout_estime') }}" required min="0">
+                            <div class="invalid-feedback" style="display: none;">Le coût estimé doit être un nombre positif.</div>
                         </div>
                         <div class="form-group">
                             <label for="statut">Statut</label>
-                            <select class="form-control @error('statut') is-invalid @enderror" id="statut" name="statut" required>
+                            <select class="form-control" id="statut" name="statut" required>
                                 <option value="">Sélectionner</option>
                                 <option value="en attente" {{ old('statut') == 'en attente' ? 'selected' : '' }}>En Attente</option>
                                 <option value="en cours" {{ old('statut') == 'en cours' ? 'selected' : '' }}>En Cours</option>
                                 <option value="réalisé" {{ old('statut') == 'réalisé' ? 'selected' : '' }}>Réalisé</option>
                             </select>
-                            @error('statut')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                            <div class="invalid-feedback" style="display: none;">Le statut est obligatoire ou doit être en attente, en cours ou réalisé.</div>
                         </div>
                         <div class="form-group">
                             <label for="espace_vert_id">Espace Vert</label>
-                            <select class="form-control @error('espace_vert_id') is-invalid @enderror" id="espace_vert_id" name="espace_vert_id" required>
+                            <select class="form-control" id="espace_vert_id" name="espace_vert_id" required>
                                 <option value="">Sélectionner un espace vert</option>
                                 @foreach($espaceVerts as $espaceVert)
                                     <option value="{{ $espaceVert->id }}" {{ old('espace_vert_id') == $espaceVert->id ? 'selected' : '' }}>{{ $espaceVert->nom }}</option>
                                 @endforeach
                             </select>
-                            @error('espace_vert_id')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                            <div class="invalid-feedback" style="display: none;">L'espace vert est obligatoire.</div>
                         </div>
                         <button type="submit" class="btn btn-primary">Soumettre</button>
                     </form>
@@ -352,68 +340,75 @@
             const editForms = document.querySelectorAll('form[id^="editForm-"]');
 
             function validateForm(form) {
-                const dateRapport = form.querySelector('input[name="date_rapport"]');
-                const description = form.querySelector('textarea[name="description"]');
-                const priorite = form.querySelector('select[name="priorite"]');
-                const coutEstime = form.querySelector('input[name="cout_estime"]');
-                const statut = form.querySelector('select[name="statut"]');
-                const espaceVertId = form.querySelector('select[name="espace_vert_id"]');
-
                 let isValid = true;
+                const fields = [
+                    { input: form.querySelector('input[name="date_rapport"]'), feedback: form.querySelector('input[name="date_rapport"]').nextElementSibling, rules: [
+                        { check: val => !val, message: 'La date est obligatoire.' },
+                        { check: val => val && new Date(val) < new Date(), message: 'La date doit être aujourd\'hui ou une date future.' }
+                    ]},
+                    { input: form.querySelector('textarea[name="description"]'), feedback: form.querySelector('textarea[name="description"]').nextElementSibling, rules: [
+                        { check: val => !val.trim(), message: 'La description est obligatoire.' },
+                        { check: val => val.length > 1000, message: 'La description ne doit pas dépasser 1000 caractères.' }
+                    ]},
+                    { input: form.querySelector('select[name="priorite"]'), feedback: form.querySelector('select[name="priorite"]').nextElementSibling, rules: [
+                        { check: val => !val, message: 'La priorité est obligatoire.' },
+                        { check: val => !['faible', 'moyenne', 'élevée'].includes(val), message: 'La priorité doit être faible, moyenne ou élevée.' }
+                    ]},
+                    { input: form.querySelector('input[name="cout_estime"]'), feedback: form.querySelector('input[name="cout_estime"]').nextElementSibling, rules: [
+                        { check: val => !val || parseFloat(val) < 0, message: 'Le coût estimé doit être un nombre positif.' }
+                    ]},
+                    { input: form.querySelector('select[name="statut"]'), feedback: form.querySelector('select[name="statut"]').nextElementSibling, rules: [
+                        { check: val => !val, message: 'Le statut est obligatoire.' },
+                        { check: val => !['en attente', 'en cours', 'réalisé'].includes(val), message: 'Le statut doit être en attente, en cours ou réalisé.' }
+                    ]},
+                    { input: form.querySelector('select[name="espace_vert_id"]'), feedback: form.querySelector('select[name="espace_vert_id"]').nextElementSibling, rules: [
+                        { check: val => !val, message: 'L\'espace vert est obligatoire.' }
+                    ]}
+                ];
 
-                // Reset validation states
-                [dateRapport, description, priorite, coutEstime, statut, espaceVertId].forEach(input => {
-                    input.classList.remove('is-invalid');
-                    const feedback = input.nextElementSibling;
-                    if (feedback && feedback.classList.contains('invalid-feedback')) {
-                        feedback.textContent = '';
+                fields.forEach(field => {
+                    field.input.classList.remove('is-invalid');
+                    field.feedback.style.display = 'none';
+
+                    for (let rule of field.rules) {
+                        if (rule.check(field.input.value)) {
+                            field.input.classList.add('is-invalid');
+                            field.feedback.textContent = rule.message;
+                            field.feedback.style.display = 'block';
+                            isValid = false;
+                            break; // Stop at first validation failure for this field
+                        }
                     }
                 });
 
-                // Validate date_rapport
-                if (!dateRapport.value) {
-                    dateRapport.classList.add('is-invalid');
-                    dateRapport.nextElementSibling.textContent = 'La date est obligatoire.';
-                    isValid = false;
-                }
-
-                // Validate description
-                if (!description.value.trim()) {
-                    description.classList.add('is-invalid');
-                    description.nextElementSibling.textContent = 'La description est obligatoire.';
-                    isValid = false;
-                }
-
-                // Validate priorite
-                if (!priorite.value) {
-                    priorite.classList.add('is-invalid');
-                    priorite.nextElementSibling.textContent = 'La priorité est obligatoire.';
-                    isValid = false;
-                }
-
-                // Validate cout_estime
-                if (!coutEstime.value || parseFloat(coutEstime.value) < 0) {
-                    coutEstime.classList.add('is-invalid');
-                    coutEstime.nextElementSibling.textContent = 'Le coût estimé doit être un nombre positif.';
-                    isValid = false;
-                }
-
-                // Validate statut
-                if (!statut.value) {
-                    statut.classList.add('is-invalid');
-                    statut.nextElementSibling.textContent = 'Le statut est obligatoire.';
-                    isValid = false;
-                }
-
-                // Validate espace_vert_id
-                if (!espaceVertId.value) {
-                    espaceVertId.classList.add('is-invalid');
-                    espaceVertId.nextElementSibling.textContent = 'L\'espace vert est obligatoire.';
-                    isValid = false;
-                }
-
                 return isValid;
             }
+
+            // Validate on input change and submit
+            function setupRealTimeValidation(form) {
+                const fields = [
+                    form.querySelector('input[name="date_rapport"]'),
+                    form.querySelector('textarea[name="description"]'),
+                    form.querySelector('select[name="priorite"]'),
+                    form.querySelector('input[name="cout_estime"]'),
+                    form.querySelector('select[name="statut"]'),
+                    form.querySelector('select[name="espace_vert_id"]')
+                ];
+
+                fields.forEach(input => {
+                    if (input) {
+                        input.addEventListener('input', () => {
+                            validateForm(form); // Re-validate on every change
+                        });
+                        input.addEventListener('change', () => {
+                            validateForm(form); // Re-validate on change (e.g., select)
+                        });
+                    }
+                });
+            }
+
+            setupRealTimeValidation(addForm);
+            editForms.forEach(form => setupRealTimeValidation(form));
 
             addForm.addEventListener('submit', function(event) {
                 if (!validateForm(this)) {
@@ -445,7 +440,7 @@
                 .then(data => {
                     if (!Array.isArray(data)) {
                         console.error('Data is not an array:', data);
-                        return; // Don't empty table if not array
+                        return;
                     }
                     tableBody.innerHTML = '';
                     data.forEach(item => {
@@ -456,7 +451,7 @@
                             <td>${item.date_rapport}</td>
                             <td>${item.description.length > 50 ? item.description.substring(0, 50) + '...' : item.description}</td>
                             <td><span class="badge ${prioriteBadge}">${item.priorite.charAt(0).toUpperCase() + item.priorite.slice(1)}</span></td>
-                            <td>${parseFloat(item.cout_estime).toFixed(2)} €</td>
+                            <td>${parseFloat(item.cout_estime).toFixed(2)} dt</td>
                             <td><span class="badge ${statutBadge}">${item.statut.charAt(0).toUpperCase() + item.statut.slice(1)}</span></td>
                             <td>${item.espace_vert_nom || 'N/A'}</td>
                             <td>
@@ -466,7 +461,6 @@
                                 <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModal-${item.id}">
                                     <i class="fas fa-trash"></i>
                                 </button>
-                                <!-- Edit Modal (simplified for JS, but use Blade for full) -->
                                 <div class="modal fade" id="editModal-${item.id}" tabindex="-1" role="dialog" aria-labelledby="editModalLabel-${item.id}" aria-hidden="true">
                                     <div class="modal-dialog" role="document">
                                         <div class="modal-content">
@@ -483,12 +477,12 @@
                                                     <div class="form-group">
                                                         <label for="date_rapport-${item.id}">Date Rapport</label>
                                                         <input type="date" class="form-control" id="date_rapport-${item.id}" name="date_rapport" value="${item.date_rapport}" required>
-                                                        <div class="invalid-feedback"></div>
+                                                        <div class="invalid-feedback" style="display: none;">La date est obligatoire ou doit être aujourd\'hui ou une date future.</div>
                                                     </div>
                                                     <div class="form-group">
                                                         <label for="description-${item.id}">Description</label>
                                                         <textarea class="form-control" id="description-${item.id}" name="description" rows="3" required>${item.description}</textarea>
-                                                        <div class="invalid-feedback"></div>
+                                                        <div class="invalid-feedback" style="display: none;">La description est obligatoire ou ne doit pas dépasser 1000 caractères.</div>
                                                     </div>
                                                     <div class="form-group">
                                                         <label for="priorite-${item.id}">Priorité</label>
@@ -497,12 +491,12 @@
                                                             <option value="moyenne" ${item.priorite === 'moyenne' ? 'selected' : ''}>Moyenne</option>
                                                             <option value="élevée" ${item.priorite === 'élevée' ? 'selected' : ''}>Élevée</option>
                                                         </select>
-                                                        <div class="invalid-feedback"></div>
+                                                        <div class="invalid-feedback" style="display: none;">La priorité est obligatoire ou doit être faible, moyenne ou élevée.</div>
                                                     </div>
                                                     <div class="form-group">
-                                                        <label for="cout_estime-${item.id}">Coût Estimé (€)</label>
+                                                        <label for="cout_estime-${item.id}">Coût Estimé (DT)</label>
                                                         <input type="number" step="0.01" class="form-control" id="cout_estime-${item.id}" name="cout_estime" value="${item.cout_estime}" required min="0">
-                                                        <div class="invalid-feedback"></div>
+                                                        <div class="invalid-feedback" style="display: none;">Le coût estimé doit être un nombre positif.</div>
                                                     </div>
                                                     <div class="form-group">
                                                         <label for="statut-${item.id}">Statut</label>
@@ -511,15 +505,14 @@
                                                             <option value="en cours" ${item.statut === 'en cours' ? 'selected' : ''}>En Cours</option>
                                                             <option value="réalisé" ${item.statut === 'réalisé' ? 'selected' : ''}>Réalisé</option>
                                                         </select>
-                                                        <div class="invalid-feedback"></div>
+                                                        <div class="invalid-feedback" style="display: none;">Le statut est obligatoire ou doit être en attente, en cours ou réalisé.</div>
                                                     </div>
                                                     <div class="form-group">
                                                         <label for="espace_vert_id-${item.id}">Espace Vert</label>
                                                         <select class="form-control" id="espace_vert_id-${item.id}" name="espace_vert_id" required>
-                                                            <!-- Options would be populated server-side; placeholder here -->
                                                             <option value="${item.espace_vert_id}" selected>${item.espace_vert_nom}</option>
                                                         </select>
-                                                        <div class="invalid-feedback"></div>
+                                                        <div class="invalid-feedback" style="display: none;">L\'espace vert est obligatoire.</div>
                                                     </div>
                                                     <button type="submit" class="btn btn-primary">Mettre à Jour</button>
                                                 </form>
@@ -527,7 +520,6 @@
                                         </div>
                                     </div>
                                 </div>
-                                <!-- Delete Confirmation Modal -->
                                 <div class="modal fade" id="deleteModal-${item.id}" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel-${item.id}" aria-hidden="true">
                                     <div class="modal-dialog" role="document">
                                         <div class="modal-content">
@@ -558,11 +550,9 @@
                 })
                 .catch(error => {
                     console.error('Error fetching data:', error);
-                    // Don't empty table on error - keep Blade-rendered content
                 });
             }
 
-            // Debounce function to limit API calls
             function debounce(func, wait) {
                 let timeout;
                 return function executedFunction(...args) {
@@ -577,10 +567,6 @@
 
             const debouncedUpdateTable = debounce(updateTable, 300);
 
-            // NO INITIAL LOAD CALL - Let Blade render the table
-            // updateTable(''); // Commented out to prevent flash on page load
-
-            // Event listeners
             if (searchInput) {
                 searchInput.addEventListener('input', function() {
                     debouncedUpdateTable(this.value);

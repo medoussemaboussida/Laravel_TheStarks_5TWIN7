@@ -10,6 +10,15 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+   <!-- Vendor CSS Files -->
+  @vite([
+      'resources/clientPageAssets/vendor/bootstrap/css/bootstrap.min.css',
+      'resources/clientPageAssets/vendor/bootstrap-icons/bootstrap-icons.css',
+      'resources/clientPageAssets/vendor/glightbox/css/glightbox.min.css',
+      'resources/clientPageAssets/vendor/swiper/swiper-bundle.min.css'
+  ])
+  <!-- Main CSS File -->
+  @vite(['resources/clientPageAssets/css/main.css'])
   <style>
     /* Reset et Styles de Base Modernes */
     * {
@@ -688,13 +697,10 @@
 </head>
 <body>
 <header class="header" id="header">
-  <div class="container d-flex align-items-center justify-content-between">
-    <a href="/" class="logo d-flex align-items-center gap-2 text-decoration-none">
-      <img src="{{ asset('img/undraw_rocket.svg') }}" alt="Logo" style="height: 40px;">
-      <span class="fw-bold fs-4">UrbanGreen</span>
-    </a>
-    <a class="btn btn-primary rounded-pill px-4 shadow-sm" href="/">Accueil</a>
-  </div>
+  <!-- Navbar -->
+        @include('client_page.partials.navbar')
+
+        <!-- Main Content Wrapper -->
 </header>
 <div class="container py-5">
 

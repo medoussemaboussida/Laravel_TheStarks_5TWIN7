@@ -5,11 +5,11 @@
         </a>
         <nav id="navmenu" class="navmenu">
             <ul>
-                <li><a href="#hero" class="active">Home</a></li>
-                <li><a href="#about">About</a></li>
-                <li><a href="#espace-verts">Espaces Verts</a></li>
-                <li><a href="#publications">Publication</a></li>
-                <li><a href="#pricing">Pricing</a></li>
+                <li><a href="{{ route('client.index') }}" class="active">Home</a></li>
+                <li><a href="{{ route('client.index') }}#about">About</a></li>
+                <li><a href="{{ route('client.index') }}#espace-verts">Espaces Verts</a></li>
+                <li><a href="{{ route('client.index') }}#publications">Publication</a></li>
+                <li><a href="{{ route('client.index') }}#pricing">Pricing</a></li>
                 <li class="dropdown"><a href="#"><span>Dropdown</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
                     <ul>
                         <li><a href="#">Dropdown 1</a></li>
@@ -27,10 +27,10 @@
                         <li><a href="#">Dropdown 4</a></li>
                     </ul>
                 </li>
-                <li><a href="#contact">Contact</a></li>
+                <li><a href="{{ route('client.index') }}#contact">Contact</a></li>
             </ul>
             <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
         </nav>
-        <a class="btn-getstarted" href="#about">Get Started</a>
+        <a class="btn-getstarted" href="{{ route('client.index') }}#about">Get Started</a>
     </div>
 </header>

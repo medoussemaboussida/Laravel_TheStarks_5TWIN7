@@ -10,6 +10,7 @@ class PublicationController extends Controller
     public function index(Request $request)
     {
         $query = $request->input('search');
+        $sort = $request->input('sort', 'desc'); // 'desc' (nouveaux) ou 'asc' (anciens)
         $publications = \App\Models\Publication::with('user')
             ->when($query, function ($q) use ($query) {
                 $q->where(function ($sub) use ($query) {
@@ -17,7 +18,7 @@ class PublicationController extends Controller
                          ->orWhere('description', 'like', "%$query%") ;
                 });
             })
-            ->orderByDesc('created_at')
+            ->orderBy('created_at', $sort)
             ->get();
 
         if ($request->header('X-Requested-With') === 'XMLHttpRequest') {

@@ -162,27 +162,34 @@
                             <h2 class="text-center mb-4" style="font-family: 'Rubik', sans-serif; color: #1cc88a;">Nos Publications</h2>
                             <div class="row justify-content-center mb-4">
                                 <div class="col-md-8">
-                                    <input type="text" id="search-publication" class="form-control form-control-lg shadow-sm" placeholder="Rechercher une publication..." style="border-radius: 2rem; font-size: 1.1rem; padding: 0.75rem 1.5rem; border: 2px solid #1cc88a; background: #fff; transition: box-shadow 0.2s;" autocomplete="off">
+                                    <div class="d-flex gap-2 align-items-center">
+                                        <input type="text" id="search-publication" class="form-control form-control-lg shadow-sm" placeholder="Rechercher une publication..." style="border-radius: 2rem; font-size: 1.1rem; padding: 0.75rem 1.5rem; border: 2px solid #1cc88a; background: #fff; transition: box-shadow 0.2s;" autocomplete="off">
+                                        <select id="sort-publication" class="form-select form-select-lg shadow-sm" style="border-radius:2rem; font-size:1.1rem; padding:0.75rem 1.5rem; border:2px solid #1cc88a; background:#fff; transition:box-shadow 0.2s; max-width:180px;">
+                                            <option value="desc" selected>Nouveaux</option>
+                                            <option value="asc">Anciens</option>
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
                             <div class="d-flex flex-wrap justify-content-center gap-4" id="publications-list">
                     <script>
                         document.addEventListener('DOMContentLoaded', function() {
                             const searchInput = document.getElementById('search-publication');
+                            const sortSelect = document.getElementById('sort-publication');
                             const publicationsList = document.getElementById('publications-list');
                             let timer;
-                            searchInput.addEventListener('input', function() {
+                            function fetchPublications() {
                                 clearTimeout(timer);
                                 timer = setTimeout(() => {
                                     const query = searchInput.value.trim();
-                                    fetch(`/publications?search=${encodeURIComponent(query)}`, {
+                                    const sort = sortSelect.value;
+                                    fetch(`/publications?search=${encodeURIComponent(query)}&sort=${sort}`, {
                                         headers: {
                                             'X-Requested-With': 'XMLHttpRequest'
                                         }
                                     })
                                         .then(response => response.text())
                                         .then(html => {
-                                            // Extraire la nouvelle liste des publications du HTML reçu
                                             const tempDiv = document.createElement('div');
                                             tempDiv.innerHTML = html;
                                             const newList = tempDiv.querySelector('#publications-list');
@@ -190,8 +197,10 @@
                                                 publicationsList.innerHTML = newList.innerHTML;
                                             }
                                         });
-                                }, 350); // délai pour éviter trop de requêtes
-                            });
+                                }, 350);
+                            }
+                            searchInput.addEventListener('input', fetchPublications);
+                            sortSelect.addEventListener('change', fetchPublications);
                         });
                     </script>
                                 @include('client_page.partials.publications_list', ['publications' => $publications])

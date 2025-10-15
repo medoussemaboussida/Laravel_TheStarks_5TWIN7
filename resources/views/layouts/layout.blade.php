@@ -11,6 +11,18 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+
+    document.querySelectorAll('.likes-dislikes-toggle-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var pubId = btn.getAttribute('data-publication-id');
+            var section = document.getElementById('likes-dislikes-section-' + pubId);
+            if (section.style.display === 'none' || section.style.display === '') {
+                section.style.display = 'block';
+            } else {
+                section.style.display = 'none';
+            }
+        });
+    });
 });
 </script>
 <!DOCTYPE html>
@@ -391,6 +403,10 @@ document.addEventListener('DOMContentLoaded', function() {
                                         <button type="button" class="btn btn-sm btn-light comment-toggle-btn" data-publication-id="{{ $publication->id }}" style="border-radius:50%;padding:6px 8px;line-height:1;box-shadow:0 2px 8px rgba(40,167,69,0.12);" title="Voir les commentaires">
                                             <i class="fas fa-comments text-success"></i>
                                         </button>
+                                        <!-- Like/Dislike Icon -->
+                                        <button type="button" class="btn btn-sm btn-outline-info likes-dislikes-toggle-btn" data-publication-id="{{ $publication->id }}" style="border-radius:50%;padding:6px 8px;line-height:1;box-shadow:0 2px 8px rgba(23,162,184,0.12);" title="Voir likes/dislikes">
+                                            <i class="fas fa-thumbs-up"></i>
+                                        </button>
                                 </div>
 <!-- Modal de confirmation suppression publication (à placer en dehors de la boucle) -->
 <div class="modal fade" id="deletePublicationModal" tabindex="-1" aria-labelledby="deletePublicationModalLabel" aria-hidden="true">
@@ -456,6 +472,14 @@ document.addEventListener('DOMContentLoaded', function() {
                                         @else
                                             <div class="text-muted small">Aucun commentaire pour cette publication.</div>
                                         @endif
+                                    </div>
+                                    <!-- Bloc likes/dislikes masqué/affiché -->
+                                    <div class="likes-dislikes-section" id="likes-dislikes-section-{{ $publication->id }}" style="display:none;background:#f8f9fa;border-top:1px solid #e3e6f0;padding:16px 20px;">
+                                        <h6 class="mb-3 text-info"><i class="fas fa-thumbs-up"></i> Likes & Dislikes</h6>
+                                        <div class="d-flex gap-3">
+                                            <span class="badge badge-success">{{ $publication->getLikesCount() }} Likes</span>
+                                            <span class="badge badge-danger">{{ $publication->getDislikesCount() }} Dislikes</span>
+                                        </div>
                                     </div>
                             </div>
                         </div>

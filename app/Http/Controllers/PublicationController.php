@@ -150,4 +150,90 @@ class PublicationController extends Controller
         ]);
         return redirect()->back()->with('success', 'Commentaire ajouté avec succès!');
     }
+
+    // Like a publication
+    public function like(Request $request, $id)
+    {
+        if (!auth()->check()) {
+            return response()->json(['error' => 'Vous devez être connecté pour liker.'], 401);
+        }
+
+        $publication = \App\Models\Publication::findOrFail($id);
+        $userId = auth()->id();
+
+        // Check if user already disliked, remove it
+        $existingDislike = \App\Models\PublicationLike::where('user_id', $userId)
+            ->where('publication_id', $id)
+            ->where('type', 'dislike')
+            ->first();
+        if ($existingDislike) {
+            $existingDislike->delete();
+        }
+
+        // Check if user already liked, remove it (toggle off)
+        $existingLike = \App\Models\PublicationLike::where('user_id', $userId)
+            ->where('publication_id', $id)
+            ->where('type', 'like')
+            ->first();
+        if ($existingLike) {
+            $existingLike->delete();
+        } else {
+            // Create new like
+            \App\Models\PublicationLike::create([
+                'user_id' => $userId,
+                'publication_id' => $id,
+                'type' => 'like',
+            ]);
+        }
+
+        return response()->json([
+            'likes_count' => $publication->getLikesCount(),
+            'dislikes_count' => $publication->getDislikesCount(),
+            'user_liked' => $publication->hasUserLiked($userId),
+            'user_disliked' => $publication->hasUserDisliked($userId),
+        ]);
+    }
+
+    // Dislike a publication
+    public function dislike(Request $request, $id)
+    {
+        if (!auth()->check()) {
+            return response()->json(['error' => 'Vous devez être connecté pour disliker.'], 401);
+        }
+
+        $publication = \App\Models\Publication::findOrFail($id);
+        $userId = auth()->id();
+
+        // Check if user already liked, remove it
+        $existingLike = \App\Models\PublicationLike::where('user_id', $userId)
+            ->where('publication_id', $id)
+            ->where('type', 'like')
+            ->first();
+        if ($existingLike) {
+            $existingLike->delete();
+        }
+
+        // Check if user already disliked, remove it (toggle off)
+        $existingDislike = \App\Models\PublicationLike::where('user_id', $userId)
+            ->where('publication_id', $id)
+            ->where('type', 'dislike')
+            ->first();
+        if ($existingDislike) {
+            $existingDislike->delete();
+        } else {
+            // Create new dislike
+            \App\Models\PublicationLike::create([
+                'user_id' => $userId,
+                'publication_id' => $id,
+                'type' => 'dislike',
+            ]);
+        }
+
+        return response()->json([
+            'likes_count' => $publication->getLikesCount(),
+            'dislikes_count' => $publication->getDislikesCount(),
+            'user_liked' => $publication->hasUserLiked($userId),
+            'user_disliked' => $publication->hasUserDisliked($userId),
+        ]);
+    }
 }

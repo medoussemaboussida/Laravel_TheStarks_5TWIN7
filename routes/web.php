@@ -40,6 +40,10 @@ Route::get('/publications', [PublicationController::class, 'index'])->name('publ
 Route::get('/publications/{publication}', [PublicationController::class, 'show'])->name('publications.show');
 // Route pour ajouter un commentaire
 Route::post('/publications/{publication}/comment', [PublicationController::class, 'addComment'])->name('publications.comment');
+// Route pour like une publication
+Route::post('/publications/{publication}/like', [PublicationController::class, 'like'])->name('publications.like');
+// Route pour dislike une publication
+Route::post('/publications/{publication}/dislike', [PublicationController::class, 'dislike'])->name('publications.dislike');
 // Route pour l'ajout de publication
 Route::post('/publications', [PublicationController::class, 'store'])->name('publications.store');
 // Route de modification de publication

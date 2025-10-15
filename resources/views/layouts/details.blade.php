@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Détails de la publication</title>
+  <meta name="csrf-token" content="{{ csrf_token() }}">
   <!-- Bootstrap CSS -->
   <link rel="stylesheet" href="{{ asset('resources/clientPageAssets/vendor/bootstrap/css/bootstrap.min.css') }}">
   <!-- Bootstrap Icons -->
@@ -718,6 +719,29 @@
             <span class="text-muted fs-5">Par <b>{{ $publication->user->name ?? 'Admin' }}</b></span>
           </div>
           <p class="lead text-dark mb-4">{{ $publication->description }}</p>
+
+          <!-- Like/Dislike Section -->
+          @if(auth()->check())
+            <div class="d-flex align-items-center gap-3 mb-4">
+              <button id="like-btn" class="btn {{ $publication->hasUserLiked(auth()->id()) ? 'btn-success' : 'btn-outline-success' }} rounded-pill px-3" onclick="toggleLike({{ $publication->id }})">
+                <i class="bi bi-hand-thumbs-up me-1"></i> Like <span id="likes-count">{{ $publication->getLikesCount() }}</span>
+              </button>
+              <button id="dislike-btn" class="btn {{ $publication->hasUserDisliked(auth()->id()) ? 'btn-danger' : 'btn-outline-danger' }} rounded-pill px-3" onclick="toggleDislike({{ $publication->id }})">
+                <i class="bi bi-hand-thumbs-down me-1"></i> Dislike <span id="dislikes-count">{{ $publication->getDislikesCount() }}</span>
+              </button>
+            </div>
+          @else
+            <div class="d-flex align-items-center gap-3 mb-4">
+              <button class="btn btn-outline-success rounded-pill px-3" disabled>
+                <i class="bi bi-hand-thumbs-up me-1"></i> Like {{ $publication->getLikesCount() }}
+              </button>
+              <button class="btn btn-outline-danger rounded-pill px-3" disabled>
+                <i class="bi bi-hand-thumbs-down me-1"></i> Dislike {{ $publication->getDislikesCount() }}
+              </button>
+              <small class="text-muted">Connectez-vous pour liker/disliker</small>
+            </div>
+          @endif
+
           <a href="{{ route('client.index') }}" class="btn btn-outline-primary rounded-pill px-4 mt-3"><i class="bi bi-arrow-left me-2"></i> Retour</a>
 
           <!-- Section Commentaires -->
@@ -798,6 +822,74 @@
 function toggleEditForm(commentId) {
   var form = document.getElementById('edit-form-' + commentId);
   form.style.display = form.style.display === 'none' ? 'block' : 'none';
+}
+
+// Function to toggle like
+function toggleLike(publicationId) {
+  fetch(`/publications/${publicationId}/like`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+    },
+    body: JSON.stringify({})
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.error) {
+      alert(data.error);
+      return;
+    }
+    document.getElementById('likes-count').textContent = data.likes_count;
+    document.getElementById('dislikes-count').textContent = data.dislikes_count;
+    updateButtonStates(data.user_liked, data.user_disliked);
+  })
+  .catch(error => console.error('Error:', error));
+}
+
+// Function to toggle dislike
+function toggleDislike(publicationId) {
+  fetch(`/publications/${publicationId}/dislike`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+    },
+    body: JSON.stringify({})
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.error) {
+      alert(data.error);
+      return;
+    }
+    document.getElementById('likes-count').textContent = data.likes_count;
+    document.getElementById('dislikes-count').textContent = data.dislikes_count;
+    updateButtonStates(data.user_liked, data.user_disliked);
+  })
+  .catch(error => console.error('Error:', error));
+}
+
+// Function to update button states
+function updateButtonStates(userLiked, userDisliked) {
+  const likeBtn = document.getElementById('like-btn');
+  const dislikeBtn = document.getElementById('dislike-btn');
+
+  if (userLiked) {
+    likeBtn.classList.remove('btn-outline-success');
+    likeBtn.classList.add('btn-success');
+  } else {
+    likeBtn.classList.remove('btn-success');
+    likeBtn.classList.add('btn-outline-success');
+  }
+
+  if (userDisliked) {
+    dislikeBtn.classList.remove('btn-outline-danger');
+    dislikeBtn.classList.add('btn-danger');
+  } else {
+    dislikeBtn.classList.remove('btn-danger');
+    dislikeBtn.classList.add('btn-outline-danger');
+  }
 }
 
 // Effet de scroll pour l'en-tête

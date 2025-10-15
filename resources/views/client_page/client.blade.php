@@ -160,33 +160,41 @@
                     <section id="publications" class="section py-5" style="background: #f8f9fa;">
                         <div class="container">
                             <h2 class="text-center mb-4" style="font-family: 'Rubik', sans-serif; color: #1cc88a;">Nos Publications</h2>
-                            <div class="d-flex flex-wrap justify-content-center gap-4">
-                                @forelse($publications as $publication)
-                                    <a href="{{ route('publications.show', $publication->id) }}" class="publication-modern-card d-flex flex-column align-items-start text-decoration-none" style="color:inherit;">
-                                        <div class="publication-modern-img position-relative w-100">
-                                            <img src="{{ $publication->image ? asset('storage/' . $publication->image) : asset('img/undraw_posting_photo.svg') }}" alt="{{ $publication->titre }}" class="w-100" style="height: 220px; object-fit: cover; border-radius: 1.25rem 1.25rem 0 0;">
-                                            <span class="badge publication-modern-date position-absolute top-0 end-0 m-2 px-3 py-2 shadow">{{ $publication->created_at->format('d/m/Y') }}</span>
-                                        </div>
-                                        <div class="p-4 w-100 flex-grow-1 d-flex flex-column">
-                                            <h5 class="fw-bold mb-2" style="font-family:'Rubik',sans-serif; color:#222;">{{ $publication->titre }}</h5>
-                                            <p class="text-secondary mb-3 flex-grow-1" style="font-size:1.05rem;">{{ $publication->description }}</p>
-                                            <div class="d-flex align-items-center mt-auto gap-2">
-                                                <img src="{{ asset('img/undraw_profile_1.svg') }}" alt="Auteur" class="rounded-circle border border-2 border-success" width="36" height="36">
-                                                <span class="text-muted small">Par <b>{{ $publication->user->name ?? 'Admin' }}</b></span>
-                                            </div>
-                                        </div>
-                                    </a>
-                                @empty
-                                    <div class="col-12">
-                                        <div class="alert alert-info text-center py-5">
-                                            <i class="bi bi-info-circle fs-2 mb-2"></i><br>
-                                            Aucune publication trouvée pour le moment.
-                                        </div>
-                                    </div>
-                                @endforelse
+                            <div class="row justify-content-center mb-4">
+                                <div class="col-md-8">
+                                    <input type="text" id="search-publication" class="form-control form-control-lg shadow-sm" placeholder="Rechercher une publication..." style="border-radius: 2rem; font-size: 1.1rem; padding: 0.75rem 1.5rem; border: 2px solid #1cc88a; background: #fff; transition: box-shadow 0.2s;" autocomplete="off">
+                                </div>
                             </div>
-                        </div>
-                    </section>
+                            <div class="d-flex flex-wrap justify-content-center gap-4" id="publications-list">
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            const searchInput = document.getElementById('search-publication');
+                            const publicationsList = document.getElementById('publications-list');
+                            let timer;
+                            searchInput.addEventListener('input', function() {
+                                clearTimeout(timer);
+                                timer = setTimeout(() => {
+                                    const query = searchInput.value.trim();
+                                    fetch(`/publications?search=${encodeURIComponent(query)}`, {
+                                        headers: {
+                                            'X-Requested-With': 'XMLHttpRequest'
+                                        }
+                                    })
+                                        .then(response => response.text())
+                                        .then(html => {
+                                            // Extraire la nouvelle liste des publications du HTML reçu
+                                            const tempDiv = document.createElement('div');
+                                            tempDiv.innerHTML = html;
+                                            const newList = tempDiv.querySelector('#publications-list');
+                                            if (newList) {
+                                                publicationsList.innerHTML = newList.innerHTML;
+                                            }
+                                        });
+                                }, 350); // délai pour éviter trop de requêtes
+                            });
+                        });
+                    </script>
+                                @include('client_page.partials.publications_list', ['publications' => $publications])
 
                     <style>
                         .publication-modern-card {

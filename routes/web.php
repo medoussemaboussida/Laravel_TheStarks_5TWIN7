@@ -34,6 +34,8 @@ Route::patch('/commentaires/{comment}', [PublicationController::class, 'updateCo
 // Route pour supprimer un commentaire
 Route::delete('/commentaires/{comment}', [PublicationController::class, 'destroyComment'])->name('commentaires.destroy');
 
+// Route pour afficher la liste des publications avec recherche
+Route::get('/publications', [PublicationController::class, 'index'])->name('publications.index');
 // Route pour afficher les détails d'une publication
 Route::get('/publications/{publication}', [PublicationController::class, 'show'])->name('publications.show');
 // Route pour ajouter un commentaire

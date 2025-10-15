@@ -6,7 +6,26 @@ use Illuminate\Http\Request;
 
 class PublicationController extends Controller
 {
-    // ...existing code...
+    // Afficher la liste des publications avec recherche
+    public function index(Request $request)
+    {
+        $query = $request->input('search');
+        $publications = \App\Models\Publication::with('user')
+            ->when($query, function ($q) use ($query) {
+                $q->where(function ($sub) use ($query) {
+                    $sub->where('titre', 'like', "%$query%")
+                         ->orWhere('description', 'like', "%$query%") ;
+                });
+            })
+            ->orderByDesc('created_at')
+            ->get();
+
+        if ($request->header('X-Requested-With') === 'XMLHttpRequest') {
+            // Retourner uniquement le fragment HTML de la liste des publications
+            return response()->view('client_page.partials.publications_list', compact('publications'))->header('Vary', 'Accept');
+        }
+        return view('client_page.client', compact('publications'));
+    }
 
     // Afficher le formulaire d'édition d'un commentaire (optionnel, pour inline ou modal)
     public function editComment($commentId)

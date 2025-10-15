@@ -8,11 +8,8 @@ use App\Http\Controllers\EspaceVertController;
 use App\Http\Controllers\RapportBesoinController;
 
 Route::get('/', function () {
-    $publications = \App\Models\Publication::latest()->get();
-    return view('layouts.front', [
-        'publications' => $publications
-    ]);
-})->name('home');
+    return redirect('/login');
+});
 
 Route::get('/adminpublication', function () {
     $publications = \App\Models\Publication::latest()->get();

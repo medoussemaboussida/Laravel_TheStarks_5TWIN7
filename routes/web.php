@@ -26,4 +26,7 @@ Route::resource('espace', EspaceVertController::class);
 Route::resource('rapport-besoins', RapportBesoinController::class);
 Route::get('/client', [EspaceVertController::class, 'displayClient'])->name('client.index');
 Route::get('/rapports/{id}', [RapportBesoinController::class, 'indexByEspace'])->name('rapport-besoins.index-by-espace');
+// Chatbot route
+Route::get('/chatbot', [EspaceVertController::class, 'chatbotPage'])->name('chatbot');
+Route::post('/api/chat', [EspaceVertController::class, 'chat'])->name('espace.chat');
 require __DIR__.'/auth.php';

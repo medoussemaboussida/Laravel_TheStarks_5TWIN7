@@ -688,6 +688,8 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <div class="mb-4">
                                     <label for="titre" class="form-label">Titre</label>
                                     <input type="text" class="form-control" id="titre" name="titre" placeholder="Titre de la publication">
+                                    <button type="button" id="generateDescriptionBtn" class="btn btn-outline-primary mt-2" style="font-size: 0.9rem;">Générer description avec Grok</button>
+
                                 </div>
                                 <div class="mb-4">
                                     <label for="image" class="form-label">Image</label>
@@ -775,6 +777,68 @@ function showInputError(input, message) {
     error.innerText = message;
     input.parentNode.appendChild(error);
 }
+
+// Function to generate description using Grok API
+async function generateDescription() {
+    const titre = document.getElementById('titre').value.trim();
+    const descriptionTextarea = document.getElementById('description');
+    const btn = document.getElementById('generateDescriptionBtn');
+
+    if (!titre) {
+        alert('Veuillez entrer un titre d\'abord.');
+        return;
+    }
+    // Disable button and show loading
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Génération...';
+
+    try {
+        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                
+            },
+            body: JSON.stringify({
+                model: 'llama-3.3-70b-versatile',
+                messages: [
+                    {
+                        role: 'user',
+                        content: `Génère une description attrayante et détaillée pour une publication avec le titre : "${titre}". La description doit être en français, informative et engageante. Retourne uniquement la description, sans introduction ni conclusion.`
+                    }
+                ],
+                max_tokens: 200,
+                temperature: 0.7
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`Erreur API: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const generatedDescription = data.choices[0].message.content.trim();
+
+        // Populate the description field
+        descriptionTextarea.value = generatedDescription;
+
+    } catch (error) {
+        console.error('Erreur lors de la génération:', error);
+        alert('Erreur lors de la génération de la description. Veuillez réessayer.');
+    } finally {
+        // Re-enable button
+        btn.disabled = false;
+        btn.innerHTML = 'Générer description avec Grok';
+    }
+}
+
+// Add event listener to the button
+document.addEventListener('DOMContentLoaded', function() {
+    const generateBtn = document.getElementById('generateDescriptionBtn');
+    if (generateBtn) {
+        generateBtn.addEventListener('click', generateDescription);
+    }
+});
 </script>
 </body>
 

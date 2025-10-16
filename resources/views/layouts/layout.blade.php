@@ -291,206 +291,109 @@ document.addEventListener('DOMContentLoaded', function() {
                                 class="fas fa-download fa-sm text-white-50"></i> Generate Report</a>
                     </div>
 
-                    <!-- Content Row -->
-                    <div class="row">
-
-                        <!-- Earnings (Monthly) Card Example -->
-                        <div class="col-xl-3 col-md-6 mb-4">
-                            <div class="card border-left-primary shadow h-100 py-2">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                                Earnings (Monthly)</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">$40,000</div>
-                                        </div>
-                                        <div class="col-auto">
-                                            <i class="fas fa-calendar fa-2x text-gray-300"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Earnings (Monthly) Card Example -->
-                        <div class="col-xl-3 col-md-6 mb-4">
-                            <div class="card border-left-success shadow h-100 py-2">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                                Earnings (Annual)</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">$215,000</div>
-                                        </div>
-                                        <div class="col-auto">
-                                            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Earnings (Monthly) Card Example -->
-                        <div class="col-xl-3 col-md-6 mb-4">
-                            <div class="card border-left-info shadow h-100 py-2">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Tasks
-                                            </div>
-                                            <div class="row no-gutters align-items-center">
-                                                <div class="col-auto">
-                                                    <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">50%</div>
-                                                </div>
-                                                <div class="col">
-                                                    <div class="progress progress-sm mr-2">
-                                                        <div class="progress-bar bg-info" role="progressbar"
-                                                            style="width: 50%" aria-valuenow="50" aria-valuemin="0"
-                                                            aria-valuemax="100"></div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-auto">
-                                            <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Pending Requests Card Example -->
-                        <div class="col-xl-3 col-md-6 mb-4">
-                            <div class="card border-left-warning shadow h-100 py-2">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                                Pending Requests</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">18</div>
-                                        </div>
-                                        <div class="col-auto">
-                                            <i class="fas fa-comments fa-2x text-gray-300"></i>
-                                        </div>
-                                    </div>
-                                </div>
+                    <!-- Search and Filter Bar -->
+                    <div class="row justify-content-center mb-4">
+                        <div class="col-md-8">
+                            <div class="d-flex gap-2 align-items-center">
+                                <input type="text" id="search-publication" class="form-control form-control-lg shadow-sm" placeholder="Rechercher une publication..." style="border-radius: 2rem; font-size: 1.1rem; padding: 0.75rem 1.5rem; border: 2px solid #1cc88a; background: #fff; transition: box-shadow 0.2s;" autocomplete="off">
+                                <select id="sort-publication" class="form-select form-select-lg shadow-sm" style="border-radius:2rem; font-size:1.1rem; padding:0.75rem 1.5rem; border:2px solid #1cc88a; background:#fff; transition:box-shadow 0.2s; max-width:180px;">
+                                    <option value="desc" selected>Nouveaux</option>
+                                    <option value="asc">Anciens</option>
+                                </select>
                             </div>
                         </div>
                     </div>
 
                     <!-- Content Row -->
-
-                    <div class="row">
+                    <div class="row" id="publications-list">
                         @forelse($publications as $publication)
-
-                        <div class="col-md-6 col-lg-4 mb-4">
-                            <div class="card shadow h-100 publication-card position-relative" style="border-radius:20px;overflow:hidden;">
-                                <!-- Edit & Delete Icons -->
-                                <div style="position:absolute;top:12px;right:16px;z-index:10;display:flex;gap:8px;">
-                                    <!-- Edit Icon -->
-                                    <button type="button" class="btn btn-sm btn-info edit-publication-btn" data-publication-id="{{ $publication->id }}" data-publication-titre="{{ $publication->titre }}" data-publication-description="{{ $publication->description }}" data-publication-image="{{ $publication->image }}" style="border-radius:50%;padding:6px 8px;line-height:1;box-shadow:0 2px 8px rgba(78,115,223,0.12);">
-                                        <i class="fas fa-pencil-alt"></i>
-                                    </button>
-                                    <!-- Delete Icon -->
-                                    <form method="POST" action="{{ route('publications.destroy', $publication->id) }}" class="delete-publication-form" style="display:inline;">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="button" class="btn btn-sm btn-danger delete-publication-btn" data-publication-id="{{ $publication->id }}" style="border-radius:50%;padding:6px 8px;line-height:1;box-shadow:0 2px 8px rgba(231,74,59,0.12);">
-                                            <i class="fas fa-trash-alt"></i>
+                            <div class="col-md-6 col-lg-4 mb-4">
+                                <div class="card shadow h-100 publication-card position-relative" style="border-radius:20px;overflow:hidden;">
+                                    <!-- Edit & Delete Icons -->
+                                    <div style="position:absolute;top:12px;right:16px;z-index:10;display:flex;gap:8px;">
+                                        <!-- Edit Icon -->
+                                        <button type="button" class="btn btn-sm btn-info edit-publication-btn" data-publication-id="{{ $publication->id }}" data-publication-titre="{{ $publication->titre }}" data-publication-description="{{ $publication->description }}" data-publication-image="{{ $publication->image }}" style="border-radius:50%;padding:6px 8px;line-height:1;box-shadow:0 2px 8px rgba(78,115,223,0.12);">
+                                            <i class="fas fa-pencil-alt"></i>
                                         </button>
-                                    </form>
-                                        <!-- Comment Icon -->
-                                        <button type="button" class="btn btn-sm btn-light comment-toggle-btn" data-publication-id="{{ $publication->id }}" style="border-radius:50%;padding:6px 8px;line-height:1;box-shadow:0 2px 8px rgba(40,167,69,0.12);" title="Voir les commentaires">
-                                            <i class="fas fa-comments text-success"></i>
-                                        </button>
-                                        <!-- Like/Dislike Icon -->
-                                        <button type="button" class="btn btn-sm btn-outline-info likes-dislikes-toggle-btn" data-publication-id="{{ $publication->id }}" style="border-radius:50%;padding:6px 8px;line-height:1;box-shadow:0 2px 8px rgba(23,162,184,0.12);" title="Voir likes/dislikes">
-                                            <i class="fas fa-thumbs-up"></i>
-                                        </button>
-                                </div>
-<!-- Modal de confirmation suppression publication (à placer en dehors de la boucle) -->
-<div class="modal fade" id="deletePublicationModal" tabindex="-1" aria-labelledby="deletePublicationModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content" style="border-radius:24px;">
-            <div class="modal-header" style="background:linear-gradient(90deg,#e74a3b 0%,#f8f9fa 100%);color:#fff;border-top-left-radius:24px;border-top-right-radius:24px;">
-                <h5 class="modal-title" id="deletePublicationModalLabel">Confirmation de suppression</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color:#fff;font-size:2rem;opacity:0.8;">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body text-center">
-                <p style="font-size:1.15rem;color:#e74a3b;font-weight:500;">Voulez-vous vraiment supprimer cette publication ?</p>
-            </div>
-            <div class="modal-footer" style="border-bottom-left-radius:24px;border-bottom-right-radius:24px;justify-content:center;">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
-                <button type="button" class="btn btn-danger" id="confirmDeletePublicationBtn">Supprimer</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    var publicationFormToDelete = null;
-    $(document).on('click', '.delete-publication-btn', function(e) {
-        e.preventDefault();
-        publicationFormToDelete = $(this).closest('form');
-        $('#deletePublicationModal').modal('show');
-    });
-
-    $('#confirmDeletePublicationBtn').on('click', function() {
-        if (publicationFormToDelete) {
-            publicationFormToDelete.submit();
-            publicationFormToDelete = null;
-            $('#deletePublicationModal').modal('hide');
-        }
-    });
-});
-</script>
-                                <img src="{{ $publication->image ? asset('storage/' . $publication->image) : asset('img/undraw_posting_photo.svg') }}" class="card-img-top" alt="{{ $publication->titre }}" style="height:220px;object-fit:cover;">
-                                <div class="card-body d-flex flex-column">
-                                    <h5 class="card-title text-primary font-weight-bold">{{ $publication->titre }}</h5>
-                                    <p class="card-text" style="flex:1;color:#444;font-size:1.05rem;">{{ $publication->description }}</p>
-                                    <div class="mt-2 text-right">
-                                        <span class="badge badge-pill badge-info" style="font-size:0.95rem;">Ajouté le {{ $publication->created_at->format('d/m/Y') }}</span>
+                                        <!-- Delete Icon -->
+                                        <form method="POST" action="{{ route('publications.destroy', $publication->id) }}" class="delete-publication-form" style="display:inline;">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="button" class="btn btn-sm btn-danger delete-publication-btn" data-publication-id="{{ $publication->id }}" style="border-radius:50%;padding:6px 8px;line-height:1;box-shadow:0 2px 8px rgba(231,74,59,0.12);">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </form>
+                                            <!-- Comment Icon -->
+                                            <button type="button" class="btn btn-sm btn-light comment-toggle-btn" data-publication-id="{{ $publication->id }}" style="border-radius:50%;padding:6px 8px;line-height:1;box-shadow:0 2px 8px rgba(40,167,69,0.12);" title="Voir les commentaires">
+                                                <i class="fas fa-comments text-success"></i>
+                                            </button>
+                                            <!-- Like/Dislike Icon -->
+                                            <button type="button" class="btn btn-sm btn-outline-info likes-dislikes-toggle-btn" data-publication-id="{{ $publication->id }}" style="border-radius:50%;padding:6px 8px;line-height:1;box-shadow:0 2px 8px rgba(23,162,184,0.12);" title="Voir likes/dislikes">
+                                                <i class="fas fa-thumbs-up"></i>
+                                            </button>
                                     </div>
-                                </div>
-                                    <!-- Bloc commentaires masqué/affiché -->
-                                    <div class="comments-section" id="comments-section-{{ $publication->id }}" style="display:none;background:#f8f9fa;border-top:1px solid #e3e6f0;padding:16px 20px;">
-                                        <h6 class="mb-3 text-success"><i class="fas fa-comments"></i> Commentaires</h6>
-                                        @php $comments = $publication->comments()->with('user')->latest()->get(); @endphp
-                                        @if($comments->count())
-                                            @foreach($comments as $comment)
-                                                <div class="d-flex mb-2 align-items-start">
-                                                    <img src="{{ asset('img/undraw_profile_1.svg') }}" alt="Avatar" class="rounded-circle me-2" width="32" height="32">
-                                                    <div>
-                                                        <div class="fw-bold small">{{ $comment->user->name ?? 'Utilisateur' }} <span class="text-muted small">{{ $comment->created_at->diffForHumans() }}</span></div>
-                                                        <div class="small">{{ $comment->content }}</div>
-                                                    </div>
-                                                </div>
-                                            @endforeach
-                                        @else
-                                            <div class="text-muted small">Aucun commentaire pour cette publication.</div>
-                                        @endif
-                                    </div>
-                                    <!-- Bloc likes/dislikes masqué/affiché -->
-                                    <div class="likes-dislikes-section" id="likes-dislikes-section-{{ $publication->id }}" style="display:none;background:#f8f9fa;border-top:1px solid #e3e6f0;padding:16px 20px;">
-                                        <h6 class="mb-3 text-info"><i class="fas fa-thumbs-up"></i> Likes & Dislikes</h6>
-                                        <div class="d-flex gap-3">
-                                            <span class="badge badge-success">{{ $publication->getLikesCount() }} Likes</span>
-                                            <span class="badge badge-danger">{{ $publication->getDislikesCount() }} Dislikes</span>
+                                    <img src="{{ $publication->image ? asset('storage/' . $publication->image) : asset('img/undraw_posting_photo.svg') }}" class="card-img-top" alt="{{ $publication->titre }}" style="height:220px;object-fit:cover;">
+                                    <div class="card-body d-flex flex-column">
+                                        <h5 class="card-title text-primary font-weight-bold">{{ $publication->titre }}</h5>
+                                        <p class="card-text" style="flex:1;color:#444;font-size:1.05rem;">{{ $publication->description }}</p>
+                                        <div class="mt-2 text-right">
+                                            <span class="badge badge-pill badge-info" style="font-size:0.95rem;">Ajouté le {{ $publication->created_at->format('d/m/Y') }}</span>
                                         </div>
                                     </div>
+                                        <!-- Bloc commentaires masqué/affiché -->
+                                        <div class="comments-section" id="comments-section-{{ $publication->id }}" style="display:none;background:#f8f9fa;border-top:1px solid #e3e6f0;padding:16px 20px;">
+                                            <h6 class="mb-3 text-success"><i class="fas fa-comments"></i> Commentaires</h6>
+                                            @php $comments = $publication->comments()->with('user')->latest()->get(); @endphp
+                                            @if($comments->count())
+                                                @foreach($comments as $comment)
+                                                    <div class="d-flex mb-2 align-items-start">
+                                                        <img src="{{ asset('img/undraw_profile_1.svg') }}" alt="Avatar" class="rounded-circle me-2" width="32" height="32">
+                                                        <div>
+                                                            <div class="fw-bold small">{{ $comment->user->name ?? 'Utilisateur' }} <span class="text-muted small">{{ $comment->created_at->diffForHumans() }}</span></div>
+                                                            <div class="small">{{ $comment->content }}</div>
+                                                        </div>
+                                                    </div>
+                                                @endforeach
+                                            @else
+                                                <div class="text-muted small">Aucun commentaire pour cette publication.</div>
+                                            @endif
+                                        </div>
+                                        <!-- Bloc likes/dislikes masqué/affiché -->
+                                        <div class="likes-dislikes-section" id="likes-dislikes-section-{{ $publication->id }}" style="display:none;background:#f8f9fa;border-top:1px solid #e3e6f0;padding:16px 20px;">
+                                            <h6 class="mb-3 text-info"><i class="fas fa-thumbs-up"></i> Likes & Dislikes</h6>
+                                            <div class="d-flex gap-3">
+                                                <span class="badge badge-success">{{ $publication->getLikesCount() }} Likes</span>
+                                                <span class="badge badge-danger">{{ $publication->getDislikesCount() }} Dislikes</span>
+                                            </div>
+                                        </div>
+                                </div>
                             </div>
-                        </div>
                         @empty
-                        <div class="col-12">
-                            <div class="alert alert-info text-center">Aucune publication trouvée.</div>
-                        </div>
+                            <div class="col-12">
+                                <div class="alert alert-info text-center">Aucune publication trouvée.</div>
+                            </div>
                         @endforelse
                     </div>
 
-                    
+                    <!-- Modal de confirmation suppression publication (à placer en dehors de la boucle) -->
+                    <div class="modal fade" id="deletePublicationModal" tabindex="-1" aria-labelledby="deletePublicationModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content" style="border-radius:24px;">
+                                <div class="modal-header" style="background:linear-gradient(90deg,#e74a3b 0%,#f8f9fa 100%);color:#fff;border-top-left-radius:24px;border-top-right-radius:24px;">
+                                    <h5 class="modal-title" id="deletePublicationModalLabel">Confirmation de suppression</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color:#fff;font-size:2rem;opacity:0.8;">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                        </div>
+                        <div class="modal-body text-center">
+                            <p style="font-size:1.15rem;color:#e74a3b;font-weight:500;">Voulez-vous vraiment supprimer cette publication ?</p>
+                        </div>
+                        <div class="modal-footer" style="border-bottom-left-radius:24px;border-bottom-right-radius:24px;justify-content:center;">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                            <button type="button" class="btn btn-danger" id="confirmDeletePublicationBtn">Supprimer</button>
+                        </div>
+                    </div>
+                    </div>
 
             </div>
             <!-- End of Main Content -->

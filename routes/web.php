@@ -11,12 +11,7 @@ Route::get('/', function () {
     return redirect('/login');
 });
 
-Route::get('/adminpublication', function () {
-    $publications = \App\Models\Publication::latest()->get();
-    return view('adminpublication', [
-        'publications' => $publications
-    ]);
-});
+Route::get('/adminpublication', [PublicationController::class, 'index'])->name('admin.publications.index');
 
 Route::middleware(['auth'])->group(function () {
     Route::redirect('settings', 'settings/profile');

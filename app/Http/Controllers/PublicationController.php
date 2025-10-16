@@ -25,7 +25,7 @@ class PublicationController extends Controller
             // Retourner uniquement le fragment HTML de la liste des publications
             return response()->view('client_page.partials.publications_list', compact('publications'))->header('Vary', 'Accept');
         }
-        return view('client_page.client', compact('publications'));
+        return view('adminpublication', compact('publications'));
     }
 
     // Afficher le formulaire d'édition d'un commentaire (optionnel, pour inline ou modal)

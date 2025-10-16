@@ -1,5 +1,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    let currentDeletePubId = null;
+
     document.querySelectorAll('.comment-toggle-btn').forEach(function(btn) {
         btn.addEventListener('click', function() {
             var pubId = btn.getAttribute('data-publication-id');
@@ -22,6 +24,27 @@ document.addEventListener('DOMContentLoaded', function() {
                 section.style.display = 'none';
             }
         });
+    });
+
+    // Handle delete publication button click
+    document.querySelectorAll('.delete-publication-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            currentDeletePubId = btn.getAttribute('data-publication-id');
+            $('#deletePublicationModal').modal('show');
+        });
+    });
+
+    // Handle confirm delete button click
+    document.getElementById('confirmDeletePublicationBtn').addEventListener('click', function() {
+        if (currentDeletePubId) {
+            // Find the form with the matching publication ID in the action URL
+            const forms = document.querySelectorAll('.delete-publication-form');
+            forms.forEach(function(form) {
+                if (form.action.includes('/publications/' + currentDeletePubId)) {
+                    form.submit();
+                }
+            });
+        }
     });
 });
 </script>

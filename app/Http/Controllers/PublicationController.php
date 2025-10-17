@@ -6,7 +6,27 @@ use Illuminate\Http\Request;
 
 class PublicationController extends Controller
 {
-    // ...existing code...
+    // Afficher la liste des publications avec recherche
+    public function index(Request $request)
+    {
+        $query = $request->input('search');
+        $sort = $request->input('sort', 'desc'); // 'desc' (nouveaux) ou 'asc' (anciens)
+        $publications = \App\Models\Publication::with('user')
+            ->when($query, function ($q) use ($query) {
+                $q->where(function ($sub) use ($query) {
+                    $sub->where('titre', 'like', "%$query%")
+                         ->orWhere('description', 'like', "%$query%") ;
+                });
+            })
+            ->orderBy('created_at', $sort)
+            ->get();
+
+        if ($request->header('X-Requested-With') === 'XMLHttpRequest') {
+            // Retourner uniquement le fragment HTML de la liste des publications
+            return response()->view('client_page.partials.publications_list', compact('publications'))->header('Vary', 'Accept');
+        }
+        return view('adminpublication', compact('publications'));
+    }
 
     // Afficher le formulaire d'édition d'un commentaire (optionnel, pour inline ou modal)
     public function editComment($commentId)
@@ -129,5 +149,91 @@ class PublicationController extends Controller
             'content' => $request->input('content'),
         ]);
         return redirect()->back()->with('success', 'Commentaire ajouté avec succès!');
+    }
+
+    // Like a publication
+    public function like(Request $request, $id)
+    {
+        if (!auth()->check()) {
+            return response()->json(['error' => 'Vous devez être connecté pour liker.'], 401);
+        }
+
+        $publication = \App\Models\Publication::findOrFail($id);
+        $userId = auth()->id();
+
+        // Check if user already disliked, remove it
+        $existingDislike = \App\Models\PublicationLike::where('user_id', $userId)
+            ->where('publication_id', $id)
+            ->where('type', 'dislike')
+            ->first();
+        if ($existingDislike) {
+            $existingDislike->delete();
+        }
+
+        // Check if user already liked, remove it (toggle off)
+        $existingLike = \App\Models\PublicationLike::where('user_id', $userId)
+            ->where('publication_id', $id)
+            ->where('type', 'like')
+            ->first();
+        if ($existingLike) {
+            $existingLike->delete();
+        } else {
+            // Create new like
+            \App\Models\PublicationLike::create([
+                'user_id' => $userId,
+                'publication_id' => $id,
+                'type' => 'like',
+            ]);
+        }
+
+        return response()->json([
+            'likes_count' => $publication->getLikesCount(),
+            'dislikes_count' => $publication->getDislikesCount(),
+            'user_liked' => $publication->hasUserLiked($userId),
+            'user_disliked' => $publication->hasUserDisliked($userId),
+        ]);
+    }
+
+    // Dislike a publication
+    public function dislike(Request $request, $id)
+    {
+        if (!auth()->check()) {
+            return response()->json(['error' => 'Vous devez être connecté pour disliker.'], 401);
+        }
+
+        $publication = \App\Models\Publication::findOrFail($id);
+        $userId = auth()->id();
+
+        // Check if user already liked, remove it
+        $existingLike = \App\Models\PublicationLike::where('user_id', $userId)
+            ->where('publication_id', $id)
+            ->where('type', 'like')
+            ->first();
+        if ($existingLike) {
+            $existingLike->delete();
+        }
+
+        // Check if user already disliked, remove it (toggle off)
+        $existingDislike = \App\Models\PublicationLike::where('user_id', $userId)
+            ->where('publication_id', $id)
+            ->where('type', 'dislike')
+            ->first();
+        if ($existingDislike) {
+            $existingDislike->delete();
+        } else {
+            // Create new dislike
+            \App\Models\PublicationLike::create([
+                'user_id' => $userId,
+                'publication_id' => $id,
+                'type' => 'dislike',
+            ]);
+        }
+
+        return response()->json([
+            'likes_count' => $publication->getLikesCount(),
+            'dislikes_count' => $publication->getDislikesCount(),
+            'user_liked' => $publication->hasUserLiked($userId),
+            'user_disliked' => $publication->hasUserDisliked($userId),
+        ]);
     }
 }

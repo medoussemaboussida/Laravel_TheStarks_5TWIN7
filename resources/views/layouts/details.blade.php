@@ -4,12 +4,22 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Détails de la publication</title>
+  <meta name="csrf-token" content="{{ csrf_token() }}">
   <!-- Bootstrap CSS -->
   <link rel="stylesheet" href="{{ asset('resources/clientPageAssets/vendor/bootstrap/css/bootstrap.min.css') }}">
   <!-- Bootstrap Icons -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+   <!-- Vendor CSS Files -->
+  @vite([
+      'resources/clientPageAssets/vendor/bootstrap/css/bootstrap.min.css',
+      'resources/clientPageAssets/vendor/bootstrap-icons/bootstrap-icons.css',
+      'resources/clientPageAssets/vendor/glightbox/css/glightbox.min.css',
+      'resources/clientPageAssets/vendor/swiper/swiper-bundle.min.css'
+  ])
+  <!-- Main CSS File -->
+  @vite(['resources/clientPageAssets/css/main.css'])
   <style>
     /* Reset et Styles de Base Modernes */
     * {
@@ -688,13 +698,10 @@
 </head>
 <body>
 <header class="header" id="header">
-  <div class="container d-flex align-items-center justify-content-between">
-    <a href="/" class="logo d-flex align-items-center gap-2 text-decoration-none">
-      <img src="{{ asset('img/undraw_rocket.svg') }}" alt="Logo" style="height: 40px;">
-      <span class="fw-bold fs-4">UrbanGreen</span>
-    </a>
-    <a class="btn btn-primary rounded-pill px-4 shadow-sm" href="/">Accueil</a>
-  </div>
+  <!-- Navbar -->
+        @include('client_page.partials.navbar')
+
+        <!-- Main Content Wrapper -->
 </header>
 <div class="container py-5">
 
@@ -712,6 +719,29 @@
             <span class="text-muted fs-5">Par <b>{{ $publication->user->name ?? 'Admin' }}</b></span>
           </div>
           <p class="lead text-dark mb-4">{{ $publication->description }}</p>
+
+          <!-- Like/Dislike Section -->
+          @if(auth()->check())
+            <div class="d-flex align-items-center gap-3 mb-4">
+              <button id="like-btn" class="btn {{ $publication->hasUserLiked(auth()->id()) ? 'btn-success' : 'btn-outline-success' }} rounded-pill px-3" onclick="toggleLike({{ $publication->id }})">
+                <i class="bi bi-hand-thumbs-up me-1"></i> Like <span id="likes-count">{{ $publication->getLikesCount() }}</span>
+              </button>
+              <button id="dislike-btn" class="btn {{ $publication->hasUserDisliked(auth()->id()) ? 'btn-danger' : 'btn-outline-danger' }} rounded-pill px-3" onclick="toggleDislike({{ $publication->id }})">
+                <i class="bi bi-hand-thumbs-down me-1"></i> Dislike <span id="dislikes-count">{{ $publication->getDislikesCount() }}</span>
+              </button>
+            </div>
+          @else
+            <div class="d-flex align-items-center gap-3 mb-4">
+              <button class="btn btn-outline-success rounded-pill px-3" disabled>
+                <i class="bi bi-hand-thumbs-up me-1"></i> Like {{ $publication->getLikesCount() }}
+              </button>
+              <button class="btn btn-outline-danger rounded-pill px-3" disabled>
+                <i class="bi bi-hand-thumbs-down me-1"></i> Dislike {{ $publication->getDislikesCount() }}
+              </button>
+              <small class="text-muted">Connectez-vous pour liker/disliker</small>
+            </div>
+          @endif
+
           <a href="{{ route('client.index') }}" class="btn btn-outline-primary rounded-pill px-4 mt-3"><i class="bi bi-arrow-left me-2"></i> Retour</a>
 
           <!-- Section Commentaires -->
@@ -792,6 +822,74 @@
 function toggleEditForm(commentId) {
   var form = document.getElementById('edit-form-' + commentId);
   form.style.display = form.style.display === 'none' ? 'block' : 'none';
+}
+
+// Function to toggle like
+function toggleLike(publicationId) {
+  fetch(`/publications/${publicationId}/like`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+    },
+    body: JSON.stringify({})
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.error) {
+      alert(data.error);
+      return;
+    }
+    document.getElementById('likes-count').textContent = data.likes_count;
+    document.getElementById('dislikes-count').textContent = data.dislikes_count;
+    updateButtonStates(data.user_liked, data.user_disliked);
+  })
+  .catch(error => console.error('Error:', error));
+}
+
+// Function to toggle dislike
+function toggleDislike(publicationId) {
+  fetch(`/publications/${publicationId}/dislike`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+    },
+    body: JSON.stringify({})
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.error) {
+      alert(data.error);
+      return;
+    }
+    document.getElementById('likes-count').textContent = data.likes_count;
+    document.getElementById('dislikes-count').textContent = data.dislikes_count;
+    updateButtonStates(data.user_liked, data.user_disliked);
+  })
+  .catch(error => console.error('Error:', error));
+}
+
+// Function to update button states
+function updateButtonStates(userLiked, userDisliked) {
+  const likeBtn = document.getElementById('like-btn');
+  const dislikeBtn = document.getElementById('dislike-btn');
+
+  if (userLiked) {
+    likeBtn.classList.remove('btn-outline-success');
+    likeBtn.classList.add('btn-success');
+  } else {
+    likeBtn.classList.remove('btn-success');
+    likeBtn.classList.add('btn-outline-success');
+  }
+
+  if (userDisliked) {
+    dislikeBtn.classList.remove('btn-outline-danger');
+    dislikeBtn.classList.add('btn-danger');
+  } else {
+    dislikeBtn.classList.remove('btn-danger');
+    dislikeBtn.classList.add('btn-outline-danger');
+  }
 }
 
 // Effet de scroll pour l'en-tête

@@ -1,0 +1,4 @@
+- [x] Modifier resources/views/adminpublication.blade.php pour afficher le nombre de likes et dislikes devant chaque titre de publication
+- [x] Ajouter une icône cliquable pour afficher les compteurs de likes et dislikes sur clic
+- [x] Appliquer les changements dans layout.blade.php au lieu d'adminpublication.blade.php
+- [ ] Vérifier l'affichage des compteurs dans la page admin

@@ -16,7 +16,7 @@
 
             <a class="nav-link" href="/adminpublication">
             <i class="fas fa-tree"></i>
-            <span>Gestion Publciation</span></a>
+            <span>Gestion Publication</span></a>
     </li>
     <!-- Divider -->
     <hr class="sidebar-divider">

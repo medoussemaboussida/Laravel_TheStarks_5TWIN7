@@ -140,6 +140,9 @@ class EspaceVertController extends Controller
     {
         $espacesVerts = EspaceVert::orderBy('created_at', 'desc')->get();
         $publications = \App\Models\Publication::with('user')->orderBy('created_at', 'desc')->get();
-        return view('client_page.client', compact('espacesVerts', 'publications'));
+        // Also pass batiments and zones so the client page can manage bâtiments
+        $batiments = \App\Models\Batiment::orderBy('created_at', 'desc')->get();
+        $zones = \App\Models\ZoneUrbaine::all();
+        return view('client_page.client', compact('espacesVerts', 'publications', 'batiments', 'zones'));
     }
 }

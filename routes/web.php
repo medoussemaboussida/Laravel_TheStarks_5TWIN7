@@ -5,6 +5,7 @@ use App\Livewire\Settings\Password;
 use App\Livewire\Settings\Profile;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EspaceVertController;
+use App\Http\Controllers\BatimentController;
 use App\Http\Controllers\RapportBesoinController;
 
 Route::get('/', function () {
@@ -31,6 +32,10 @@ Route::middleware(['auth'])->group(function () {
 Route::resource('espace', EspaceVertController::class);
 Route::resource('rapport-besoins', RapportBesoinController::class);
 Route::get('/client', [EspaceVertController::class, 'displayClient'])->name('client.index');
+// Front-office batiment routes (create / update / delete from client page)
+Route::post('/batiments', [BatimentController::class, 'store'])->name('batiments.store');
+Route::patch('/batiments/{batiment}', [BatimentController::class, 'update'])->name('batiments.update');
+Route::delete('/batiments/{id}', [BatimentController::class, 'destroyFrontoffice'])->name('batiments.destroy');
 Route::get('/rapports/{id}', [RapportBesoinController::class, 'indexByEspace'])->name('rapport-besoins.index-by-espace');
 // Route pour modifier un commentaire
 Route::patch('/commentaires/{comment}', [PublicationController::class, 'updateComment'])->name('commentaires.update');

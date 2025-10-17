@@ -136,13 +136,47 @@ class EspaceVertController extends Controller
        /**
      * Display client page with Espace Vert data.
      */
-    public function displayClient()
+    public function displayClient(Request $request)
     {
         $espacesVerts = EspaceVert::orderBy('created_at', 'desc')->get();
         $publications = \App\Models\Publication::with('user')->orderBy('created_at', 'desc')->get();
-        // Also pass batiments and zones so the client page can manage bâtiments
-        $batiments = \App\Models\Batiment::orderBy('created_at', 'desc')->get();
+
+        // Recherche et filtrage des bâtiments
+        $searchBatiment = $request->input('search_batiment');
+        $queryBatiments = \App\Models\Batiment::with('zone');
+
+        if ($searchBatiment) {
+            $queryBatiments->where(function ($q) use ($searchBatiment) {
+                $q->where('type_batiment', 'like', "%$searchBatiment%")
+                  ->orWhere('adresse', 'like', "%$searchBatiment%")
+                  ->orWhereHas('zone', function ($zoneQuery) use ($searchBatiment) {
+                      $zoneQuery->where('nom', 'like', "%$searchBatiment%");
+                  });
+            });
+        }
+
+        $batiments = $queryBatiments->orderBy('created_at', 'desc')->get();
         $zones = \App\Models\ZoneUrbaine::all();
+
+        // Si c'est une requête AJAX pour les bâtiments
+        if ($request->ajax() && $request->has('search_batiment')) {
+            return response()->json($batiments->map(function ($batiment) {
+                return [
+                    'id' => $batiment->id,
+                    'type_batiment' => $batiment->type_batiment,
+                    'adresse' => $batiment->adresse,
+                    'emissionCO2' => $batiment->emission_c_o2,
+                    'emissionReelle' => $batiment->emission_reelle,
+                    'pourcentageRenouvelable' => $batiment->pourcentage_renouvelable,
+                    'nbArbresBesoin' => $batiment->nbArbresBesoin,
+                    'zone' => $batiment->zone ? $batiment->zone->nom : null,
+                    'nbHabitants' => $batiment->nb_habitants,
+                    'nbEmployes' => $batiment->nb_employes,
+                    'typeIndustrie' => $batiment->type_industrie,
+                ];
+            }));
+        }
+
         return view('client_page.client', compact('espacesVerts', 'publications', 'batiments', 'zones'));
     }
 }

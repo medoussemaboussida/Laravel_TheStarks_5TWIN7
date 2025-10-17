@@ -248,6 +248,215 @@
                         }
                     </style>
                 </main>
+
+                <!-- Bâtiments Section -->
+                <section id="batiments" class="section py-5">
+                    <div class="container">
+                        <h2 class="text-center mb-4" style="font-family: 'Rubik', sans-serif; color: #1cc88a;">Gestion des Bâtiments</h2>
+
+                        <!-- Champ de recherche -->
+                        <div class="d-flex justify-content-center mb-4">
+                            <div class="col-md-8">
+                                <input type="text" id="search-batiment" class="form-control form-control-lg shadow-sm" placeholder="Rechercher un bâtiment par type, adresse ou zone..." style="border-radius: 2rem; font-size: 1.1rem; padding: 0.75rem 1.5rem; border: 2px solid #1cc88a; background: #fff; transition: box-shadow 0.2s;" autocomplete="off">
+                            </div>
+                        </div>
+
+                        <!-- Messages de succès/erreur -->
+                        @if(session('success'))
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                {{ session('success') }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        @endif
+
+                        @if(session('error'))
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                {{ session('error') }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        @endif
+
+                        <!-- Formulaire de création -->
+                        <div class="card mb-4">
+                            <div class="card-header" style="background: #1cc88a; color: white;">
+                                <h5 class="mb-0">Ajouter un Nouveau Bâtiment</h5>
+                            </div>
+                            <div class="card-body">
+                                <form action="{{ route('batiments.store') }}" method="POST" id="batiment-form">
+                                    @csrf
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="type_batiment" class="form-label">Type de Bâtiment</label>
+                                            <select name="type_batiment" id="type_batiment" class="form-select" required>
+                                                <option value="">Sélectionner un type</option>
+                                                <option value="Maison">Maison</option>
+                                                <option value="Usine">Usine</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="adresse" class="form-label">Adresse</label>
+                                            <input type="text" name="adresse" id="adresse" class="form-control" required>
+                                        </div>
+                                    </div>
+
+                                    <div class="row" id="maison-fields" style="display: none;">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="nbHabitants" class="form-label">Nombre d'Habitants</label>
+                                            <input type="number" name="nbHabitants" id="nbHabitants" class="form-control">
+                                        </div>
+                                    </div>
+
+                                    <div class="row" id="usine-fields" style="display: none;">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="nbEmployes" class="form-label">Nombre d'Employés</label>
+                                            <input type="number" name="nbEmployes" id="nbEmployes" class="form-control">
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="typeIndustrie" class="form-label">Type d'Industrie</label>
+                                            <input type="text" name="typeIndustrie" id="typeIndustrie" class="form-control">
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="zone_id" class="form-label">Zone Urbaine</label>
+                                            <select name="zone_id" id="zone_id" class="form-select">
+                                                <option value="">Sélectionner une zone</option>
+                                                @foreach($zones as $zone)
+                                                    <option value="{{ $zone->id }}">{{ $zone->nom }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <h6>Émissions CO2 (t/an)</h6>
+                                        <div class="row">
+                                            <div class="col-md-3 mb-2">
+                                                <label class="form-check-label">
+                                                    <input type="checkbox" name="emissions[voiture][check]" value="1" class="form-check-input">
+                                                    Voiture
+                                                </label>
+                                                <input type="number" name="emissions[voiture][nb]" placeholder="Nombre" class="form-control form-control-sm mt-1">
+                                            </div>
+                                            <div class="col-md-3 mb-2">
+                                                <label class="form-check-label">
+                                                    <input type="checkbox" name="emissions[moto][check]" value="1" class="form-check-input">
+                                                    Moto
+                                                </label>
+                                                <input type="number" name="emissions[moto][nb]" placeholder="Nombre" class="form-control form-control-sm mt-1">
+                                            </div>
+                                            <div class="col-md-3 mb-2">
+                                                <label class="form-check-label">
+                                                    <input type="checkbox" name="emissions[bus][check]" value="1" class="form-check-input">
+                                                    Bus
+                                                </label>
+                                                <input type="number" name="emissions[bus][nb]" placeholder="Nombre" class="form-control form-control-sm mt-1">
+                                            </div>
+                                            <div class="col-md-3 mb-2">
+                                                <label class="form-check-label">
+                                                    <input type="checkbox" name="emissions[avion][check]" value="1" class="form-check-input">
+                                                    Avion
+                                                </label>
+                                                <input type="number" name="emissions[avion][nb]" placeholder="Nombre" class="form-control form-control-sm mt-1">
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-3 mb-2">
+                                                <label class="form-check-label">
+                                                    <input type="checkbox" name="emissions[fumeur][check]" value="1" class="form-check-input">
+                                                    Fumeur
+                                                </label>
+                                                <input type="number" name="emissions[fumeur][nb]" placeholder="Nombre" class="form-control form-control-sm mt-1">
+                                            </div>
+                                            <div class="col-md-3 mb-2">
+                                                <label class="form-check-label">
+                                                    <input type="checkbox" name="emissions[electricite][check]" value="1" class="form-check-input">
+                                                    Électricité
+                                                </label>
+                                                <input type="number" name="emissions[electricite][nb]" placeholder="Nombre" class="form-control form-control-sm mt-1">
+                                            </div>
+                                            <div class="col-md-3 mb-2">
+                                                <label class="form-check-label">
+                                                    <input type="checkbox" name="emissions[gaz][check]" value="1" class="form-check-input">
+                                                    Gaz
+                                                </label>
+                                                <input type="number" name="emissions[gaz][nb]" placeholder="Nombre" class="form-control form-control-sm mt-1">
+                                            </div>
+                                            <div class="col-md-3 mb-2">
+                                                <label class="form-check-label">
+                                                    <input type="checkbox" name="emissions[clim][check]" value="1" class="form-check-input">
+                                                    Climatisation
+                                                </label>
+                                                <input type="number" name="emissions[clim][nb]" placeholder="Nombre" class="form-control form-control-sm mt-1">
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-4 mb-2">
+                                                <label class="form-check-label">
+                                                    <input type="checkbox" name="emissions[machine][check]" value="1" class="form-check-input">
+                                                    Machine
+                                                </label>
+                                                <input type="number" name="emissions[machine][nb]" placeholder="Nombre" class="form-control form-control-sm mt-1">
+                                            </div>
+                                            <div class="col-md-4 mb-2">
+                                                <label class="form-check-label">
+                                                    <input type="checkbox" name="emissions[camion][check]" value="1" class="form-check-input">
+                                                    Camion
+                                                </label>
+                                                <input type="number" name="emissions[camion][nb]" placeholder="Nombre" class="form-control form-control-sm mt-1">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <button type="submit" class="btn btn-success">Ajouter le Bâtiment</button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Liste des bâtiments -->
+                        <div class="card">
+                            <div class="card-header" style="background: #1cc88a; color: white;">
+                                <h5 class="mb-0">Liste des Bâtiments</h5>
+                            </div>
+                            <div class="card-body batiments-list">
+                                @forelse($batiments as $batiment)
+                                    <div class="batiment-item border-bottom pb-3 mb-3" data-id="{{ $batiment->id }}">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-2">{{ $batiment->type_batiment }} - {{ $batiment->adresse }}</h6>
+                                                <p class="mb-1"><strong>Émission CO2:</strong> {{ $batiment->emissionCO2 }} t/an</p>
+                                                <p class="mb-1"><strong>Émission Réelle:</strong> {{ $batiment->emissionReelle }} t/an</p>
+                                                <p class="mb-1"><strong>% Renouvelable:</strong> {{ $batiment->pourcentageRenouvelable }}%</p>
+                                                <p class="mb-1"><strong>Arbres Besoin:</strong> {{ $batiment->nbArbresBesoin }}</p>
+                                                @if($batiment->zone)
+                                                    <p class="mb-0"><strong>Zone:</strong> {{ $batiment->zone->nom }}</p>
+                                                @endif
+                                                @if($batiment->type_batiment === 'Maison' && $batiment->nbHabitants)
+                                                    <p class="mb-0"><strong>Habitants:</strong> {{ $batiment->nbHabitants }}</p>
+                                                @elseif($batiment->type_batiment === 'Usine' && $batiment->nbEmployes)
+                                                    <p class="mb-0"><strong>Employés:</strong> {{ $batiment->nbEmployes }} | <strong>Industrie:</strong> {{ $batiment->typeIndustrie }}</p>
+                                                @endif
+                                            </div>
+                                            <div class="ms-3">
+                                                <button class="btn btn-sm btn-warning me-2 edit-btn" data-id="{{ $batiment->id }}">Modifier</button>
+                                                <form action="{{ route('batiments.destroy', $batiment->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce bâtiment ?')">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-sm btn-danger">Supprimer</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @empty
+                                    <p class="text-center text-muted">Aucun bâtiment enregistré pour le moment.</p>
+                                @endforelse
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- /Bâtiments Section -->
             </div>
         </div>
 
@@ -268,5 +477,86 @@
     <!-- Main JS File -->
     @vite(['resources/clientPageAssets/js/main.js'])
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const typeBatiment = document.getElementById('type_batiment');
+            const maisonFields = document.getElementById('maison-fields');
+            const usineFields = document.getElementById('usine-fields');
+
+            typeBatiment.addEventListener('change', function() {
+                if (this.value === 'Maison') {
+                    maisonFields.style.display = 'block';
+                    usineFields.style.display = 'none';
+                } else if (this.value === 'Usine') {
+                    maisonFields.style.display = 'none';
+                    usineFields.style.display = 'block';
+                } else {
+                    maisonFields.style.display = 'none';
+                    usineFields.style.display = 'none';
+                }
+            });
+
+            // Recherche des bâtiments
+            const searchBatimentInput = document.getElementById('search-batiment');
+            if (searchBatimentInput) {
+                let batimentTimer;
+                searchBatimentInput.addEventListener('input', function() {
+                    clearTimeout(batimentTimer);
+                    batimentTimer = setTimeout(() => {
+                        const query = this.value.trim();
+                        fetch(`/client?search_batiment=${encodeURIComponent(query)}`, {
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        })
+                            .then(response => response.json())
+                            .then(data => {
+                                updateBatimentsList(data);
+                            })
+                            .catch(error => console.error('Erreur lors de la recherche:', error));
+                    }, 350);
+                });
+            }
+
+            function updateBatimentsList(batiments) {
+                const container = document.querySelector('.batiments-list');
+                if (!container) return;
+
+                if (batiments.length === 0) {
+                    container.innerHTML = '<p class="text-center text-muted">Aucun bâtiment trouvé pour cette recherche.</p>';
+                    return;
+                }
+
+                let html = '';
+                batiments.forEach(batiment => {
+                    html += `
+                        <div class="batiment-item border-bottom pb-3 mb-3" data-id="${batiment.id}">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-2">${batiment.type_batiment} - ${batiment.adresse}</h6>
+                                    <p class="mb-1"><strong>Émission CO2:</strong> ${batiment.emissionCO2} t/an</p>
+                                    <p class="mb-1"><strong>Émission Réelle:</strong> ${batiment.emissionReelle} t/an</p>
+                                    <p class="mb-1"><strong>% Renouvelable:</strong> ${batiment.pourcentageRenouvelable}%</p>
+                                    <p class="mb-1"><strong>Arbres Besoin:</strong> ${batiment.nbArbresBesoin}</p>
+                                    ${batiment.zone ? `<p class="mb-0"><strong>Zone:</strong> ${batiment.zone}</p>` : ''}
+                                    ${batiment.type_batiment === 'Maison' && batiment.nbHabitants ? `<p class="mb-0"><strong>Habitants:</strong> ${batiment.nbHabitants}</p>` : ''}
+                                    ${batiment.type_batiment === 'Usine' && batiment.nbEmployes ? `<p class="mb-0"><strong>Employés:</strong> ${batiment.nbEmployes} | <strong>Industrie:</strong> ${batiment.typeIndustrie}</p>` : ''}
+                                </div>
+                                <div class="ms-3">
+                                    <button class="btn btn-sm btn-warning me-2 edit-btn" data-id="${batiment.id}">Modifier</button>
+                                    <form action="/batiments/${batiment.id}" method="POST" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce bâtiment ?')">
+                                        <input type="hidden" name="_method" value="DELETE">
+                                        <input type="hidden" name="_token" value="${document.querySelector('meta[name=csrf-token]').getAttribute('content')}">
+                                        <button type="submit" class="btn btn-sm btn-danger">Supprimer</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+            }
+        });
+    </script>
 </body>
 </html>

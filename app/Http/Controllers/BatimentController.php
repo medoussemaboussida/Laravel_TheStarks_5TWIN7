@@ -157,7 +157,7 @@ class BatimentController extends Controller
 
     public function store(Request $request)
     {
-    $b = new Batiment();
+        $b = new Batiment();
 
         // --- Associer la zone choisie ---
         if ($request->zone_id) {
@@ -165,37 +165,20 @@ class BatimentController extends Controller
             if ($zone) {
                 $b->zone()->associate($zone);
             }
+        }
 
         // --- Type de bâtiment ---
-        $b->setTypeBatiment($request->type_batiment);
-        $b->setAdresse($request->adresse);
-        $energie_evitee = 0;
-
-            if ($request->solaire_active && $request->solaire_kw) {
-                $energie_evitee += $request->solaire_kw * 0.0005; // 1000 kWh ≈ 0.5 tCO₂ évité
-            }
-            if ($request->voiture_active && $request->voiture_nb) {
-                $energie_evitee += $request->voiture_nb * 2; // 1 EV ≈ 2 tCO₂/an évité
-            }
-            if ($request->biomasse_active && $request->biomasse_tonnes) {
-                $energie_evitee += $request->biomasse_tonnes * 1.5;
-            }
-            if ($request->eolien_active && $request->eolien_kw) {
-                $energie_evitee += $request->eolien_kw * 0.0004;
-            }
-
-            $pctRenouvelable = min(100, ($energie_evitee / max(1, $b->getEmissionCO2())) * 100);
-            $pctRenouvelable = min(100, ($energie_evitee / max(1, $b->emissionCO2 ?? 0)) * 100);
-            $b->pourcentageRenouvelable = $pctRenouvelable;
+        $b->type_batiment = $request->type_batiment;
+        $b->adresse = $request->adresse;
 
         if ($request->type_batiment === 'Maison') {
-            $b->setNbHabitants($request->nbHabitants);
-            $b->setNbEmployes(null);
-            $b->setTypeIndustrie(null);
+            $b->nbHabitants = $request->nbHabitants;
+            $b->nbEmployes = null;
+            $b->typeIndustrie = null;
         } elseif ($request->type_batiment === 'Usine') {
-            $b->setNbHabitants(null);
-            $b->setNbEmployes($request->nbEmployes);
-            $b->setTypeIndustrie($request->typeIndustrie);
+            $b->nbHabitants = null;
+            $b->nbEmployes = $request->nbEmployes;
+            $b->typeIndustrie = $request->typeIndustrie;
         }
 
         // --- FACTEURS CO2 (t/an par unité) ---
@@ -223,21 +206,13 @@ class BatimentController extends Controller
             }
         }
 
-        // Sauvegarde de l’émission calculée
-    // Sauvegarde de l’émission calculée
-    $b->emissionCO2 = $emission;
-    $b->save();
+        $b->emissionCO2 = $emission;
+        $b->save();
 
-        // If the request comes from the backoffice modal, redirect back to the backoffice index
-        if ($request->input('source') === 'backoffice') {
-            return redirect()->route('backoffice.indexbatiment')
-                             ->with('success', 'Bâtiment ajouté avec succès.');
-        }
-
-        return redirect()->route('batiments.index')
+        return redirect()->route('client.index') . '#batiments'
                          ->with('success', 'Bâtiment ajouté avec succès.');
     }
-    }
+
     public function edit($id)
     {
     $batiment = Batiment::find($id);
@@ -266,11 +241,11 @@ class BatimentController extends Controller
     {
         $batiment = Batiment::find($id);
         if (!$batiment) {
-            return redirect()->route('batiments.index')
+            return redirect()->route('client.index') . '#batiments'
                              ->with('error', 'Bâtiment introuvable.');
         }
         $batiment->delete();
-        return redirect()->route('batiments.index')
+        return redirect()->route('client.index') . '#batiments'
                          ->with('success', 'Bâtiment supprimé avec succès.');
     }
 }

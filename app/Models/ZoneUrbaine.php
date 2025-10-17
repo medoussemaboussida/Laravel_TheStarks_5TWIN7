@@ -16,15 +16,17 @@ class ZoneUrbaine extends Model
         'nom',
         'population',
         'surface',
-        'niveauPollution',
-        'nbArbresExist',
+        'niveau_pollution',
+        'nb_arbres_exist',
+        'superficie',
     ];
 
     protected $casts = [
         'population' => 'integer',
         'surface' => 'float',
-        'niveauPollution' => 'float',
-        'nbArbresExist' => 'integer',
+        'niveau_pollution' => 'float',
+        'nb_arbres_exist' => 'integer',
+        'superficie' => 'float',
     ];
 
     public function batiments(): HasMany

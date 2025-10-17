@@ -15,6 +15,10 @@ Route::get('/', function () {
 Route::get('/adminpublication', [PublicationController::class, 'index'])->name('admin.publications.index');
 
 Route::middleware(['auth'])->group(function () {
+    Route::get('/dashboard', function () {
+        return view('dashboard');
+    })->name('dashboard');
+
     Route::redirect('settings', 'settings/profile');
 
     Route::get('settings/profile', Profile::class)->name('settings.profile');

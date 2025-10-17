@@ -15,21 +15,21 @@ class Batiment extends Model
     protected $fillable = [
         'type_batiment',
         'adresse',
-        'emissionCO2',
-        'nbHabitants',
-        'nbEmployes',
-        'typeIndustrie',
-        'pourcentageRenouvelable',
-        'emissionReelle',
+        'emission_c_o2',
+        'nb_habitants',
+        'nb_employes',
+        'type_industrie',
+        'pourcentage_renouvelable',
+        'emission_reelle',
         'zone_id',
     ];
 
     protected $casts = [
-        'emissionCO2' => 'float',
-        'pourcentageRenouvelable' => 'float',
-        'emissionReelle' => 'float',
-        'nbHabitants' => 'integer',
-        'nbEmployes' => 'integer',
+        'emission_c_o2' => 'float',
+        'pourcentage_renouvelable' => 'float',
+        'emission_reelle' => 'float',
+        'nb_habitants' => 'integer',
+        'nb_employes' => 'integer',
     ];
 
     public function zone(): BelongsTo
@@ -39,18 +39,18 @@ class Batiment extends Model
 
     public function setEmissionCO2Attribute($value)
     {
-        $this->attributes['emissionCO2'] = (float) $value;
-        $this->attributes['emissionReelle'] = $this->calculateEmissionReelle(
+        $this->attributes['emission_c_o2'] = (float) $value;
+        $this->attributes['emission_reelle'] = $this->calculateEmissionReelle(
             (float) $value,
-            $this->attributes['pourcentageRenouvelable'] ?? 0.0
+            $this->attributes['pourcentage_renouvelable'] ?? 0.0
         );
     }
 
     public function setPourcentageRenouvelableAttribute($value)
     {
-        $this->attributes['pourcentageRenouvelable'] = (float) $value;
-        $this->attributes['emissionReelle'] = $this->calculateEmissionReelle(
-            $this->attributes['emissionCO2'] ?? 0.0,
+        $this->attributes['pourcentage_renouvelable'] = (float) $value;
+        $this->attributes['emission_reelle'] = $this->calculateEmissionReelle(
+            $this->attributes['emission_c_o2'] ?? 0.0,
             (float) $value
         );
     }
@@ -62,6 +62,22 @@ class Batiment extends Model
 
     public function getNbArbresBesoinAttribute(): int
     {
-        return (int) ceil(($this->emissionReelle ?? 0.0) / 0.02);
+        return (int) ceil(($this->emission_reelle ?? 0.0) / 0.02);
+    }
+
+    // Accesseurs pour les anciens noms
+    public function getEmissionCO2Attribute()
+    {
+        return $this->attributes['emission_c_o2'] ?? 0.0;
+    }
+
+    public function getNbHabitantsAttribute()
+    {
+        return $this->attributes['nb_habitants'] ?? null;
+    }
+
+    public function getNbEmployesAttribute()
+    {
+        return $this->attributes['nb_employes'] ?? null;
     }
 }

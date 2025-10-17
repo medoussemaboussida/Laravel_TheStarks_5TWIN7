@@ -1,0 +1,50 @@
+# Comments are provided throughout this file to help you get started.
+# If you need more help, visit the Docker Compose reference guide at
+# https://docs.docker.com/go/compose-spec-reference/
+
+# Here the instructions define your application as a service called "server".
+# This service is built from the Dockerfile in the current directory.
+# You can add other services your application may depend on here, such as a
+# database or a cache. For examples, see the Awesome Compose repository:
+# https://github.com/docker/awesome-compose
+
+services:
+  server:
+    build:
+      context: .
+    ports:
+      - 8600:80  # Maps host 8600 to container's Apache port 80
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - DB_CONNECTION=mysql
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_DATABASE=laravel  # Consistent DB name
+      - DB_USERNAME=laravel
+      - DB_PASSWORD=secret
+    volumes:
+      - ./.env:/var/www/html/.env:ro  # Optional: Mount local .env for persistence
+
+  db:  # Properly defined as a separate service (was nested incorrectly)
+    image: mysql:8.0  # Use specific version for reproducibility (latest can break)
+    container_name: mysql
+    restart: unless-stopped
+    environment:
+      - MYSQL_DATABASE=laravel  # Matches server's DB_DATABASE
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_USER=laravel
+      - MYSQL_PASSWORD=secret
+    ports:
+      - "3306:3306"  # Exposes MySQL externally (optional; remove for security if not needed)
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  mysql-data:

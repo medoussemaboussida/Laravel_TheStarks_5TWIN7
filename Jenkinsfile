@@ -59,6 +59,24 @@ pipeline {
                     url: 'https://github.com/medoussemaboussida/Laravel_TheStarks_5TWIN7.git'
             }
         }
+        stage('Setup SonarScanner') {
+            steps {
+                sh '''
+                    # Install Java 17 if not present
+                    sudo apt-get update
+                    sudo apt-get install -y openjdk-17-jre-headless wget unzip || true
+                    
+                    # Download and install SonarScanner CLI (latest: 7.3.0.5189)
+                    wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-7.3.0.5189-linux-x64.zip
+                    unzip sonar-scanner-cli-7.3.0.5189-linux-x64.zip
+                    sudo mv sonar-scanner-7.3.0.5189-linux /opt/sonar-scanner
+                    sudo ln -s /opt/sonar-scanner/bin/sonar-scanner /usr/local/bin/sonar-scanner
+                    
+                    # Verify
+                    sonar-scanner -h
+                '''
+            }
+        }
         stage("SonarQube Analysis") {
             steps {
                 withSonarQubeEnv('scanner') {

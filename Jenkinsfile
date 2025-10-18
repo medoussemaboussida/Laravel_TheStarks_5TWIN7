@@ -50,7 +50,12 @@ def failure() {
 }
 
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'php:8.2-cli'
+            args '-u root --privileged --entrypoint=""'  // Privileged for Docker-in-Docker; root for installs
+        }
+    }
     stages {
         stage('Checkout GIT') {
             steps {
@@ -61,25 +66,40 @@ pipeline {
         }
         stage("SonarQube Analysis") {
             steps {
-                withSonarQubeEnv('scanner') {
-                    sh 'sonar-scanner'
+                script {
+                    sh '''
+                        # Install minimal deps
+                        apt-get update && apt-get install -y wget unzip openjdk-17-jre-headless
+                        
+                        # Download and extract SonarScanner
+                        wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-7.3.0.5189-linux-x64.zip
+                        unzip sonar-scanner-cli-7.3.0.5189-linux-x64.zip
+                        
+                        # Add to PATH
+                        export PATH=$(pwd)/sonar-scanner-7.3.0.5189-linux/bin:$PATH
+                        
+                        # Test
+                        sonar-scanner -h
+                    '''
+                    withSonarQubeEnv('scanner') {
+                        sh 'sonar-scanner'
+                    }
                 }
             }
         }
         stage('Start Prometheus') {
             steps {
-                sh 'docker start prometheus'
+                sh 'docker start prometheus || docker run -d --name prometheus -p 9090:9090 prom/prometheus'
                 echo 'Prometheus started.'
             }
         }
         stage('Start Grafana') {
             steps {
-                sh 'docker start grafana'
+                sh 'docker start grafana || docker run -d --name grafana -p 3000:3000 grafana/grafana'
                 echo 'Grafana started.'
             }
         }
     }
-    // Mailing functions
     post {
         success {
             script {

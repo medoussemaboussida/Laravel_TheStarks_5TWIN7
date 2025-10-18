@@ -59,6 +59,27 @@ pipeline {
                     url: 'https://github.com/medoussemaboussida/Laravel_TheStarks_5TWIN7.git'
             }
         }
+        stage('Setup Environment') {
+            steps {
+                echo 'Setting up PHP and Composer environment...'
+                sh '''
+                    # Install Composer if not present
+                    if ! command -v composer &> /dev/null; then
+                        echo "Installing Composer..."
+                        curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+                    else
+                        echo "Composer already installed."
+                    fi
+                    
+                    # Ensure PHP is available (assuming it's installed; adjust if needed)
+                    if ! command -v php &> /dev/null; then
+                        echo "PHP not found. Please ensure PHP is installed on the agent."
+                        exit 1
+                    fi
+                '''
+                echo 'Environment setup completed.'
+            }
+        }
         stage('Unit Tests') {
             steps {
                 echo 'Running unit tests for tests/Unit/ExampleTest.php...'

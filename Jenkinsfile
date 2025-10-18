@@ -62,48 +62,30 @@ pipeline {
         stage("SonarQube Analysis") {
             steps {
                 script {
-                    sh '''
-                        # Clean any old ZIP
-                        rm -f sonar-scanner-cli-7.3.0.5189-linux-x64.zip*
-                        
-                        # Install minimal deps if not present
-                        apt-get update || true
-                        apt-get install -y wget python3 || true
-                        
-                        # Download SonarScanner
-                        wget -O sonar-scanner-cli-7.3.0.5189-linux-x64.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-7.3.0.5189-linux-x64.zip
-                        
-                        # Extract with Python
-                        python3 -c "
-import zipfile
-with zipfile.ZipFile('sonar-scanner-cli-7.3.0.5189-linux-x64.zip', 'r') as zip_ref:
-    zip_ref.extractall('.')
-"
-                        
-                        # Verify extraction and PATH
-                        ls -la sonar-scanner-7.3.0.5189-linux/bin/sonar-scanner
-                        export PATH=$(pwd)/sonar-scanner-7.3.0.5189-linux/bin:$PATH
-                        sonar-scanner -h
-                    '''
+                    // 🔹 Récupère le scanner configuré dans Jenkins
+                    def scannerHome = tool 'scanner'
+
+                    // 🔹 Exécute l’analyse SonarQube
                     withSonarQubeEnv('scanner') {
-                        sh 'sonar-scanner'
+                        sh "${scannerHome}/bin/sonar-scanner"
                     }
                 }
             }
         }
         stage('Start Prometheus') {
             steps {
-                sh 'docker start prometheus || true'
-                echo 'Prometheus started or already running.'
+                sh 'docker start prometheus'
+                echo 'Prometheus started.'
             }
         }
         stage('Start Grafana') {
             steps {
-                sh 'docker start grafana || true'
-                echo 'Grafana started or already running.'
+                sh 'docker start grafana'
+                echo 'Grafana started.'
             }
         }
     }
+    // Mailing functions
     post {
         success {
             script {

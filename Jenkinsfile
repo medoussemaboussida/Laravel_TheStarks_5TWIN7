@@ -52,19 +52,23 @@ def failure() {
 pipeline {
     agent any
     stages {
+        stage('Install Dependencies') {
+            steps {
+                sh '''
+                    sudo apt-get update
+                    sudo apt-get install -y curl php8.2 php8.2-cli php8.2-mbstring php8.2-xml php8.2-zip php8.2-curl nodejs npm git unzip
+                    curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+                    composer --version
+                    node --version
+                    npm --version
+                '''
+            }
+        }
         stage('Checkout GIT') {
             steps {
                 echo 'Pulling ...'
                 git branch: 'main',
                     url: 'https://github.com/medoussemaboussida/Laravel_TheStarks_5TWIN7.git'
-            }
-        }
-        stage('Install Composer') {
-            steps {
-                sh '''
-                    curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-                    composer --version
-                '''
             }
         }
         stage('Composer Install') {

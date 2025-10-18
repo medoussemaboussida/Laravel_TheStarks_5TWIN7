@@ -67,7 +67,13 @@ pipeline {
 
                     // 🔹 Exécute l’analyse SonarQube
                     withSonarQubeEnv('scanner') {
-                        sh "${scannerHome}/bin/sonar-scanner"
+                        sh """
+                            ${scannerHome}/bin/sonar-scanner \
+                            -Dsonar.projectKey=laravel-thestarks-5twin7 \
+                            -Dsonar.projectName=Laravel_TheStarks_5TWIN7 \
+                            -Dsonar.sources=. \
+                            -Dsonar.exclusions=vendor/**,node_modules/**,storage/**,bootstrap/cache/**
+                        """
                     }
                 }
             }

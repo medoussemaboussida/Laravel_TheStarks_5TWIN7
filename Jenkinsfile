@@ -50,12 +50,7 @@ def failure() {
 }
 
 pipeline {
-    agent {
-        docker {
-            image 'php:8.2-cli'  // Clean PHP env; pulls Java/tools as needed
-            args '-u root --entrypoint=""'  // Run as root for installs; disables default entrypoint
-        }
-    }
+    agent any
     stages {
         stage('Checkout GIT') {
             steps {
@@ -66,26 +61,8 @@ pipeline {
         }
         stage("SonarQube Analysis") {
             steps {
-                script {
-                    // Inline SonarScanner download/setup (runs every build, but fast)
-                    sh '''
-                        # Install minimal deps (wget, unzip, Java)
-                        apt-get update && apt-get install -y wget unzip openjdk-17-jre-headless
-                        
-                        # Download and extract SonarScanner
-                        wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-7.3.0.5189-linux-x64.zip
-                        unzip sonar-scanner-cli-7.3.0.5189-linux-x64.zip
-                        
-                        # Add to PATH for this stage
-                        export PATH=$(pwd)/sonar-scanner-7.3.0.5189-linux/bin:$PATH
-                        
-                        # Test
-                        sonar-scanner -h
-                    '''
-                    // Run scan against your SonarQube container (assumes config in Jenkins plugin)
-                    withSonarQubeEnv('scanner') {
-                        sh 'sonar-scanner'
-                    }
+                withSonarQubeEnv('scanner') {
+                    sh 'sonar-scanner'
                 }
             }
         }

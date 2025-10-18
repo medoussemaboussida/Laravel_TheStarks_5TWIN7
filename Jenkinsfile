@@ -62,6 +62,9 @@ pipeline {
         stage('Setup SonarScanner') {
             steps {
                 sh '''
+                    # Clean previous ZIP files to avoid duplicates
+                    rm -f sonar-scanner-cli-7.3.0.5189-linux-x64.zip*
+                    
                     # Check if Java is available; if not, download portable Adoptium JDK 17
                     if ! command -v java &> /dev/null; then
                         echo "Java not found, downloading portable JDK 17..."
@@ -71,8 +74,8 @@ pipeline {
                         export PATH=$JAVA_HOME/bin:$PATH
                     fi
                     
-                    # Download SonarScanner CLI to workspace (no sudo)
-                    wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-7.3.0.5189-linux-x64.zip
+                    # Download SonarScanner CLI to workspace (force overwrite with -O)
+                    wget -O sonar-scanner-cli-7.3.0.5189-linux-x64.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-7.3.0.5189-linux-x64.zip
                     
                     # Extract using Python (since unzip may not be available)
                     python3 -c "

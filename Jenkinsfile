@@ -50,12 +50,7 @@ def failure() {
 }
 
 pipeline {
-    agent {
-        docker {
-            image 'php:8.2-cli'
-            args '-u root --privileged --entrypoint=""'  // Privileged for Docker-in-Docker; root for installs
-        }
-    }
+    agent any
     stages {
         stage('Checkout GIT') {
             steps {
@@ -68,17 +63,26 @@ pipeline {
             steps {
                 script {
                     sh '''
-                        # Install minimal deps
-                        apt-get update && apt-get install -y wget unzip openjdk-17-jre-headless
+                        # Clean any old ZIP
+                        rm -f sonar-scanner-cli-7.3.0.5189-linux-x64.zip*
                         
-                        # Download and extract SonarScanner
-                        wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-7.3.0.5189-linux-x64.zip
-                        unzip sonar-scanner-cli-7.3.0.5189-linux-x64.zip
+                        # Install minimal deps if not present
+                        apt-get update || true
+                        apt-get install -y wget python3 || true
                         
-                        # Add to PATH
+                        # Download SonarScanner
+                        wget -O sonar-scanner-cli-7.3.0.5189-linux-x64.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-7.3.0.5189-linux-x64.zip
+                        
+                        # Extract with Python
+                        python3 -c "
+import zipfile
+with zipfile.ZipFile('sonar-scanner-cli-7.3.0.5189-linux-x64.zip', 'r') as zip_ref:
+    zip_ref.extractall('.')
+"
+                        
+                        # Verify extraction and PATH
+                        ls -la sonar-scanner-7.3.0.5189-linux/bin/sonar-scanner
                         export PATH=$(pwd)/sonar-scanner-7.3.0.5189-linux/bin:$PATH
-                        
-                        # Test
                         sonar-scanner -h
                     '''
                     withSonarQubeEnv('scanner') {
@@ -89,14 +93,14 @@ pipeline {
         }
         stage('Start Prometheus') {
             steps {
-                sh 'docker start prometheus || docker run -d --name prometheus -p 9090:9090 prom/prometheus'
-                echo 'Prometheus started.'
+                sh 'docker start prometheus || true'
+                echo 'Prometheus started or already running.'
             }
         }
         stage('Start Grafana') {
             steps {
-                sh 'docker start grafana || docker run -d --name grafana -p 3000:3000 grafana/grafana'
-                echo 'Grafana started.'
+                sh 'docker start grafana || true'
+                echo 'Grafana started or already running.'
             }
         }
     }

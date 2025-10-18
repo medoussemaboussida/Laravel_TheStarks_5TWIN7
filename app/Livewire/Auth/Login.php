@@ -9,16 +9,16 @@ use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
-use Livewire\Attributes\Validate;
+use Livewire\Attributes\Rule;
 use Livewire\Component;
 
 #[Layout('components.layouts.auth')]
 class Login extends Component
 {
-    #[Validate('required|string|email')]
+    #[Rule('required|string|email')]
     public string $email = '';
 
-    #[Validate('required|string')]
+    #[Rule('required|string')]
     public string $password = '';
 
     public bool $remember = false;
@@ -43,7 +43,12 @@ class Login extends Component
         RateLimiter::clear($this->throttleKey());
         Session::regenerate();
 
-    $this->redirectIntended(default: route('client.index', absolute: false), navigate: true);
+        // Redirect based on user role
+        if (Auth::user()->isAdmin()) {
+            $this->redirect(route('espace.index', absolute: false), navigate: true);
+        } else {
+            $this->redirectIntended(default: route('client.index', absolute: false), navigate: true);
+        }
     }
 
     /**

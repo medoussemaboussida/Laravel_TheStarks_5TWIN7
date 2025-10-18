@@ -12,7 +12,9 @@ Route::get('/', function () {
     return redirect('/login');
 });
 
-Route::get('/adminpublication', [PublicationController::class, 'index'])->name('admin.publications.index');
+Route::middleware(['auth', 'admin'])->group(function () {
+    Route::get('/adminpublication', [PublicationController::class, 'index'])->name('admin.publications.index');
+});
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', function () {
@@ -25,7 +27,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('settings/password', Password::class)->name('settings.password');
     Route::get('settings/appearance', Appearance::class)->name('settings.appearance');
 });
-Route::resource('espace', EspaceVertController::class);
+Route::resource('espace', EspaceVertController::class)->middleware('admin');
 Route::resource('rapport-besoins', RapportBesoinController::class);
 Route::get('/client', [EspaceVertController::class, 'displayClient'])->name('client.index');
 // Front-office batiment routes (create / update / delete from client page)

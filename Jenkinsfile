@@ -50,7 +50,12 @@ def failure() {
 }
 
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'php:8.2-cli'  // Clean PHP env; pulls Java/tools as needed
+            args '-u root --entrypoint=""'  // Run as root for installs; disables default entrypoint
+        }
+    }
     stages {
         stage('Checkout GIT') {
             steps {
@@ -59,40 +64,28 @@ pipeline {
                     url: 'https://github.com/medoussemaboussida/Laravel_TheStarks_5TWIN7.git'
             }
         }
-        stage('Setup SonarScanner') {
-            steps {
-                sh '''
-                    # Clean previous ZIP files to avoid duplicates
-                    rm -f sonar-scanner-cli-7.3.0.5189-linux-x64.zip*
-                    
-                    # Check if Java is available; if not, download portable Adoptium JDK 17
-                    if ! command -v java &> /dev/null; then
-                        echo "Java not found, downloading portable JDK 17..."
-                        wget https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.12%2B7/OpenJDK17U-jre_x64_linux_hotspot_17.0.12_7.tar.gz
-                        tar -xzf OpenJDK17U-jre_x64_linux_hotspot_17.0.12_7.tar.gz
-                        export JAVA_HOME=$(pwd)/jdk-17.0.12+7
-                        export PATH=$JAVA_HOME/bin:$PATH
-                    fi
-                    
-                    # Download SonarScanner CLI to workspace (force overwrite with -O)
-                    wget -O sonar-scanner-cli-7.3.0.5189-linux-x64.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-7.3.0.5189-linux-x64.zip
-                    
-                    # Extract using Python (since unzip may not be available)
-                    python3 -c "
-import zipfile
-with zipfile.ZipFile('sonar-scanner-cli-7.3.0.5189-linux-x64.zip', 'r') as zip_ref:
-    zip_ref.extractall('.')
-"
-                    
-                    # Verify (using local Java if downloaded)
-                    ./sonar-scanner-7.3.0.5189-linux/bin/sonar-scanner -h
-                '''
-            }
-        }
         stage("SonarQube Analysis") {
             steps {
-                withSonarQubeEnv('scanner') {
-                    sh './sonar-scanner-7.3.0.5189-linux/bin/sonar-scanner'
+                script {
+                    // Inline SonarScanner download/setup (runs every build, but fast)
+                    sh '''
+                        # Install minimal deps (wget, unzip, Java)
+                        apt-get update && apt-get install -y wget unzip openjdk-17-jre-headless
+                        
+                        # Download and extract SonarScanner
+                        wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-7.3.0.5189-linux-x64.zip
+                        unzip sonar-scanner-cli-7.3.0.5189-linux-x64.zip
+                        
+                        # Add to PATH for this stage
+                        export PATH=$(pwd)/sonar-scanner-7.3.0.5189-linux/bin:$PATH
+                        
+                        # Test
+                        sonar-scanner -h
+                    '''
+                    // Run scan against your SonarQube container (assumes config in Jenkins plugin)
+                    withSonarQubeEnv('scanner') {
+                        sh 'sonar-scanner'
+                    }
                 }
             }
         }

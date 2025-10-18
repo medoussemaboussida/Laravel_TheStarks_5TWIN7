@@ -32,6 +32,10 @@
             </ul>
             <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
         </nav>
-        <a class="btn-getstarted" href="{{ route('client.index') }}#about">Get Started</a>
+        <form method="POST" action="{{ route('logout') }}" class="d-inline">
+            @csrf
+            <button type="submit" class="btn-getstarted" style="background: none; border: none; color: inherit; text-decoration: none; padding: 0;">Log Out</button>
+       </form>
+        
     </div>
 </header>

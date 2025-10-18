@@ -22,6 +22,9 @@ class Batiment extends Model
         'pourcentage_renouvelable',
         'emission_reelle',
         'zone_id',
+        'type_zone_urbaine',
+        'recyclage_data',
+        'energies_renouvelables_data',
     ];
 
     protected $casts = [
@@ -30,6 +33,8 @@ class Batiment extends Model
         'emission_reelle' => 'float',
         'nb_habitants' => 'integer',
         'nb_employes' => 'integer',
+        'recyclage_data' => 'array',
+        'energies_renouvelables_data' => 'array',
     ];
 
     public function zone(): BelongsTo
@@ -79,5 +84,63 @@ class Batiment extends Model
     public function getNbEmployesAttribute()
     {
         return $this->attributes['nb_employes'] ?? null;
+    }
+
+    // Mutateurs pour les anciens noms (compatibilité)
+    public function setNbHabitantsAttribute($value)
+    {
+        $this->attributes['nb_habitants'] = $value;
+    }
+
+    public function setNbEmployesAttribute($value)
+    {
+        $this->attributes['nb_employes'] = $value;
+    }
+
+    public function setTypeIndustrieAttribute($value)
+    {
+        $this->attributes['type_industrie'] = $value;
+    }
+
+    // Accesseur pour les données de recyclage
+    public function getRecyclageDataAttribute()
+    {
+        return $this->attributes['recyclage_data'] ? json_decode($this->attributes['recyclage_data'], true) : null;
+    }
+
+    // Accesseur pour vérifier si le recyclage existe
+    public function getRecyclageExisteAttribute()
+    {
+        $data = $this->recyclageData;
+        return $data && isset($data['existe']) && $data['existe'];
+    }
+
+    // Accesseur pour vérifier si les énergies renouvelables existent
+    public function getEnergiesRenouvelablesExisteAttribute()
+    {
+        $data = $this->energiesRenouvelablesData;
+        return !empty($data);
+    }
+
+    public function setEnergiesRenouvelablesDataAttribute($value)
+    {
+        $this->attributes['energies_renouvelables_data'] = json_encode($value);
+    }
+
+    public function getEnergiesRenouvelablesDataAttribute($value)
+    {
+        return json_decode($value, true) ?? [];
+    }
+
+    // Accesseur pour le type de zone urbaine formaté
+    public function getTypeZoneUrbaineFormattedAttribute()
+    {
+        $types = [
+            'zone_industrielle' => 'Zone Industrielle',
+            'quartier_residentiel' => 'Quartier Résidentiel',
+            'centre_ville' => 'Centre Ville'
+        ];
+
+        return $this->type_zone_urbaine ? ($types[$this->type_zone_urbaine] ?? $this->type_zone_urbaine) : null;
     }
 }

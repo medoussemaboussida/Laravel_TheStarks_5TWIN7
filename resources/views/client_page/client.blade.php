@@ -299,6 +299,27 @@
                                         </div>
                                     </div>
 
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="zone_id" class="form-label">État (Gouvernorat)</label>
+                                            <select name="zone_id" id="zone_id" class="form-select" required>
+                                                <option value="">Sélectionner un gouvernorat</option>
+                                                @foreach($zonesUrbaines as $zone)
+                                                    <option value="{{ $zone->id }}">{{ $zone->nom }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="type_zone_urbaine" class="form-label">Zone Urbaine</label>
+                                            <select name="type_zone_urbaine" id="type_zone_urbaine" class="form-select">
+                                                <option value="">Sélectionner une zone</option>
+                                                @foreach($typesZoneUrbaine as $key => $value)
+                                                    <option value="{{ $key }}">{{ $value }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </div>
+
                                     <div class="row" id="maison-fields" style="display: none;">
                                         <div class="col-md-6 mb-3">
                                             <label for="nbHabitants" class="form-label">Nombre d'Habitants</label>
@@ -317,48 +338,36 @@
                                         </div>
                                     </div>
 
-                                    <div class="row">
-                                        <div class="col-md-6 mb-3">
-                                            <label for="zone_id" class="form-label">Zone Urbaine</label>
-                                            <select name="zone_id" id="zone_id" class="form-select">
-                                                <option value="">Sélectionner une zone</option>
-                                                @foreach($zones as $zone)
-                                                    <option value="{{ $zone->id }}">{{ $zone->nom }}</option>
-                                                @endforeach
-                                            </select>
-                                        </div>
-                                    </div>
-
                                     <div class="mb-3">
-                                        <h6>Émissions CO2 (t/an)</h6>
+                                        <h6>Émissions (unités mensuelles)</h6>
                                         <div class="row">
                                             <div class="col-md-3 mb-2">
                                                 <label class="form-check-label">
                                                     <input type="checkbox" name="emissions[voiture][check]" value="1" class="form-check-input">
                                                     Voiture
                                                 </label>
-                                                <input type="number" name="emissions[voiture][nb]" placeholder="Nombre" class="form-control form-control-sm mt-1">
+                                                <input type="number" name="emissions[voiture][nb]" placeholder="km/mois" min="0" step="1" class="form-control form-control-sm mt-1">
                                             </div>
                                             <div class="col-md-3 mb-2">
                                                 <label class="form-check-label">
                                                     <input type="checkbox" name="emissions[moto][check]" value="1" class="form-check-input">
                                                     Moto
                                                 </label>
-                                                <input type="number" name="emissions[moto][nb]" placeholder="Nombre" class="form-control form-control-sm mt-1">
+                                                <input type="number" name="emissions[moto][nb]" placeholder="km/mois" min="0" step="1" class="form-control form-control-sm mt-1">
                                             </div>
                                             <div class="col-md-3 mb-2">
                                                 <label class="form-check-label">
                                                     <input type="checkbox" name="emissions[bus][check]" value="1" class="form-check-input">
                                                     Bus
                                                 </label>
-                                                <input type="number" name="emissions[bus][nb]" placeholder="Nombre" class="form-control form-control-sm mt-1">
+                                                <input type="number" name="emissions[bus][nb]" placeholder="km/mois" min="0" step="1" class="form-control form-control-sm mt-1">
                                             </div>
                                             <div class="col-md-3 mb-2">
                                                 <label class="form-check-label">
                                                     <input type="checkbox" name="emissions[avion][check]" value="1" class="form-check-input">
                                                     Avion
                                                 </label>
-                                                <input type="number" name="emissions[avion][nb]" placeholder="Nombre" class="form-control form-control-sm mt-1">
+                                                <input type="number" name="emissions[avion][nb]" placeholder="km/mois" min="0" step="1" class="form-control form-control-sm mt-1">
                                             </div>
                                         </div>
                                         <div class="row">
@@ -367,49 +376,120 @@
                                                     <input type="checkbox" name="emissions[fumeur][check]" value="1" class="form-check-input">
                                                     Fumeur
                                                 </label>
-                                                <input type="number" name="emissions[fumeur][nb]" placeholder="Nombre" class="form-control form-control-sm mt-1">
+                                                <input type="number" name="emissions[fumeur][nb]" placeholder="paquets/mois" min="0" step="1" class="form-control form-control-sm mt-1">
                                             </div>
                                             <div class="col-md-3 mb-2">
                                                 <label class="form-check-label">
                                                     <input type="checkbox" name="emissions[electricite][check]" value="1" class="form-check-input">
                                                     Électricité
                                                 </label>
-                                                <input type="number" name="emissions[electricite][nb]" placeholder="Nombre" class="form-control form-control-sm mt-1">
+                                                <input type="number" name="emissions[electricite][nb]" placeholder="kWh/mois" min="0" step="0.1" class="form-control form-control-sm mt-1">
                                             </div>
                                             <div class="col-md-3 mb-2">
                                                 <label class="form-check-label">
                                                     <input type="checkbox" name="emissions[gaz][check]" value="1" class="form-check-input">
                                                     Gaz
                                                 </label>
-                                                <input type="number" name="emissions[gaz][nb]" placeholder="Nombre" class="form-control form-control-sm mt-1">
+                                                <input type="number" name="emissions[gaz][nb]" placeholder="m3/mois" min="0" step="1" class="form-control form-control-sm mt-1">
                                             </div>
-                                            <div class="col-md-3 mb-2">
-                                                <label class="form-check-label">
-                                                    <input type="checkbox" name="emissions[clim][check]" value="1" class="form-check-input">
-                                                    Climatisation
-                                                </label>
-                                                <input type="number" name="emissions[clim][nb]" placeholder="Nombre" class="form-control form-control-sm mt-1">
-                                            </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-md-4 mb-2">
-                                                <label class="form-check-label">
-                                                    <input type="checkbox" name="emissions[machine][check]" value="1" class="form-check-input">
-                                                    Machine
-                                                </label>
-                                                <input type="number" name="emissions[machine][nb]" placeholder="Nombre" class="form-control form-control-sm mt-1">
-                                            </div>
-                                            <div class="col-md-4 mb-2">
+                                             <div class="col-md-3 mb-2">
                                                 <label class="form-check-label">
                                                     <input type="checkbox" name="emissions[camion][check]" value="1" class="form-check-input">
                                                     Camion
                                                 </label>
-                                                <input type="number" name="emissions[camion][nb]" placeholder="Nombre" class="form-control form-control-sm mt-1">
+                                                <input type="number" name="emissions[camion][nb]" placeholder="km/mois" min="0" step="1" class="form-control form-control-sm mt-1">
+                                            </div>
+                                        </div>
+                                       
+                                    </div>
+
+                        
+                                    </div>
+
+                                    <div class="ms-4">
+                                    <div class="mb-3">
+                                        <label class="form-check-label">
+                                           <h6> <input type="checkbox" name="energies_renouvelables[existe]" value="1" class="form-check-input" id="energies-renouvelables-existe">
+                                           Énergies Renouvelables
+                                        </label></h6>
+                                    </div>
+                                    <div id="energies-renouvelables-types" style="display: none;">
+                                        <div class="row">
+                                            <div class="col-md-6 mb-2">
+                                                <label class="form-check-label">
+                                                    <input type="checkbox" name="energies_renouvelables[panneaux_solaires][check]" value="1" class="form-check-input">
+                                                    Panneaux Solaires
+                                                </label>
+                                                <input type="number" name="energies_renouvelables[panneaux_solaires][nb]" placeholder="Quantité de kW produits" class="form-control form-control-sm mt-1" min="0">
+                                            </div>
+                                            <div class="col-md-6 mb-2">
+                                                <label class="form-check-label">
+                                                    <input type="checkbox" name="energies_renouvelables[voitures_electriques][check]" value="1" class="form-check-input">
+                                                    Voitures Électriques
+                                                </label>
+                                                <input type="number" name="energies_renouvelables[voitures_electriques][nb]" placeholder="Kilométrage (km/mois)" class="form-control form-control-sm mt-1" min="0">
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6 mb-2">
+                                                <label class="form-check-label">
+                                                    <input type="checkbox" name="energies_renouvelables[camions_electriques][check]" value="1" class="form-check-input">
+                                                    Camions Électriques
+                                                </label>
+                                                <input type="number" name="energies_renouvelables[camions_electriques][nb]" placeholder="Kilométrage (km/mois)" class="form-control form-control-sm mt-1" min="0">
+                                            </div>
+                                            <div class="col-md-6 mb-2">
+                                                <label class="form-check-label">
+                                                    <input type="checkbox" name="energies_renouvelables[energie_eolienne][check]" value="1" class="form-check-input">
+                                                    Énergie Éolienne
+                                                </label>
+                                                <input type="number" name="energies_renouvelables[energie_eolienne][nb]" placeholder="Puissance (MW)" class="form-control form-control-sm mt-1" min="0">
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6 mb-2">
+                                                <label class="form-check-label">
+                                                    <input type="checkbox" name="energies_renouvelables[energie_hydroelectrique][check]" value="1" class="form-check-input">
+                                                    Énergie Hydroélectrique
+                                                </label>
+                                                <input type="number" name="energies_renouvelables[energie_hydroelectrique][nb]" placeholder="Production (TWh)" class="form-control form-control-sm mt-1" min="0">
                                             </div>
                                         </div>
                                     </div>
+                                    </div>
 
-                                    <button type="submit" class="btn btn-success">Ajouter le Bâtiment</button>
+                                      <div class="mb-3 ms-4">                                      <div class="mb-3">
+                                            <label class="form-check-label">
+                                               <h6> <input type="checkbox" name="recyclage[existe]" value="1" class="form-check-input" id="recyclage-existe">
+                                               Recyclage des produits
+                                            </label></h6>
+                                        </div>
+                                        <div id="recyclage-types" style="display: none;">
+                                            <div class="row">
+                                                <div class="col-md-6 mb-3">
+                                                    <label for="produit_recycle" class="form-label">Produits Recyclés</label>
+                                                    <select name="recyclage[produit_recycle][]" id="produit_recycle" class="form-select" multiple size="4">
+                                                        <option value="papier">Papier/Carton</option>
+                                                        <option value="plastique">Plastique</option>
+                                                        <option value="verre">Verre</option>
+                                                        <option value="metal">Métal</option>
+                                                        <option value="organique">Déchets Organiques</option>
+                                                        <option value="electronique">Déchets Électroniques</option>
+                                                        <option value="textile">Textile</option>
+                                                        <option value="bois">Bois</option>
+                                                        <option value="batteries">Batteries</option>
+                                                        <option value="autre">Autre</option>
+                                                    </select>
+                                                    <small class="form-text text-muted">Maintenez Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs produits</small>
+                                                </div>
+                                                <div class="col-md-6 mb-3">
+                                                    <label class="form-label">Quantités Recyclées (kg/mois)</label>
+                                                    <div id="quantites-container">
+                                                        <small class="form-text text-muted">Sélectionnez d'abord les produits pour voir les champs de quantité</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>                                    <button type="submit" class="btn btn-success ms-4">Ajouter le Bâtiment</button>
                                 </form>
                             </div>
                         </div>
@@ -436,6 +516,48 @@
                                                     <p class="mb-0"><strong>Habitants:</strong> {{ $batiment->nbHabitants }}</p>
                                                 @elseif($batiment->type_batiment === 'Usine' && $batiment->nbEmployes)
                                                     <p class="mb-0"><strong>Employés:</strong> {{ $batiment->nbEmployes }} | <strong>Industrie:</strong> {{ $batiment->typeIndustrie }}</p>
+                                                @endif
+                                                @if($batiment->recyclageExiste)
+                                                    <p class="mb-0"><strong>♻️ Recyclage:</strong>
+                                                        @php
+                                                            $recyclageData = $batiment->recyclageData;
+                                                            $produits = $recyclageData['produit_recycle'] ?? [];
+                                                            $quantites = $recyclageData['quantites'] ?? [];
+                                                            $typeNames = [
+                                                                'papier' => 'Papier/Carton',
+                                                                'plastique' => 'Plastique',
+                                                                'verre' => 'Verre',
+                                                                'metal' => 'Métal',
+                                                                'organique' => 'Déchets Organiques',
+                                                                'electronique' => 'Déchets Électroniques',
+                                                                'textile' => 'Textile',
+                                                                'bois' => 'Bois',
+                                                                'batteries' => 'Batteries',
+                                                                'autre' => 'Autre'
+                                                            ];
+                                                            $produitDetails = [];
+                                                            if (is_array($produits)) {
+                                                                foreach ($produits as $produit) {
+                                                                    $produitLabel = $typeNames[$produit] ?? $produit;
+                                                                    $quantite = isset($quantites[$produit]) ? (float)$quantites[$produit] : 0;
+                                                                    if ($quantite > 0) {
+                                                                        $produitDetails[] = $produitLabel . ' (' . $quantite . ' kg/mois)';
+                                                                    } else {
+                                                                        $produitDetails[] = $produitLabel;
+                                                                    }
+                                                                }
+                                                            } elseif ($produits) {
+                                                                $produitLabel = $typeNames[$produits] ?? $produits;
+                                                                $quantite = isset($quantites[$produits]) ? (float)$quantites[$produits] : 0;
+                                                                if ($quantite > 0) {
+                                                                    $produitDetails[] = $produitLabel . ' (' . $quantite . ' kg/mois)';
+                                                                } else {
+                                                                    $produitDetails[] = $produitLabel;
+                                                                }
+                                                            }
+                                                            echo implode(', ', $produitDetails);
+                                                        @endphp
+                                                    </p>
                                                 @endif
                                             </div>
                                             <div class="ms-3">
@@ -496,6 +618,84 @@
                 }
             });
 
+            // Gestion du recyclage
+            const recyclageExiste = document.getElementById('recyclage-existe');
+            const recyclageTypes = document.getElementById('recyclage-types');
+            const produitRecycle = document.getElementById('produit_recycle');
+            const quantitesContainer = document.getElementById('quantites-container');
+
+            const typeNames = {
+                papier: 'Papier/Carton',
+                plastique: 'Plastique',
+                verre: 'Verre',
+                metal: 'Métal',
+                organique: 'Déchets Organiques',
+                electronique: 'Déchets Électroniques',
+                textile: 'Textile',
+                bois: 'Bois',
+                batteries: 'Batteries',
+                autre: 'Autre'
+            };
+
+            function updateQuantitesInputs() {
+                const selectedOptions = Array.from(produitRecycle.selectedOptions);
+                quantitesContainer.innerHTML = '';
+
+                if (selectedOptions.length === 0) {
+                    quantitesContainer.innerHTML = '<small class="form-text text-muted">Sélectionnez d\'abord les produits pour voir les champs de quantité</small>';
+                    return;
+                }
+
+                selectedOptions.forEach(option => {
+                    const produitValue = option.value;
+                    const produitLabel = typeNames[produitValue] || produitValue;
+
+                    const div = document.createElement('div');
+                    div.className = 'mb-2';
+                    div.innerHTML = `
+                        <label class="form-label">${produitLabel}</label>
+                        <input type="number" name="recyclage[quantites][${produitValue}]" class="form-control form-control-sm" placeholder="Quantité en kg/mois" min="0" step="0.1">
+                    `;
+                    quantitesContainer.appendChild(div);
+                });
+            }
+
+            if (recyclageExiste && recyclageTypes) {
+                recyclageExiste.addEventListener('change', function() {
+                    if (this.checked) {
+                        recyclageTypes.style.display = 'block';
+                        updateQuantitesInputs();
+                    } else {
+                        recyclageTypes.style.display = 'none';
+                        // Réinitialiser les champs de recyclage
+                        Array.from(produitRecycle.options).forEach(option => option.selected = false);
+                        quantitesContainer.innerHTML = '<small class="form-text text-muted">Sélectionnez d\'abord les produits pour voir les champs de quantité</small>';
+                    }
+                });
+
+                // Mettre à jour les inputs de quantité quand la sélection change
+                produitRecycle.addEventListener('change', updateQuantitesInputs);
+            }
+
+            // Gestion des énergies renouvelables
+            const energiesRenouvelablesExiste = document.getElementById('energies-renouvelables-existe');
+            const energiesRenouvelablesTypes = document.getElementById('energies-renouvelables-types');
+
+            if (energiesRenouvelablesExiste && energiesRenouvelablesTypes) {
+                energiesRenouvelablesExiste.addEventListener('change', function() {
+                    if (this.checked) {
+                        energiesRenouvelablesTypes.style.display = 'block';
+                    } else {
+                        energiesRenouvelablesTypes.style.display = 'none';
+                        // Réinitialiser les champs d'énergies renouvelables
+                        const energieCheckboxes = energiesRenouvelablesTypes.querySelectorAll('input[type="checkbox"]');
+                        const energieInputs = energiesRenouvelablesTypes.querySelectorAll('input[type="number"]');
+                        energieCheckboxes.forEach(checkbox => checkbox.checked = false);
+                        energieInputs.forEach(input => input.value = '');
+                    }
+                });
+            }
+
             // Recherche des bâtiments
             const searchBatimentInput = document.getElementById('search-batiment');
             if (searchBatimentInput) {
@@ -541,6 +741,43 @@
                                     ${batiment.zone ? `<p class="mb-0"><strong>Zone:</strong> ${batiment.zone}</p>` : ''}
                                     ${batiment.type_batiment === 'Maison' && batiment.nbHabitants ? `<p class="mb-0"><strong>Habitants:</strong> ${batiment.nbHabitants}</p>` : ''}
                                     ${batiment.type_batiment === 'Usine' && batiment.nbEmployes ? `<p class="mb-0"><strong>Employés:</strong> ${batiment.nbEmployes} | <strong>Industrie:</strong> ${batiment.typeIndustrie}</p>` : ''}
+                                    ${batiment.recyclageExiste ? `<p class="mb-0"><strong>♻️ Recyclage:</strong> ${(() => {
+                                        const typeNames = {
+                                            papier: 'Papier/Carton',
+                                            plastique: 'Plastique',
+                                            verre: 'Verre',
+                                            metal: 'Métal',
+                                            organique: 'Déchets Organiques',
+                                            electronique: 'Déchets Électroniques',
+                                            textile: 'Textile',
+                                            bois: 'Bois',
+                                            batteries: 'Batteries',
+                                            autre: 'Autre'
+                                        };
+                                        const produits = batiment.recyclageData.produit_recycle || [];
+                                        const quantites = batiment.recyclageData.quantites || {};
+                                        let produitDetails = [];
+                                        if (Array.isArray(produits)) {
+                                            produits.forEach(produit => {
+                                                const produitLabel = typeNames[produit] || produit;
+                                                const quantite = quantites[produit] ? parseFloat(quantites[produit]) : 0;
+                                                if (quantite > 0) {
+                                                    produitDetails.push(produitLabel + ' (' + quantite + ' kg/mois)');
+                                                } else {
+                                                    produitDetails.push(produitLabel);
+                                                }
+                                            });
+                                        } else if (produits) {
+                                            const produitLabel = typeNames[produits] || produits;
+                                            const quantite = quantites[produits] ? parseFloat(quantites[produits]) : 0;
+                                            if (quantite > 0) {
+                                                produitDetails.push(produitLabel + ' (' + quantite + ' kg/mois)');
+                                            } else {
+                                                produitDetails.push(produitLabel);
+                                            }
+                                        }
+                                        return produitDetails.join(', ');
+                                    })()}</p>` : ''}
                                 </div>
                                 <div class="ms-3">
                                     <button class="btn btn-sm btn-warning me-2 edit-btn" data-id="${batiment.id}">Modifier</button>

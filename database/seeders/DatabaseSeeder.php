@@ -19,5 +19,8 @@ class DatabaseSeeder extends Seeder
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
+
+        // Seed bâtiments de test
+        $this->call(BatimentSeeder::class);
     }
 }

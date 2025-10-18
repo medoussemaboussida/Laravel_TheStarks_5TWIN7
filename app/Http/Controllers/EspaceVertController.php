@@ -140,43 +140,104 @@ class EspaceVertController extends Controller
     {
         $espacesVerts = EspaceVert::orderBy('created_at', 'desc')->get();
         $publications = \App\Models\Publication::with('user')->orderBy('created_at', 'desc')->get();
+        $zonesUrbaines = \App\Models\ZoneUrbaine::orderBy('nom')->get();
+
+        // Liste des gouvernorats de Tunisie
+        $gouvernorats = [
+            'tunis' => 'Tunis',
+            'ariana' => 'Ariana',
+            'ben_arous' => 'Ben Arous',
+            'manouba' => 'La Manouba',
+            'nabeul' => 'Nabeul',
+            'zaghouan' => 'Zaghouan',
+            'bizerte' => 'Bizerte',
+            'beja' => 'Béja',
+            'jendouba' => 'Jendouba',
+            'kef' => 'Le Kef',
+            'siliana' => 'Siliana',
+            'kairouan' => 'Kairouan',
+            'kasserine' => 'Kasserine',
+            'sidi_bouzid' => 'Sidi Bouzid',
+            'sousse' => 'Sousse',
+            'monastir' => 'Monastir',
+            'mahdia' => 'Mahdia',
+            'sfax' => 'Sfax',
+            'gabes' => 'Gabès',
+            'medenine' => 'Médenine',
+            'tataouine' => 'Tataouine',
+            'gbelli' => 'Gafsa',
+            'tozeur' => 'Tozeur',
+            'kebili' => 'Kébili'
+        ];
+
+        // Liste des types de zone urbaine
+        $typesZoneUrbaine = [
+            'zone_industrielle' => 'Zone Industrielle',
+            'quartier_residentiel' => 'Quartier Résidentiel',
+            'centre_ville' => 'Centre Ville'
+        ];
 
         // Recherche et filtrage des bâtiments
         $searchBatiment = $request->input('search_batiment');
+        $filterType = $request->input('filter_type');
+        $filterZone = $request->input('filter_zone');
+        $filterEtat = $request->input('filter_etat');
+
         $queryBatiments = \App\Models\Batiment::with('zone');
 
         if ($searchBatiment) {
-            $queryBatiments->where(function ($q) use ($searchBatiment) {
-                $q->where('type_batiment', 'like', "%$searchBatiment%")
-                  ->orWhere('adresse', 'like', "%$searchBatiment%")
-                  ->orWhereHas('zone', function ($zoneQuery) use ($searchBatiment) {
-                      $zoneQuery->where('nom', 'like', "%$searchBatiment%");
-                  });
-            });
+            $queryBatiments->where('adresse', 'like', "%$searchBatiment%");
         }
 
-        $batiments = $queryBatiments->orderBy('created_at', 'desc')->get();
-        $zones = \App\Models\ZoneUrbaine::all();
-
-        // Si c'est une requête AJAX pour les bâtiments
-        if ($request->ajax() && $request->has('search_batiment')) {
-            return response()->json($batiments->map(function ($batiment) {
-                return [
-                    'id' => $batiment->id,
-                    'type_batiment' => $batiment->type_batiment,
-                    'adresse' => $batiment->adresse,
-                    'emissionCO2' => $batiment->emission_c_o2,
-                    'emissionReelle' => $batiment->emission_reelle,
-                    'pourcentageRenouvelable' => $batiment->pourcentage_renouvelable,
-                    'nbArbresBesoin' => $batiment->nbArbresBesoin,
-                    'zone' => $batiment->zone ? $batiment->zone->nom : null,
-                    'nbHabitants' => $batiment->nb_habitants,
-                    'nbEmployes' => $batiment->nb_employes,
-                    'typeIndustrie' => $batiment->type_industrie,
-                ];
-            }));
+        // Appliquer les filtres
+        if ($filterType) {
+            $queryBatiments->where('type_batiment', $filterType);
         }
 
-        return view('client_page.client', compact('espacesVerts', 'publications', 'batiments', 'zones'));
+        if ($filterZone) {
+            $queryBatiments->where('zone_id', $filterZone);
+        }
+
+        if ($filterEtat) {
+            $queryBatiments->where('zone_id', $filterEtat);
+        }
+
+        $batiments = $queryBatiments->orderBy('created_at', 'desc')->paginate(8);
+
+        // Si c'est une requête AJAX pour les bâtiments (recherche ou pagination)
+        if ($request->ajax() && ($request->has('search_batiment') || $request->has('page') || $request->has('filter_type') || $request->has('filter_zone') || $request->has('filter_etat'))) {
+            return response()->json([
+                'batiments' => $batiments->map(function ($batiment) {
+                    return [
+                        'id' => $batiment->id,
+                        'type_batiment' => $batiment->type_batiment,
+                        'adresse' => $batiment->adresse,
+                        'emissionCO2' => $batiment->emission_c_o2,
+                        'emissionReelle' => $batiment->emission_reelle,
+                        'pourcentageRenouvelable' => $batiment->pourcentage_renouvelable,
+                        'nbArbresBesoin' => $batiment->nbArbresBesoin,
+                        'zone' => $batiment->zone ? $batiment->zone->nom : null,
+                        'nbHabitants' => $batiment->nb_habitants,
+                        'nbEmployes' => $batiment->nb_employes,
+                        'typeIndustrie' => $batiment->type_industrie,
+                        'recyclageExiste' => $batiment->recyclageExiste,
+                        'recyclageData' => $batiment->recyclageData,
+                        'energiesRenouvelablesExiste' => $batiment->energiesRenouvelablesExiste,
+                        'energiesRenouvelablesData' => $batiment->energiesRenouvelablesData,
+                    ];
+                }),
+                'pagination' => [
+                    'current_page' => $batiments->currentPage(),
+                    'last_page' => $batiments->lastPage(),
+                    'per_page' => $batiments->perPage(),
+                    'total' => $batiments->total(),
+                    'from' => $batiments->firstItem(),
+                    'to' => $batiments->lastItem(),
+                ],
+                'csrf_token' => csrf_token()
+            ]);
+        }
+
+        return view('client_page.client', compact('espacesVerts', 'publications', 'batiments', 'zonesUrbaines', 'gouvernorats', 'typesZoneUrbaine'));
     }
 }

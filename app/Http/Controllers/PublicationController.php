@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\NewPublicationNotification;
+use App\Models\User;
 
 class PublicationController extends Controller
 {
@@ -84,7 +87,14 @@ class PublicationController extends Controller
             'titre' => $validated['titre'],
             'image' => $path, // stocke le chemin relatif
             'description' => $validated['description'],
+            'user_id' => auth()->id(), // Ajout de l'ID de l'utilisateur authentifié (admin)
         ]);
+
+        // Envoyer un email à tous les utilisateurs (sauf admin)
+        $users = User::where('role', 'user')->get();
+        foreach ($users as $user) {
+            Mail::to($user->email)->send(new NewPublicationNotification($publication));
+        }
 
         return redirect()->back()->with('success', 'Publication ajoutée avec succès!');
     }

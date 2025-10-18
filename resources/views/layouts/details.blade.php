@@ -558,6 +558,25 @@
       color: var(--text-secondary) !important;
     }
 
+    /* Styles pour les erreurs personnalisées */
+    .custom-error {
+      color: #e3342f;
+      font-size: 0.875rem;
+      margin-top: 0.5rem;
+      display: none;
+      font-weight: 500;
+    }
+
+    .custom-error.show {
+      display: block;
+    }
+
+    .comment-form textarea.invalid,
+    .edit-form textarea.invalid {
+      border-color: #e3342f;
+      box-shadow: 0 0 0 3px rgba(231, 76, 59, 0.1);
+    }
+
     /* Design Responsive Avancé */
     @media (max-width: 992px) {
       .card-body {
@@ -694,6 +713,189 @@
     .comment-card:nth-child(odd) {
       animation-delay: 0.2s;
     }
+
+    /* Styles pour le Modal Personnalisé */
+    .custom-modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(8px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1050;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    .custom-modal {
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      border-radius: var(--border-radius);
+      border: var(--glass-border);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      max-width: 450px;
+      width: 90%;
+      overflow: hidden;
+      animation: modalSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      transform: scale(0.9);
+      transition: transform 0.3s ease;
+    }
+
+    .custom-modal:hover {
+      transform: scale(1);
+    }
+
+    .custom-modal-header {
+      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      padding: 1.5rem 2rem;
+      border-bottom: 1px solid rgba(59, 130, 246, 0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .custom-modal-title {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+    }
+
+    .custom-modal-close {
+      background: none;
+      border: none;
+      font-size: 1.25rem;
+      color: var(--text-secondary);
+      cursor: pointer;
+      padding: 0.5rem;
+      border-radius: 50%;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .custom-modal-close:hover {
+      background: rgba(239, 68, 68, 0.1);
+      color: #dc3545;
+      transform: rotate(90deg);
+    }
+
+    .custom-modal-body {
+      padding: 2rem;
+      text-align: center;
+    }
+
+    .custom-modal-message {
+      font-size: 1.1rem;
+      color: var(--text-primary);
+      margin-bottom: 1.5rem;
+      line-height: 1.6;
+    }
+
+    .custom-modal-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      opacity: 0.8;
+      animation: pulse 2s infinite;
+    }
+
+    .custom-modal-footer {
+      padding: 1.5rem 2rem;
+      background: rgba(248, 250, 252, 0.8);
+      border-top: 1px solid rgba(59, 130, 246, 0.1);
+      display: flex;
+      justify-content: flex-end;
+      gap: 1rem;
+    }
+
+    .custom-btn {
+      border-radius: 50px;
+      padding: 0.75rem 1.5rem;
+      font-weight: 600;
+      transition: var(--transition);
+      border: none;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .custom-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+      transition: left 0.5s;
+    }
+
+    .custom-btn:hover::before {
+      left: 100%;
+    }
+
+    .custom-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes modalSlideIn {
+      from {
+        opacity: 0;
+        transform: scale(0.8) translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+
+    /* Responsive pour le modal */
+    @media (max-width: 576px) {
+      .custom-modal {
+        margin: 1rem;
+        width: calc(100% - 2rem);
+      }
+
+      .custom-modal-header,
+      .custom-modal-body,
+      .custom-modal-footer {
+        padding: 1rem 1.5rem;
+      }
+
+      .custom-modal-title {
+        font-size: 1.1rem;
+      }
+
+      .custom-modal-message {
+        font-size: 1rem;
+      }
+
+      .custom-modal-footer {
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+
+      .custom-btn {
+        width: 100%;
+        justify-content: center;
+      }
+    }
   </style>
 </head>
 <body>
@@ -749,12 +951,13 @@
             <h3 class="mb-4 gradient-text">Commentaires</h3>
             <!-- Formulaire d'ajout de commentaire (si connecté) -->
             @if(auth()->check())
-              <form action="{{ route('publications.comment', $publication->id) }}" method="POST" class="comment-form">
+              <form action="{{ route('publications.comment', $publication->id) }}" method="POST" id="comment-form" class="comment-form">
                 @csrf
                 <div class="avatar-section">
                   <img src="{{ asset('img/undraw_profile_1.svg') }}" alt="Votre avatar" class="rounded-circle">
                   <div class="flex-grow-1">
-                    <textarea name="content" class="form-control w-100" rows="3" placeholder="Partagez vos pensées sur cette publication... Soyez constructif et respectueux !" required></textarea>
+                    <textarea name="content" class="form-control w-100" rows="3" placeholder="Partagez vos pensées sur cette publication... Soyez constructif et respectueux !" id="comment-content"></textarea>
+                    <div id="comment-error" class="custom-error"></div>
                     @error('content')
                       <div class="text-danger small mt-1">{{ $message }}</div>
                     @enderror
@@ -786,13 +989,9 @@
                       <button class="btn btn-outline-primary" type="button" onclick="toggleEditForm({{ $comment->id }})" title="Modifier">
                         <i class="bi bi-pencil-fill"></i>
                       </button>
-                      <form action="{{ route('commentaires.destroy', $comment->id) }}" method="POST" onsubmit="return confirm('Supprimer ce commentaire ?');" class="d-inline">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn btn-outline-danger" title="Supprimer">
-                          <i class="bi bi-trash-fill"></i>
-                        </button>
-                      </form>
+                      <button type="button" class="btn btn-outline-danger" onclick="showDeleteModal({{ $comment->id }})" title="Supprimer">
+                        <i class="bi bi-trash-fill"></i>
+                      </button>
                     </div>
                   @endif
                 </div>
@@ -801,7 +1000,8 @@
                     @csrf
                     @method('PATCH')
                     <div class="input-group d-flex flex-column flex-md-row gap-2">
-                      <textarea name="content" class="form-control flex-grow-1" rows="2" required>{{ $comment->content }}</textarea>
+                      <textarea name="content" class="form-control flex-grow-1" rows="2" id="edit-content-{{ $comment->id }}">{{ $comment->content }}</textarea>
+                      <div id="edit-error-{{ $comment->id }}" class="custom-error"></div>
                       <button type="submit" class="btn btn-success flex-shrink-0">Enregistrer</button>
                       <button type="button" class="btn btn-secondary flex-shrink-0" onclick="toggleEditForm({{ $comment->id }})">Annuler</button>
                     </div>
@@ -818,11 +1018,145 @@
   </div>
 </div>
 
+<!-- Modal de confirmation de suppression personnalisé -->
+<div id="deleteCommentModal" class="custom-modal-overlay" style="display: none;">
+  <div class="custom-modal">
+    <div class="custom-modal-header">
+      <h5 class="custom-modal-title">
+        <i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>
+        Confirmation de suppression
+      </h5>
+      <button type="button" class="custom-modal-close" onclick="hideDeleteModal()">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+    <div class="custom-modal-body">
+      <p class="custom-modal-message">
+        Êtes-vous sûr de vouloir supprimer ce commentaire ? Cette action est irréversible.
+      </p>
+      <div class="custom-modal-icon">
+        <i class="bi bi-trash3-fill text-danger"></i>
+      </div>
+    </div>
+    <div class="custom-modal-footer">
+      <button type="button" class="btn btn-secondary custom-btn" onclick="hideDeleteModal()">
+        <i class="bi bi-x-circle me-2"></i>Annuler
+      </button>
+      <button type="button" class="btn btn-danger custom-btn" id="confirmDeleteBtn" onclick="confirmDeleteComment()">
+        <i class="bi bi-check-circle me-2"></i>Supprimer
+      </button>
+    </div>
+  </div>
+</div>
+
 <script>
+let currentDeleteCommentId = null;
+
 function toggleEditForm(commentId) {
   var form = document.getElementById('edit-form-' + commentId);
+  var textarea = document.getElementById('edit-content-' + commentId);
+  var errorDiv = document.getElementById('edit-error-' + commentId);
   form.style.display = form.style.display === 'none' ? 'block' : 'none';
+  if (form.style.display === 'none') {
+    // Reset state when hiding
+    textarea.classList.remove('invalid');
+    errorDiv.classList.remove('show');
+  }
 }
+
+function showDeleteModal(commentId) {
+  currentDeleteCommentId = commentId;
+  document.getElementById('deleteCommentModal').style.display = 'flex';
+  document.body.style.overflow = 'hidden'; // Prevent background scroll
+}
+
+function hideDeleteModal() {
+  document.getElementById('deleteCommentModal').style.display = 'none';
+  document.body.style.overflow = 'auto'; // Restore scroll
+  currentDeleteCommentId = null;
+}
+
+function confirmDeleteComment() {
+  if (currentDeleteCommentId) {
+    // Create and submit the form
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = `/commentaires/${currentDeleteCommentId}`;
+    form.style.display = 'none';
+
+    // Add CSRF token
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    const csrfInput = document.createElement('input');
+    csrfInput.type = 'hidden';
+    csrfInput.name = '_token';
+    csrfInput.value = csrfToken;
+    form.appendChild(csrfInput);
+
+    // Add method override
+    const methodInput = document.createElement('input');
+    methodInput.type = 'hidden';
+    methodInput.name = '_method';
+    methodInput.value = 'DELETE';
+    form.appendChild(methodInput);
+
+    document.body.appendChild(form);
+    form.submit();
+  }
+}
+
+// Custom validation function
+function validateComment(content, errorDivId, textareaId) {
+  const contentValue = content.trim();
+  const errorDiv = document.getElementById(errorDivId);
+  const textarea = document.getElementById(textareaId);
+
+  // Reset previous state
+  textarea.classList.remove('invalid');
+  errorDiv.classList.remove('show');
+
+  if (contentValue === '') {
+    errorDiv.textContent = 'Le commentaire est obligatoire.';
+    errorDiv.classList.add('show');
+    textarea.classList.add('invalid');
+    return false;
+  }
+
+  if (contentValue.length > 1000) {
+    errorDiv.textContent = 'Le commentaire ne peut pas dépasser 1000 caractères.';
+    errorDiv.classList.add('show');
+    textarea.classList.add('invalid');
+    return false;
+  }
+
+  return true;
+}
+
+// Event listeners for forms
+document.addEventListener('DOMContentLoaded', function() {
+  // Main comment form
+  const commentForm = document.getElementById('comment-form');
+  if (commentForm) {
+    commentForm.addEventListener('submit', function(e) {
+      const content = document.getElementById('comment-content').value;
+      const isValid = validateComment(content, 'comment-error', 'comment-content');
+      if (!isValid) {
+        e.preventDefault();
+      }
+    });
+  }
+
+  // Edit forms (dynamic)
+  document.querySelectorAll('.edit-form').forEach(function(form) {
+    form.addEventListener('submit', function(e) {
+      const commentId = form.id.split('-')[2]; // Extract ID from id="edit-form-{id}"
+      const content = document.getElementById('edit-content-' + commentId).value;
+      const isValid = validateComment(content, 'edit-error-' + commentId, 'edit-content-' + commentId);
+      if (!isValid) {
+        e.preventDefault();
+      }
+    });
+  });
+});
 
 // Function to toggle like
 function toggleLike(publicationId) {

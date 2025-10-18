@@ -59,6 +59,14 @@ pipeline {
                     url: 'https://github.com/medoussemaboussida/Laravel_TheStarks_5TWIN7.git'
             }
         }
+        stage('Install Composer') {
+            steps {
+                sh '''
+                    curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+                    composer --version
+                '''
+            }
+        }
         stage('Composer Install') {
             steps {
                 sh 'composer install --no-dev --optimize-autoloader'

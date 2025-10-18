@@ -59,6 +59,14 @@ pipeline {
                     url: 'https://github.com/medoussemaboussida/Laravel_TheStarks_5TWIN7.git'
             }
         }
+        stage('Unit Tests') {
+            steps {
+                echo 'Running unit tests for tests/Unit/ExampleTest.php...'
+                sh 'composer install --no-progress --no-interaction'
+                sh 'php artisan test tests/Unit/ExampleTest.php'
+                echo 'Unit tests completed.'
+            }
+        }
         stage("SonarQube Analysis") {
             steps {
                 script {

@@ -62,25 +62,32 @@ pipeline {
         stage('Setup SonarScanner') {
             steps {
                 sh '''
-                    # Install Java 17 if not present
-                    sudo apt-get update
-                    sudo apt-get install -y openjdk-17-jre-headless wget unzip || true
+                    # Install supporting tools without sudo
+                    apt-get update || true
+                    apt-get install -y wget unzip || true
                     
-                    # Download and install SonarScanner CLI (latest: 7.3.0.5189)
+                    # Check if Java is available; if not, download portable Adoptium JDK 17
+                    if ! command -v java &> /dev/null; then
+                        echo "Java not found, downloading portable JDK 17..."
+                        wget https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.12%2B7/OpenJDK17U-jre_x64_linux_hotspot_17.0.12_7.tar.gz
+                        tar -xzf OpenJDK17U-jre_x64_linux_hotspot_17.0.12_7.tar.gz
+                        export JAVA_HOME=$(pwd)/jdk-17.0.12+7
+                        export PATH=$JAVA_HOME/bin:$PATH
+                    fi
+                    
+                    # Download SonarScanner CLI to workspace (no sudo)
                     wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-7.3.0.5189-linux-x64.zip
                     unzip sonar-scanner-cli-7.3.0.5189-linux-x64.zip
-                    sudo mv sonar-scanner-7.3.0.5189-linux /opt/sonar-scanner
-                    sudo ln -s /opt/sonar-scanner/bin/sonar-scanner /usr/local/bin/sonar-scanner
                     
-                    # Verify
-                    sonar-scanner -h
+                    # Verify (using local Java if downloaded)
+                    ./sonar-scanner-7.3.0.5189-linux/bin/sonar-scanner -h
                 '''
             }
         }
         stage("SonarQube Analysis") {
             steps {
                 withSonarQubeEnv('scanner') {
-                    sh 'sonar-scanner'
+                    sh './sonar-scanner-7.3.0.5189-linux/bin/sonar-scanner'
                 }
             }
         }

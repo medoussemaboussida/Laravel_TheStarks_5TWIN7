@@ -279,11 +279,14 @@
                         <!-- Formulaire de création -->
                         <div class="card mb-4">
                             <div class="card-header" style="background: #1cc88a; color: white;">
-                                <h5 class="mb-0">Ajouter un Nouveau Bâtiment</h5>
+                                <button class="btn btn-link text-white p-0 w-100 text-start text-decoration-none" data-bs-toggle="collapse" data-bs-target="#batiment-form-collapse" aria-expanded="false" aria-controls="batiment-form-collapse">
+                                    <h5 class="mb-0"><i class="bi bi-plus-circle me-2" id="batiment-form-icon"></i>Ajouter un Nouveau Bâtiment</h5>
+                                </button>
                             </div>
-                            <div class="card-body">
-                                <form action="{{ route('batiments.store') }}" method="POST" id="batiment-form">
-                                    @csrf
+                            <div class="collapse" id="batiment-form-collapse">
+                                <div class="card-body">
+                                    <form action="{{ route('batiments.store') }}" method="POST" id="batiment-form">
+                                        @csrf
                                     <div class="row">
                                         <div class="col-md-6 mb-3">
                                             <label for="type_batiment" class="form-label">Type de Bâtiment</label>
@@ -485,6 +488,17 @@
                                                 <div class="col-md-6 mb-3">
                                                     <label class="form-label">Quantités Recyclées (kg/mois)</label>
                                                     <div id="quantites-container">
+                                                        <!-- Inputs cachés pour tous les produits possibles -->
+                                                        <input type="hidden" name="recyclage[quantites][papier]" value="0">
+                                                        <input type="hidden" name="recyclage[quantites][plastique]" value="0">
+                                                        <input type="hidden" name="recyclage[quantites][verre]" value="0">
+                                                        <input type="hidden" name="recyclage[quantites][metal]" value="0">
+                                                        <input type="hidden" name="recyclage[quantites][organique]" value="0">
+                                                        <input type="hidden" name="recyclage[quantites][electronique]" value="0">
+                                                        <input type="hidden" name="recyclage[quantites][textile]" value="0">
+                                                        <input type="hidden" name="recyclage[quantites][bois]" value="0">
+                                                        <input type="hidden" name="recyclage[quantites][batteries]" value="0">
+                                                        <input type="hidden" name="recyclage[quantites][autre]" value="0">
                                                         <small class="form-text text-muted">Sélectionnez d'abord les produits pour voir les champs de quantité</small>
                                                     </div>
                                                 </div>
@@ -493,6 +507,7 @@
                                 </form>
                             </div>
                         </div>
+                    </div>
 
                         <!-- Liste des bâtiments -->
                         <div class="card">
@@ -501,78 +516,78 @@
                             </div>
                             <div class="card-body batiments-list">
                                 @forelse($batiments as $batiment)
-                                    <div class="batiment-item border-bottom pb-3 mb-3" data-id="{{ $batiment->id }}">
-                                        <div class="d-flex justify-content-between align-items-start">
-                                            <div class="flex-grow-1">
-                                                <h6 class="mb-2">{{ $batiment->type_batiment }} - {{ $batiment->adresse }}</h6>
-                                                <p class="mb-1"><strong>Émission CO2:</strong> {{ $batiment->emissionCO2 }} t/an</p>
-                                                <p class="mb-1"><strong>Émission Réelle:</strong> {{ $batiment->emissionReelle }} t/an</p>
-                                                <p class="mb-1"><strong>% Renouvelable:</strong> {{ $batiment->pourcentageRenouvelable }}%</p>
-                                                <p class="mb-1"><strong>Arbres Besoin:</strong> {{ $batiment->nbArbresBesoin }}</p>
-                                                @if($batiment->zone)
-                                                    <p class="mb-0"><strong>Zone:</strong> {{ $batiment->zone->nom }}</p>
-                                                @endif
-                                                @if($batiment->type_batiment === 'Maison' && $batiment->nbHabitants)
-                                                    <p class="mb-0"><strong>Habitants:</strong> {{ $batiment->nbHabitants }}</p>
-                                                @elseif($batiment->type_batiment === 'Usine' && $batiment->nbEmployes)
-                                                    <p class="mb-0"><strong>Employés:</strong> {{ $batiment->nbEmployes }} | <strong>Industrie:</strong> {{ $batiment->typeIndustrie }}</p>
-                                                @endif
-                                                @if($batiment->recyclageExiste)
-                                                    <p class="mb-0"><strong>♻️ Recyclage:</strong>
-                                                        @php
-                                                            $recyclageData = $batiment->recyclageData;
-                                                            $produits = $recyclageData['produit_recycle'] ?? [];
-                                                            $quantites = $recyclageData['quantites'] ?? [];
-                                                            $typeNames = [
-                                                                'papier' => 'Papier/Carton',
-                                                                'plastique' => 'Plastique',
-                                                                'verre' => 'Verre',
-                                                                'metal' => 'Métal',
-                                                                'organique' => 'Déchets Organiques',
-                                                                'electronique' => 'Déchets Électroniques',
-                                                                'textile' => 'Textile',
-                                                                'bois' => 'Bois',
-                                                                'batteries' => 'Batteries',
-                                                                'autre' => 'Autre'
-                                                            ];
-                                                            $produitDetails = [];
-                                                            if (is_array($produits)) {
-                                                                foreach ($produits as $produit) {
-                                                                    $produitLabel = $typeNames[$produit] ?? $produit;
-                                                                    $quantite = isset($quantites[$produit]) ? (float)$quantites[$produit] : 0;
-                                                                    if ($quantite > 0) {
-                                                                        $produitDetails[] = $produitLabel . ' (' . $quantite . ' kg/mois)';
-                                                                    } else {
-                                                                        $produitDetails[] = $produitLabel;
-                                                                    }
+                                    <div class="card mb-3">
+                                        <div class="card-body" data-id="{{ $batiment->id }}">
+                                            <div class="d-flex justify-content-between align-items-start">
+                                                <div class="flex-grow-1">
+                                                    <h6 class="mb-2">{{ $batiment->type_zone_urbaine }} - {{ $batiment->type_batiment }}</h6>
+                                                    <p class="mb-1"><strong>Adresse:</strong> {{ $batiment->adresse}}</p>
+                                                    <p class="mb-1"><strong>Émission CO2:</strong> {{ $batiment->emissionCO2 }} t/an</p>
+                                                    <p class="mb-1"><strong>Émission Réelle:</strong> {{ $batiment->emission_reelle }} t/an</p>
+                                                    <p class="mb-1"><strong>Pourcentage Renouvelable:</strong> {{ $batiment->pourcentage_renouvelable }}%</p>
+                                                    <p class="mb-1"><strong>Arbres Besoin:</strong> {{ $batiment->nbArbresBesoin }}</p>
+                                                    @if($batiment->zone)
+                                                        <p class="mb-0"><strong>Zone:</strong> {{ $batiment->zone->nom }}</p>
+                                                    @endif
+                                                    @if($batiment->type_batiment === 'Maison' && $batiment->nbHabitants)
+                                                        <p class="mb-0"><strong>Habitants:</strong> {{ $batiment->nbHabitants }}</p>
+                                                    @elseif($batiment->type_batiment === 'Usine' && $batiment->nbEmployes)
+                                                        <p class="mb-0"><strong>Employés:</strong> {{ $batiment->nbEmployes }} | <strong>Industrie:</strong> {{ $batiment->type_industrie }}</p>
+                                                    @endif
+                                                    @if($batiment->recyclageExiste)
+                                                        <p class="mb-0"><strong>♻️ Recyclage:</strong>
+                                                            @php
+                                                                // Afficher le JSON brut pour débogage
+                                                                echo json_encode($batiment->recyclageData);
+                                                            @endphp
+                                                        </p>
+                                                    @endif
+                                                    @if($batiment->energiesRenouvelablesExiste)
+                                                        <p class="mb-0"><strong>🌱 Énergies Renouvelables:</strong>
+                                                            @php
+                                                                $energiesData = $batiment->energiesRenouvelablesData;
+                                                                $energiesDetails = [];
+                                                                
+                                                                if (!empty($energiesData['panneaux_solaires']['check']) && !empty($energiesData['panneaux_solaires']['nb'])) {
+                                                                    $energiesDetails[] = 'Panneaux Solaires (' . $energiesData['panneaux_solaires']['nb'] . ' kW)';
                                                                 }
-                                                            } elseif ($produits) {
-                                                                $produitLabel = $typeNames[$produits] ?? $produits;
-                                                                $quantite = isset($quantites[$produits]) ? (float)$quantites[$produits] : 0;
-                                                                if ($quantite > 0) {
-                                                                    $produitDetails[] = $produitLabel . ' (' . $quantite . ' kg/mois)';
-                                                                } else {
-                                                                    $produitDetails[] = $produitLabel;
+                                                                if (!empty($energiesData['voitures_electriques']['check']) && !empty($energiesData['voitures_electriques']['nb'])) {
+                                                                    $energiesDetails[] = 'Voitures Électriques (' . $energiesData['voitures_electriques']['nb'] . ' km/mois)';
                                                                 }
-                                                            }
-                                                            echo implode(', ', $produitDetails);
-                                                        @endphp
-                                                    </p>
-                                                @endif
-                                            </div>
-                                            <div class="ms-3">
-                                                <button class="btn btn-sm btn-warning me-2 edit-btn" data-id="{{ $batiment->id }}">Modifier</button>
-                                                <form action="{{ route('batiments.destroy', $batiment->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce bâtiment ?')">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="btn btn-sm btn-danger">Supprimer</button>
-                                                </form>
+                                                                if (!empty($energiesData['camions_electriques']['check']) && !empty($energiesData['camions_electriques']['nb'])) {
+                                                                    $energiesDetails[] = 'Camions Électriques (' . $energiesData['camions_electriques']['nb'] . ' km/mois)';
+                                                                }
+                                                                if (!empty($energiesData['energie_eolienne']['check']) && !empty($energiesData['energie_eolienne']['nb'])) {
+                                                                    $energiesDetails[] = 'Énergie Éolienne (' . $energiesData['energie_eolienne']['nb'] . ' MW)';
+                                                                }
+                                                                if (!empty($energiesData['energie_hydroelectrique']['check']) && !empty($energiesData['energie_hydroelectrique']['nb'])) {
+                                                                    $energiesDetails[] = 'Énergie Hydroélectrique (' . $energiesData['energie_hydroelectrique']['nb'] . ' TWh)';
+                                                                }
+                                                                
+                                                                echo implode(', ', $energiesDetails);
+                                                            @endphp
+                                                        </p>
+                                                    @endif
+                                                </div>
+                                                <div class="ms-3">
+                                                    <button class="btn btn-sm btn-warning me-2 edit-btn" data-id="{{ $batiment->id }}">Modifier</button>
+                                                    <form action="{{ route('batiments.destroy', $batiment->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce bâtiment ?')">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="btn btn-sm btn-danger">Supprimer</button>
+                                                    </form>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 @empty
                                     <p class="text-center text-muted">Aucun bâtiment enregistré pour le moment.</p>
                                 @endforelse
+                            </div>
+
+                            <!-- Pagination -->
+                            <div class="d-flex justify-content-center mt-4">
+                                {{ $batiments->links() }}
                             </div>
                         </div>
                     </div>
@@ -618,6 +633,20 @@
                 }
             });
 
+            // Gestion du bouton collapse du formulaire
+            const batimentFormCollapse = document.getElementById('batiment-form-collapse');
+            const batimentFormIcon = document.getElementById('batiment-form-icon');
+
+            if (batimentFormCollapse && batimentFormIcon) {
+                batimentFormCollapse.addEventListener('show.bs.collapse', function () {
+                    batimentFormIcon.className = 'bi bi-dash-circle me-2';
+                });
+
+                batimentFormCollapse.addEventListener('hide.bs.collapse', function () {
+                    batimentFormIcon.className = 'bi bi-plus-circle me-2';
+                });
+            }
+
             // Gestion du recyclage
             const recyclageExiste = document.getElementById('recyclage-existe');
             const recyclageTypes = document.getElementById('recyclage-types');
@@ -639,25 +668,45 @@
 
             function updateQuantitesInputs() {
                 const selectedOptions = Array.from(produitRecycle.selectedOptions);
-                quantitesContainer.innerHTML = '';
+                const quantiteInputs = quantitesContainer.querySelectorAll('input[type="number"]');
+                const hiddenInputs = quantitesContainer.querySelectorAll('input[type="hidden"]');
 
-                if (selectedOptions.length === 0) {
-                    quantitesContainer.innerHTML = '<small class="form-text text-muted">Sélectionnez d\'abord les produits pour voir les champs de quantité</small>';
-                    return;
-                }
+                // Cacher tous les inputs visibles
+                quantiteInputs.forEach(input => {
+                    input.style.display = 'none';
+                });
 
+                // Montrer seulement les inputs pour les produits sélectionnés
                 selectedOptions.forEach(option => {
                     const produitValue = option.value;
-                    const produitLabel = typeNames[produitValue] || produitValue;
+                    const input = quantitesContainer.querySelector(`input[name="recyclage[quantites][${produitValue}]"]`);
+                    if (input) {
+                        input.type = 'number';
+                        input.style.display = 'block';
+                        input.placeholder = 'Quantité en kg/mois';
+                        input.className = 'form-control form-control-sm';
+                        input.min = '0';
+                        input.step = '0.1';
 
-                    const div = document.createElement('div');
-                    div.className = 'mb-2';
-                    div.innerHTML = `
-                        <label class="form-label">${produitLabel}</label>
-                        <input type="number" name="recyclage[quantites][${produitValue}]" class="form-control form-control-sm" placeholder="Quantité en kg/mois" min="0" step="0.1">
-                    `;
-                    quantitesContainer.appendChild(div);
+                        // Créer le label si nécessaire
+                        let label = input.previousElementSibling;
+                        if (!label || label.tagName !== 'LABEL') {
+                            label = document.createElement('label');
+                            label.className = 'form-label';
+                            label.textContent = typeNames[produitValue] || produitValue;
+                            input.parentNode.insertBefore(label, input);
+                        }
+                    }
                 });
+
+                // Si aucun produit sélectionné, montrer le message
+                if (selectedOptions.length === 0) {
+                    const message = quantitesContainer.querySelector('small');
+                    if (message) message.style.display = 'block';
+                } else {
+                    const message = quantitesContainer.querySelector('small');
+                    if (message) message.style.display = 'none';
+                }
             }
 
             if (recyclageExiste && recyclageTypes) {
@@ -669,7 +718,16 @@
                         recyclageTypes.style.display = 'none';
                         // Réinitialiser les champs de recyclage
                         Array.from(produitRecycle.options).forEach(option => option.selected = false);
-                        quantitesContainer.innerHTML = '<small class="form-text text-muted">Sélectionnez d\'abord les produits pour voir les champs de quantité</small>';
+                        // Cacher tous les inputs de quantité et remettre à 0
+                        const allQuantiteInputs = quantitesContainer.querySelectorAll('input[name^="recyclage[quantites]"]');
+                        allQuantiteInputs.forEach(input => {
+                            input.value = '0';
+                            if (input.type === 'number') {
+                                input.style.display = 'none';
+                            }
+                        });
+                        const message = quantitesContainer.querySelector('small');
+                        if (message) message.style.display = 'block';
                     }
                 });
 
@@ -711,7 +769,7 @@
                         })
                             .then(response => response.json())
                             .then(data => {
-                                updateBatimentsList(data);
+                                updateBatimentsList(data.batiments);
                             })
                             .catch(error => console.error('Erreur lors de la recherche:', error));
                     }, 350);
@@ -730,62 +788,78 @@
                 let html = '';
                 batiments.forEach(batiment => {
                     html += `
-                        <div class="batiment-item border-bottom pb-3 mb-3" data-id="${batiment.id}">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-2">${batiment.type_batiment} - ${batiment.adresse}</h6>
-                                    <p class="mb-1"><strong>Émission CO2:</strong> ${batiment.emissionCO2} t/an</p>
-                                    <p class="mb-1"><strong>Émission Réelle:</strong> ${batiment.emissionReelle} t/an</p>
-                                    <p class="mb-1"><strong>% Renouvelable:</strong> ${batiment.pourcentageRenouvelable}%</p>
-                                    <p class="mb-1"><strong>Arbres Besoin:</strong> ${batiment.nbArbresBesoin}</p>
-                                    ${batiment.zone ? `<p class="mb-0"><strong>Zone:</strong> ${batiment.zone}</p>` : ''}
-                                    ${batiment.type_batiment === 'Maison' && batiment.nbHabitants ? `<p class="mb-0"><strong>Habitants:</strong> ${batiment.nbHabitants}</p>` : ''}
-                                    ${batiment.type_batiment === 'Usine' && batiment.nbEmployes ? `<p class="mb-0"><strong>Employés:</strong> ${batiment.nbEmployes} | <strong>Industrie:</strong> ${batiment.typeIndustrie}</p>` : ''}
-                                    ${batiment.recyclageExiste ? `<p class="mb-0"><strong>♻️ Recyclage:</strong> ${(() => {
-                                        const typeNames = {
-                                            papier: 'Papier/Carton',
-                                            plastique: 'Plastique',
-                                            verre: 'Verre',
-                                            metal: 'Métal',
-                                            organique: 'Déchets Organiques',
-                                            electronique: 'Déchets Électroniques',
-                                            textile: 'Textile',
-                                            bois: 'Bois',
-                                            batteries: 'Batteries',
-                                            autre: 'Autre'
-                                        };
-                                        const produits = batiment.recyclageData.produit_recycle || [];
-                                        const quantites = batiment.recyclageData.quantites || {};
-                                        let produitDetails = [];
-                                        if (Array.isArray(produits)) {
-                                            produits.forEach(produit => {
-                                                const produitLabel = typeNames[produit] || produit;
-                                                const quantite = quantites[produit] ? parseFloat(quantites[produit]) : 0;
-                                                if (quantite > 0) {
-                                                    produitDetails.push(produitLabel + ' (' + quantite + ' kg/mois)');
-                                                } else {
-                                                    produitDetails.push(produitLabel);
-                                                }
-                                            });
-                                        } else if (produits) {
-                                            const produitLabel = typeNames[produits] || produits;
-                                            const quantite = quantites[produits] ? parseFloat(quantites[produits]) : 0;
-                                            if (quantite > 0) {
-                                                produitDetails.push(produitLabel + ' (' + quantite + ' kg/mois)');
-                                            } else {
-                                                produitDetails.push(produitLabel);
+                        <div class="card mb-3">
+                            <div class="card-body" data-id="${batiment.id}">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-2">${batiment.type_batiment} - ${batiment.adresse}</h6>
+                                        <p class="mb-1"><strong>Émission CO2:</strong> ${batiment.emissionCO2} t/an</p>
+                                        <p class="mb-1"><strong>Émission Réelle:</strong> ${batiment.emissionReelle} t/an</p>
+                                        <p class="mb-1"><strong>% Renouvelable:</strong> ${batiment.pourcentageRenouvelable}%</p>
+                                        <p class="mb-1"><strong>Arbres Besoin:</strong> ${batiment.nbArbresBesoin}</p>
+                                        ${batiment.zone ? `<p class="mb-0"><strong>Zone:</strong> ${batiment.zone}</p>` : ''}
+                                        ${batiment.type_batiment === 'Maison' && batiment.nbHabitants ? `<p class="mb-0"><strong>Habitants:</strong> ${batiment.nbHabitants}</p>` : ''}
+                                        ${batiment.type_batiment === 'Usine' && batiment.nbEmployes ? `<p class="mb-0"><strong>Employés:</strong> ${batiment.nbEmployes} | <strong>Industrie:</strong> ${batiment.typeIndustrie}</p>` : ''}
+                                        ${batiment.recyclageExiste ? `<p class="mb-0"><strong>♻️ Recyclage:</strong> ${(() => {
+                                            const typeNames = {
+                                                papier: 'Papier/Carton',
+                                                plastique: 'Plastique',
+                                                verre: 'Verre',
+                                                metal: 'Métal',
+                                                organique: 'Déchets Organiques',
+                                                electronique: 'Déchets Électroniques',
+                                                textile: 'Textile',
+                                                bois: 'Bois',
+                                                batteries: 'Batteries',
+                                                autre: 'Autre'
+                                            };
+                                            const produits = batiment.recyclageData.produit_recycle || [];
+                                            const quantites = batiment.recyclageData.quantites || {};
+                                            let produitDetails = [];
+                                            if (Array.isArray(produits) && produits.length > 0) {
+                                                produits.forEach(produit => {
+                                                    const produitLabel = typeNames[produit] || produit;
+                                                    const quantite = quantites[produit] ? parseFloat(quantites[produit]) : 0;
+                                                    if (quantite > 0) {
+                                                        produitDetails.push(produitLabel + ' (' + quantite + ' kg/mois)');
+                                                    } else {
+                                                        produitDetails.push(produitLabel);
+                                                    }
+                                                });
                                             }
-                                        }
-                                        return produitDetails.join(', ');
-                                    })()}</p>` : ''}
-                                </div>
-                                <div class="ms-3">
-                                    <button class="btn btn-sm btn-warning me-2 edit-btn" data-id="${batiment.id}">Modifier</button>
-                                    <form action="/batiments/${batiment.id}" method="POST" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce bâtiment ?')">
-                                        <input type="hidden" name="_method" value="DELETE">
-                                        <input type="hidden" name="_token" value="${document.querySelector('meta[name=csrf-token]').getAttribute('content')}">
-                                        <button type="submit" class="btn btn-sm btn-danger">Supprimer</button>
-                                    </form>
+                                            return produitDetails.join(', ');
+                                        })()}</p>` : ''}
+                                        ${batiment.energiesRenouvelablesExiste ? `<p class="mb-0"><strong>🌱 Énergies Renouvelables:</strong> ${(() => {
+                                            const energiesData = batiment.energiesRenouvelablesData || {};
+                                            let energiesDetails = [];
+                                            
+                                            if (energiesData.panneaux_solaires && energiesData.panneaux_solaires.check && energiesData.panneaux_solaires.nb) {
+                                                energiesDetails.push('Panneaux Solaires (' + energiesData.panneaux_solaires.nb + ' kW)');
+                                            }
+                                            if (energiesData.voitures_electriques && energiesData.voitures_electriques.check && energiesData.voitures_electriques.nb) {
+                                                energiesDetails.push('Voitures Électriques (' + energiesData.voitures_electriques.nb + ' km/mois)');
+                                            }
+                                            if (energiesData.camions_electriques && energiesData.camions_electriques.check && energiesData.camions_electriques.nb) {
+                                                energiesDetails.push('Camions Électriques (' + energiesData.camions_electriques.nb + ' km/mois)');
+                                            }
+                                            if (energiesData.energie_eolienne && energiesData.energie_eolienne.check && energiesData.energie_eolienne.nb) {
+                                                energiesDetails.push('Énergie Éolienne (' + energiesData.energie_eolienne.nb + ' MW)');
+                                            }
+                                            if (energiesData.energie_hydroelectrique && energiesData.energie_hydroelectrique.check && energiesData.energie_hydroelectrique.nb) {
+                                                energiesDetails.push('Énergie Hydroélectrique (' + energiesData.energie_hydroelectrique.nb + ' TWh)');
+                                            }
+                                            
+                                            return energiesDetails.join(', ');
+                                        })()}</p>` : ''}
+                                    </div>
+                                    <div class="ms-3">
+                                        <button class="btn btn-sm btn-warning me-2 edit-btn" data-id="${batiment.id}">Modifier</button>
+                                        <form action="/batiments/${batiment.id}" method="POST" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce bâtiment ?')">
+                                            <input type="hidden" name="_method" value="DELETE">
+                                            <input type="hidden" name="_token" value="${document.querySelector('meta[name=csrf-token]').getAttribute('content')}">
+                                            <button type="submit" class="btn btn-sm btn-danger">Supprimer</button>
+                                        </form>
+                                    </div>
                                 </div>
                             </div>
                         </div>

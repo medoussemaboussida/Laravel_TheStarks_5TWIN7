@@ -226,14 +226,6 @@ class EspaceVertController extends Controller
                         'energiesRenouvelablesData' => $batiment->energiesRenouvelablesData,
                     ];
                 }),
-                'pagination' => [
-                    'current_page' => $batiments->currentPage(),
-                    'last_page' => $batiments->lastPage(),
-                    'per_page' => $batiments->perPage(),
-                    'total' => $batiments->total(),
-                    'from' => $batiments->firstItem(),
-                    'to' => $batiments->lastItem(),
-                ],
                 'csrf_token' => csrf_token()
             ]);
         }

@@ -116,7 +116,7 @@ class BatimentController extends Controller
             ];
         }
 
-        $b->recyclage_data = $recyclageData ? json_encode($recyclageData) : null;
+        $b->recyclage_data = $recyclageData;
 
         $b->save();
 
@@ -217,11 +217,12 @@ class BatimentController extends Controller
             $recyclageData = [
                 'existe' => true,
                 'produit_recycle' => $request->recyclage['produit_recycle'] ?? [],
-                'quantite_recyclee' => (float)($request->recyclage['quantite_recyclee'] ?? 0)
+                // Keep same structure as store(): 'quantites' (array), possibly empty
+                'quantites' => $request->recyclage['quantites'] ?? []
             ];
         }
 
-        $b->recyclage_data = $recyclageData ? json_encode($recyclageData) : null;
+        $b->recyclage_data = $recyclageData;
 
         $b->save();
 
@@ -329,14 +330,24 @@ class BatimentController extends Controller
         // --- Traitement des données de recyclage ---
         $recyclageData = null;
         if ($request->has('recyclage') && isset($request->recyclage['existe']) && $request->recyclage['existe'] == 1) {
+            // Debug temporaire - décommenter pour voir les données reçues
+            // dd($request->recyclage);
+
+            // Initialiser les quantités avec 0 pour tous les produits recyclés
+            $quantites = [];
+            $produitsRecycles = $request->recyclage['produit_recycle'] ?? [];
+            foreach ($produitsRecycles as $produit) {
+                $quantites[$produit] = isset($request->recyclage['quantites'][$produit]) ? (float)$request->recyclage['quantites'][$produit] : 0;
+            }
+
             $recyclageData = [
                 'existe' => true,
-                'produit_recycle' => $request->recyclage['produit_recycle'] ?? [],
-                'quantites' => $request->recyclage['quantites'] ?? []
+                'produit_recycle' => $produitsRecycles,
+                'quantites' => $quantites
             ];
         }
 
-        $b->recyclage_data = $recyclageData ? json_encode($recyclageData) : null;
+        $b->recyclage_data = $recyclageData;
 
         // --- Traitement des données d'énergies renouvelables ---
         $energiesRenouvelablesData = [];
@@ -351,7 +362,7 @@ class BatimentController extends Controller
             }
         }
 
-        $b->energies_renouvelables_data = $energiesRenouvelablesData;
+    $b->energies_renouvelables_data = !empty($energiesRenouvelablesData) ? json_encode($energiesRenouvelablesData) : null;
 
         $b->save();
 

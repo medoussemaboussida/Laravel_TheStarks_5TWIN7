@@ -102,10 +102,28 @@ class Batiment extends Model
         $this->attributes['type_industrie'] = $value;
     }
 
-    // Accesseur pour les données de recyclage
+    // Accesseur pour les données de recyclage (toujours retourner un tableau)
     public function getRecyclageDataAttribute()
     {
-        return $this->attributes['recyclage_data'] ? json_decode($this->attributes['recyclage_data'], true) : null;
+        return $this->recyclage_data ?? [];
+    }
+
+    // Mutateur pour s'assurer que les données de recyclage sont correctement formatées
+    public function setRecyclageDataAttribute($value)
+    {
+        if (is_array($value)) {
+            // S'assurer que quantites est toujours un tableau avec des valeurs numériques
+            if (isset($value['quantites']) && is_array($value['quantites'])) {
+                foreach ($value['quantites'] as $key => $quantite) {
+                    $value['quantites'][$key] = (float) $quantite;
+                }
+            }
+            $this->attributes['recyclage_data'] = json_encode($value);
+        } elseif (is_string($value)) {
+            $this->attributes['recyclage_data'] = $value;
+        } else {
+            $this->attributes['recyclage_data'] = null;
+        }
     }
 
     // Accesseur pour vérifier si le recyclage existe
@@ -127,9 +145,9 @@ class Batiment extends Model
         $this->attributes['energies_renouvelables_data'] = json_encode($value);
     }
 
-    public function getEnergiesRenouvelablesDataAttribute($value)
+    public function getEnergiesRenouvelablesDataAttribute()
     {
-        return json_decode($value, true) ?? [];
+        return $this->attributes['energies_renouvelables_data'] ? json_decode($this->attributes['energies_renouvelables_data'], true) : [];
     }
 
     // Accesseur pour le type de zone urbaine formaté

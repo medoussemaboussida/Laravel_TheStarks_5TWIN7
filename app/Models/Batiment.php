@@ -105,8 +105,10 @@ class Batiment extends Model
     // Accesseur pour les données de recyclage (toujours retourner un tableau)
     public function getRecyclageDataAttribute()
     {
-        return $this->recyclage_data ?? [];
-    }
+    return $this->attributes['recyclage_data']
+        ? json_decode($this->attributes['recyclage_data'], true)
+        : [];
+}
 
     // Mutateur pour s'assurer que les données de recyclage sont correctement formatées
     public function setRecyclageDataAttribute($value)
@@ -145,10 +147,27 @@ class Batiment extends Model
         $this->attributes['energies_renouvelables_data'] = json_encode($value);
     }
 
-    public function getEnergiesRenouvelablesDataAttribute()
-    {
-        return $this->attributes['energies_renouvelables_data'] ? json_decode($this->attributes['energies_renouvelables_data'], true) : [];
+    public function getEnergiesRenouvelablesDataAttribute($value)
+{
+    // Si Laravel te renvoie déjà un array
+    if (is_array($value)) {
+        return $value;
     }
+
+    // Si c’est une chaîne JSON doublement encodée, on décode deux fois
+    if (is_string($value)) {
+        $decoded = json_decode($value, true);
+
+        // Si le premier decode donne encore une string JSON, on redécode
+        if (is_string($decoded)) {
+            $decoded = json_decode($decoded, true);
+        }
+
+        return is_array($decoded) ? $decoded : [];
+    }
+
+    return [];
+}
 
     // Accesseur pour le type de zone urbaine formaté
     public function getTypeZoneUrbaineFormattedAttribute()

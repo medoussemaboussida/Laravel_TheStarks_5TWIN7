@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\User;
 
 class Batiment extends Model
 {
@@ -25,6 +26,7 @@ class Batiment extends Model
         'type_zone_urbaine',
         'recyclage_data',
         'energies_renouvelables_data',
+        'user_id',
     ];
 
     protected $casts = [
@@ -40,6 +42,11 @@ class Batiment extends Model
     public function zone(): BelongsTo
     {
         return $this->belongsTo(ZoneUrbaine::class, 'zone_id');
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 
     public function setEmissionCO2Attribute($value)

@@ -30,9 +30,10 @@ Route::middleware(['auth'])->group(function () {
 Route::resource('espace', EspaceVertController::class)->middleware('admin');
 Route::resource('rapport-besoins', RapportBesoinController::class);
 Route::get('/client', [EspaceVertController::class, 'displayClient'])->name('client.index');
+Route::get('/client/batiment/{id}', [BatimentController::class, 'getBatimentData'])->name('client.batiment.data');
 // Front-office batiment routes (create / update / delete from client page)
 Route::post('/batiments', [BatimentController::class, 'store'])->name('batiments.store');
-Route::patch('/batiments/{batiment}', [BatimentController::class, 'update'])->name('batiments.update');
+Route::post('/batiments/{batiment}', [BatimentController::class, 'update'])->name('batiments.update');
 Route::delete('/batiments/{id}', [BatimentController::class, 'destroyFrontoffice'])->name('batiments.destroy');
 Route::get('/rapports/{id}', [RapportBesoinController::class, 'indexByEspace'])->name('rapport-besoins.index-by-espace');
 // Route pour modifier un commentaire

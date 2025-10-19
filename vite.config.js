@@ -17,8 +17,8 @@ export default defineConfig({
                 'resources/js/demo/chart-pie-demo.js', // Chart demos
                 'resources/clientPageAssets/css/main.css',
                 'resources/clientPageAssets/js/main.js',
-                'resources/clientPageAssets/vendor/**/*.js',
-                'resources/clientPageAssets/vendor/**/*.css',
+                'resources/clientPageAssets/vendor/aos/aos.css',
+                'resources/clientPageAssets/vendor/aos/aos.js',
             ],
             refresh: true,
         }),

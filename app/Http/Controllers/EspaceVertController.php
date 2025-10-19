@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\EspaceVert;
+use Illuminate\Support\Facades\Http;
 class EspaceVertController extends Controller
 {
     /**
@@ -133,6 +134,63 @@ class EspaceVertController extends Controller
             return redirect()->route('espace.index')->with('error', 'Échec de la suppression. Veuillez réessayer. Error: ' . $e->getMessage());
         }
     }
+    //chatbot
+      public function chatbotPage()
+    {
+        return view('admin_dashboard.chatbot');
+    }
+public function chat(Request $request)
+{
+    $message = $request->input('message');
+    if (!$message) {
+        return response()->json(['error' => 'Message is required'], 400);
+    }
+
+    try {
+        $response = Http::timeout(60)->post('http://localhost:11434/api/chat', [
+            'model' => 'llama3.2:3b',
+            'messages' => [
+                ['role' => 'system', 'content' => 'You are a helpful chatbot for Espace Vert management. Provide information about green spaces, their types, states, and needs. Only answer within this scope.'],
+                ['role' => 'user', 'content' => $message],
+            ],
+        ]);
+
+        \Log::info('Ollama Raw Response', ['body' => $response->body()]);
+
+        if ($response->failed()) {
+            \Log::error('Ollama Failed', ['status' => $response->status(), 'body' => $response->body()]);
+            return response()->json(['error' => 'Failed to connect to Ollama API. Status: ' . $response->status()], 500);
+        }
+
+        $lines = array_filter(explode("\n", trim($response->body())), 'trim');
+        $defaultReply = 'Je suis là pour vous aider sur les espaces verts. Pouvez-vous préciser votre question ?';
+        $fullContent = '';
+
+        foreach ($lines as $line) {
+            $data = json_decode($line, true);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                if (isset($data['message']['content'])) {
+                    $fullContent .= $data['message']['content'];
+                } elseif (isset($data['content'])) {
+                    $fullContent .= $data['content'];
+                } elseif (is_string($data)) {
+                    $fullContent .= $data;
+                }
+            } else {
+                \Log::warning('JSON decode failed', ['line' => $line, 'error' => json_last_error_msg()]);
+            }
+        }
+
+        $reply = trim($fullContent) ?: $defaultReply;
+
+        return response()->json(['reply' => $reply]);
+
+    } catch (\Exception $e) {
+        \Log::error('Chat Error: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+        return response()->json(['error' => 'Une erreur est survenue lors du traitement de votre demande.'], 500);
+    }
+}
+
        /**
      * Display client page with Espace Vert data.
      */

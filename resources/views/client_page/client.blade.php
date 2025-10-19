@@ -534,40 +534,56 @@
                                                     @elseif($batiment->type_batiment === 'Usine' && $batiment->nbEmployes)
                                                         <p class="mb-0"><strong>Employés:</strong> {{ $batiment->nbEmployes }} | <strong>Industrie:</strong> {{ $batiment->type_industrie }}</p>
                                                     @endif
-                                                    @if($batiment->recyclageExiste)
-                                                        <p class="mb-0"><strong>♻️ Recyclage:</strong>
-                                                            @php
-                                                                // Afficher le JSON brut pour débogage
-                                                                echo json_encode($batiment->recyclageData);
-                                                            @endphp
+                                                   @if($batiment->recyclageExiste)
+                                                                @php
+                                                                    $recyclage = $batiment->recyclage_data ?? [];
+                                                                    $produits = $recyclage['produit_recycle'] ?? [];
+                                                                    $quantites = $recyclage['quantites'] ?? [];
+
+                                                                    $details = [];
+                                                                    foreach ($produits as $produit) {
+                                                                        $qte = $quantites[$produit] ?? null;
+                                                                        if ($qte && $qte > 0) {
+                                                                            $details[] = ucfirst($produit) . ' (' . $qte . ' kg/mois)';
+                                                                        } else {
+                                                                            $details[] = ucfirst($produit);
+                                                                        }
+                                                                    }
+                                                                @endphp
+
+                                                                <p class="mb-0">
+                                                                    <strong>♻️ Recyclage :</strong> {{ count($details) ? implode(', ', $details) : 'Aucun détail disponible' }}
+                                                                </p>
+                                                            @endif
+                                                    {{-- 🌱 Énergies Renouvelables --}}
+                                                    @if(!empty($batiment->energies_renouvelables_data))
+                                                        @php
+                                                            $energies = $batiment->energies_renouvelables_data ?? [];
+                                                            $details = [];
+
+                                                            $labels = [
+                                                                'panneaux_solaires' => ['label' => 'Panneaux Solaires', 'unite' => 'kW'],
+                                                                'voitures_electriques' => ['label' => 'Voitures Électriques', 'unite' => 'km/mois'],
+                                                                'camions_electriques' => ['label' => 'Camions Électriques', 'unite' => 'km/mois'],
+                                                                'energie_eolienne' => ['label' => 'Énergie Éolienne', 'unite' => 'MW'],
+                                                                'energie_hydroelectrique' => ['label' => 'Énergie Hydroélectrique', 'unite' => 'TWh'],
+                                                            ];
+
+                                                            foreach ($labels as $key => $info) {
+                                                                if (!empty($energies[$key]['check']) && isset($energies[$key]['nb'])) {
+                                                                    $nb = $energies[$key]['nb'];
+                                                                    $details[] = $info['label'] . ' (' . $nb . ' ' . $info['unite'] . ')';
+                                                                }
+                                                            }
+                                                        @endphp
+
+                                                        <p class="mb-0">
+                                                            <strong>🌱 Énergies Renouvelables :</strong>
+                                                            {{ count($details) ? implode(', ', $details) : 'Aucune donnée disponible' }}
                                                         </p>
-                                                    @endif
-                                                    @if($batiment->energiesRenouvelablesExiste)
-                                                        <p class="mb-0"><strong>🌱 Énergies Renouvelables:</strong>
-                                                            @php
-                                                                $energiesData = $batiment->energiesRenouvelablesData;
-                                                                $energiesDetails = [];
-                                                                
-                                                                if (!empty($energiesData['panneaux_solaires']['check']) && !empty($energiesData['panneaux_solaires']['nb'])) {
-                                                                    $energiesDetails[] = 'Panneaux Solaires (' . $energiesData['panneaux_solaires']['nb'] . ' kW)';
-                                                                }
-                                                                if (!empty($energiesData['voitures_electriques']['check']) && !empty($energiesData['voitures_electriques']['nb'])) {
-                                                                    $energiesDetails[] = 'Voitures Électriques (' . $energiesData['voitures_electriques']['nb'] . ' km/mois)';
-                                                                }
-                                                                if (!empty($energiesData['camions_electriques']['check']) && !empty($energiesData['camions_electriques']['nb'])) {
-                                                                    $energiesDetails[] = 'Camions Électriques (' . $energiesData['camions_electriques']['nb'] . ' km/mois)';
-                                                                }
-                                                                if (!empty($energiesData['energie_eolienne']['check']) && !empty($energiesData['energie_eolienne']['nb'])) {
-                                                                    $energiesDetails[] = 'Énergie Éolienne (' . $energiesData['energie_eolienne']['nb'] . ' MW)';
-                                                                }
-                                                                if (!empty($energiesData['energie_hydroelectrique']['check']) && !empty($energiesData['energie_hydroelectrique']['nb'])) {
-                                                                    $energiesDetails[] = 'Énergie Hydroélectrique (' . $energiesData['energie_hydroelectrique']['nb'] . ' TWh)';
-                                                                }
-                                                                
-                                                                echo implode(', ', $energiesDetails);
-                                                            @endphp
-                                                        </p>
-                                                    @endif
+@endif
+
+
                                                 </div>
                                                 <div class="ms-3">
                                                     <button class="btn btn-sm btn-warning me-2 edit-btn" data-id="{{ $batiment->id }}">Modifier</button>

@@ -64,6 +64,90 @@
         .status-bar.mauvais {
             background-color: #dc3545; /* Red for "mauvais" */
         }
+
+        /* Grille compacte pour les bâtiments - remplacée par défilement horizontal */
+        .batiments-grid {
+            overflow-x: auto;
+            white-space: nowrap;
+            padding: 20px 0;
+            display: flex;
+            gap: 15px;
+        }
+
+        .batiments-grid .batiment-item {
+            display: inline-block;
+            min-width: 320px;
+            width: fit-content;
+            max-width: 500px;
+            flex-shrink: 0;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .batiments-grid .batiment-item:hover {
+            transform: translateY(-2px);
+        }
+
+        .batiments-grid .card {
+            border: 1px solid rgba(0,0,0,0.08);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            transition: all 0.2s ease;
+            min-height: auto;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            white-space: normal;
+        }
+
+        .batiments-grid .card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-color: rgba(28, 200, 138, 0.2);
+        }
+
+        /* Responsive adjustments pour le défilement horizontal */
+        @media (max-width: 576px) {
+            .batiments-grid .batiment-item {
+                min-width: 280px;
+                width: fit-content;
+                max-width: 400px;
+            }
+        }
+
+        /* Pagination styling */
+        .pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.pagination .page-item {
+    margin: 0 4px;
+}
+
+.pagination .page-link {
+    color: #008B8B;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 6px 12px;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.pagination .page-link:hover {
+    background-color: #008B8B;
+    color: white;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #008B8B;
+    color: white;
+    border-color: #008B8B;
+}
+
+.pagination i {
+    font-size: 14px; /* <--- réduit la taille des flèches */
+    vertical-align: middle;
+}
+
     </style>
 </head>
 <body class="index-page">
@@ -513,12 +597,28 @@
                         <!-- Liste des bâtiments -->
                         <div class="card">
                             <div class="card-header" style="background: #1cc88a; color: white;">
-                                <h5 class="mb-0">Liste des Bâtiments</h5>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">Liste des Bâtiments</h5>
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="d-flex align-items-center">
+                                            <label for="filter-type-batiment" class="me-2 mb-0" style="font-size: 0.9rem;">Type:</label>
+                                            <select id="filter-type-batiment" class="form-select form-select-sm" style="width: 120px;">
+                                                <option value="">Tous</option>
+                                                <option value="Maison">Maison</option>
+                                                <option value="Usine">Usine</option>
+                                            </select>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <label for="search-adresse" class="me-2 mb-0" style="font-size: 0.9rem;">Adresse:</label>
+                                            <input type="text" id="search-adresse" class="form-control form-control-sm" placeholder="Tapez une adresse..." style="width: 200px;">
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                             <div class="card-body batiments-list">
-                                <div class="row">
+                                <div class="batiments-grid">
                                     @forelse($batiments as $batiment)
-                                        <div class="col-md-6 col-lg-4 mb-3">
+                                        <div class="batiment-item">
                                             <div class="card h-100" style="font-size: 0.9rem;">
                                                 <div class="card-body p-3" data-id="{{ $batiment->id }}">
                                                     <div class="d-flex justify-content-between align-items-start">
@@ -588,7 +688,7 @@
 
 
                                                         </div>
-                                                        <div class="ms-2">
+                                                        <div class="ms-2 d-flex align-items-center">
                                                             @if($batiment->user_id === auth()->id())
                                                             <button class="btn btn-sm btn-warning me-1 edit-btn" data-id="{{ $batiment->id }}" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;" title="Modifier">
                                                                 <i class="bi bi-pencil"></i>
@@ -607,16 +707,15 @@
                                             </div>
                                         </div>
                                     @empty
-                                        <div class="col-12">
-                                            <p class="text-center text-muted">Aucun bâtiment enregistré pour le moment.</p>
+                                        <div class="batiment-item">
+                                            <div class="card h-100">
+                                                <div class="card-body p-3 text-center">
+                                                    <p class="text-muted mb-0">Aucun bâtiment enregistré pour le moment.</p>
+                                                </div>
+                                            </div>
                                         </div>
                                     @endforelse
                                 </div>
-                            </div>
-
-                            <!-- Pagination -->
-                            <div class="d-flex justify-content-center mt-4">
-                                {{ $batiments->links() }}
                             </div>
                         </div>
 
@@ -911,6 +1010,51 @@
                 batimentFormCollapse.addEventListener('hide.bs.collapse', function () {
                     batimentFormIcon.className = 'bi bi-plus-circle me-2';
                 });
+            }
+
+            // Gestion des filtres
+            const searchAdresse = document.getElementById('search-adresse');
+            const filterTypeBatiment = document.getElementById('filter-type-batiment');
+            const batimentsCards = document.querySelectorAll('.batiments-list .card');
+
+            function filterBatiments() {
+                const searchTerm = searchAdresse ? searchAdresse.value.toLowerCase().trim() : '';
+                const typeFilter = filterTypeBatiment ? filterTypeBatiment.value : '';
+
+                // Faire une requête AJAX pour rechercher côté serveur
+                const url = new URL(window.location.href);
+                if (searchTerm) {
+                    url.searchParams.set('search_batiment', searchTerm);
+                } else {
+                    url.searchParams.delete('search_batiment');
+                }
+                if (typeFilter) {
+                    url.searchParams.set('filter_type', typeFilter);
+                } else {
+                    url.searchParams.delete('filter_type');
+                }
+
+                fetch(url.toString(), {
+                    method: 'GET',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Mettre à jour la liste des bâtiments avec les résultats filtrés
+                    updateBatimentsList(data.batiments);
+                })
+                .catch(error => console.error('Erreur lors de la recherche:', error));
+            }
+
+            if (searchAdresse) {
+                searchAdresse.addEventListener('input', filterBatiments);
+            }
+
+            if (filterTypeBatiment) {
+                filterTypeBatiment.addEventListener('change', filterBatiments);
             }
 
             // Gestion du recyclage
@@ -1326,14 +1470,14 @@
                 if (!container) return;
 
                 if (batiments.length === 0) {
-                    container.innerHTML = '<div class="row"><div class="col-12"><p class="text-center text-muted">Aucun bâtiment trouvé pour cette recherche.</p></div></div>';
+                    container.innerHTML = '<div class="batiments-grid"><div class="batiment-item"><div class="card h-100"><div class="card-body p-3 text-center text-muted">Aucun bâtiment trouvé pour cette recherche.</div></div></div></div>';
                     return;
                 }
 
-                let html = '<div class="row">';
+                let html = '<div class="batiments-grid">';
                 batiments.forEach(batiment => {
                     html += `
-                        <div class="col-md-6 col-lg-4 mb-3">
+                        <div class="batiment-item">
                             <div class="card h-100" style="font-size: 0.9rem;">
                                 <div class="card-body p-3" data-id="${batiment.id}">
                                     <div class="d-flex justify-content-between align-items-start">
@@ -1398,7 +1542,7 @@
                                                 return energiesDetails.join(', ');
                                             })()}</p>` : ''}
                                         </div>
-                                        <div class="ms-2">
+                                        <div class="ms-2 d-flex align-items-center">
                                             <button class="btn btn-sm btn-warning me-1 edit-btn" data-id="${batiment.id}" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;" title="Modifier">
                                                 <i class="bi bi-pencil"></i>
                                             </button>

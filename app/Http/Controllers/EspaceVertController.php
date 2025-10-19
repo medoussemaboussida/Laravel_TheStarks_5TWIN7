@@ -244,7 +244,14 @@ public function chat(Request $request)
         $queryBatiments = \App\Models\Batiment::with('zone');
 
         if ($searchBatiment) {
-            $queryBatiments->where('adresse', 'like', "%$searchBatiment%");
+            $queryBatiments->where(function ($q) use ($searchBatiment) {
+                $q->where('adresse', 'like', "%$searchBatiment%")
+                  ->orWhere('type_batiment', 'like', "%$searchBatiment%")
+                  ->orWhere('type_zone_urbaine', 'like', "%$searchBatiment%")
+                  ->orWhereHas('zone', function ($zoneQuery) use ($searchBatiment) {
+                      $zoneQuery->where('nom', 'like', "%$searchBatiment%");
+                  });
+            });
         }
 
         // Appliquer les filtres
@@ -260,7 +267,7 @@ public function chat(Request $request)
             $queryBatiments->where('zone_id', $filterEtat);
         }
 
-        $batiments = $queryBatiments->orderBy('created_at', 'desc')->paginate(8);
+        $batiments = $queryBatiments->orderBy('created_at', 'desc')->get();
 
         // Si c'est une requête AJAX pour les bâtiments (recherche ou pagination)
         if ($request->ajax() && ($request->has('search_batiment') || $request->has('page') || $request->has('filter_type') || $request->has('filter_zone') || $request->has('filter_etat'))) {

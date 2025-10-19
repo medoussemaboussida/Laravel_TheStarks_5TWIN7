@@ -29,6 +29,9 @@ Route::middleware(['auth'])->group(function () {
 });
 Route::resource('espace', EspaceVertController::class)->middleware('admin');
 Route::resource('rapport-besoins', RapportBesoinController::class);
+// Chatbot route
+Route::get('/chatbot', [EspaceVertController::class, 'chatbotPage'])->name('chatbot');
+Route::post('/api/chat', [EspaceVertController::class, 'chat'])->name('espace.chat');
 Route::get('/client', [EspaceVertController::class, 'displayClient'])->name('client.index');
 Route::get('/client/batiment/{id}', [BatimentController::class, 'getBatimentData'])->name('client.batiment.data');
 // Front-office batiment routes (create / update / delete from client page)

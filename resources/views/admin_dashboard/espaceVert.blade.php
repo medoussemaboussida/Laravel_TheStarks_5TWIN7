@@ -51,7 +51,10 @@
                             </button>
                             <a href="{{ route('rapport-besoins.index') }}" class="d-none d-sm-inline-block btn btn-sm btn-info shadow-sm">
                                 <i class="fas fa-eye fa-sm text-white-50"></i> Voir Rapports
-                            </a>
+                            </a>&nbsp;&nbsp;&nbsp;
+                                  <a href="{{ route('chatbot') }}" class="d-none d-sm-inline-block btn btn-sm btn-success shadow-sm">
+        <i class="fas fa-robot fa-sm text-white-50"></i> Chatbot
+    </a>
                         </div>
                     </div>
 

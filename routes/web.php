@@ -14,7 +14,17 @@ Route::get('/', function () {
 
 Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/adminpublication', [PublicationController::class, 'index'])->name('admin.publications.index');
+
+    // Gestion des bâtiments - Admin
+    Route::get('/adminbatiment', [BatimentController::class, 'index'])->name('backoffice.indexbatiment');
+    Route::get('/adminbatiment/create', [BatimentController::class, 'create'])->name('backoffice.createbatiment');
+    Route::post('/adminbatiment', [BatimentController::class, 'storeAdmin'])->name('backoffice.storebatiment');
+    Route::get('/adminbatiment/{batiment}', [BatimentController::class, 'show'])->name('backoffice.showbatiment');
+    Route::get('/adminbatiment/{batiment}/edit', [BatimentController::class, 'edit'])->name('backoffice.editbatiment');
+    Route::put('/adminbatiment/{batiment}', [BatimentController::class, 'updateAdmin'])->name('backoffice.updatebatiment');
+    Route::delete('/adminbatiment/{batiment}', [BatimentController::class, 'destroyAdmin'])->name('backoffice.destroybatiment');
 });
+
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', function () {

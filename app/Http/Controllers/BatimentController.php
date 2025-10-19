@@ -16,7 +16,10 @@ class BatimentController extends Controller
     // Affiche la vue frontoffice pour /batiments
     public function index()
     {
-        if (request()->is('backoffice/indexbatiment')) {
+        if (request()->routeIs('backoffice.indexbatiment')) {
+            $batiments = Batiment::with(['zone', 'user'])->paginate(10);
+            return view('admin_dashboard.batiment', compact('batiments'));
+        } elseif (request()->is('backoffice/indexbatiment')) {
             $batiments = Batiment::all();
             $zones = ZoneUrbaine::all();
             return view('admin.batiments.index', compact('batiments', 'zones'));
@@ -81,7 +84,7 @@ class BatimentController extends Controller
             }
         }
 
-        $b->emissionCO2 = $emission;
+        $b->emission_c_o2 = $emission;
 
         // --- Calcul pourcentage renouvelable ---
         $pourcentageRenouvelable = 0.0;
@@ -104,7 +107,7 @@ class BatimentController extends Controller
 
         // Limiter le pourcentage à 100%
         $pourcentageRenouvelable = min($pourcentageRenouvelable, 100.0);
-        $b->pourcentageRenouvelable = $pourcentageRenouvelable;
+        $b->pourcentage_renouvelable = $pourcentageRenouvelable;
 
         // --- Traitement des données de recyclage ---
         $recyclageData = null;
@@ -127,7 +130,157 @@ class BatimentController extends Controller
     public function create()
     {
         $zones = ZoneUrbaine::all();
-        return view('batiments.create', compact('zones'));
+        $typesZoneUrbaine = [
+            'zone_industrielle' => 'Zone Industrielle',
+            'quartier_residentiel' => 'Quartier Résidentiel',
+            'centre_ville' => 'Centre Ville'
+        ];
+        return view('admin_dashboard.batiment_create', compact('zones', 'typesZoneUrbaine'));
+    }
+
+    public function storeAdmin(Request $request)
+    {
+        $request->validate([
+            'type_batiment' => 'required|in:Maison,Usine',
+            'adresse' => 'required|string|max:255',
+            'zone_id' => 'required|exists:zone_urbaines,id',
+        ]);
+
+        $b = new Batiment();
+
+        // --- Associer la zone choisie ---
+        if ($request->zone_id) {
+            $zone = ZoneUrbaine::find($request->zone_id);
+            if ($zone) {
+                $b->zone()->associate($zone);
+            }
+        }
+
+        // --- Type de bâtiment ---
+        $b->type_batiment = $request->type_batiment;
+        $b->adresse = $request->adresse;
+        $b->type_zone_urbaine = $request->type_zone_urbaine;
+
+        if ($request->type_batiment === 'Maison') {
+            $b->nb_habitants = $request->nbHabitants;
+            $b->nb_employes = null;
+            $b->type_industrie = null;
+        } elseif ($request->type_batiment === 'Usine') {
+            $b->nb_habitants = null;
+            $b->nb_employes = $request->nbEmployes;
+            $b->type_industrie = $request->typeIndustrie;
+        }
+
+        // --- FACTEURS CO2 (t/an par unité mensuelle) ---
+        $factors = [
+            'voiture'      => 1.44,  // t/an per km/mois (0.12 kg/km * 12)
+            'moto'         => 0.96,  // t/an per km/mois (0.08 kg/km * 12)
+            'bus'          => 0.6,   // t/an per km/mois (0.05 kg/km * 12)
+            'avion'        => 1.8,   // t/an per km/mois (0.15 kg/km * 12)
+            'fumeur'       => 0.24,  // t/an per pack/mois (0.02 t/an per pack * 12)
+            'electricite'  => 0.0048, // t/an per kWh/mois (0.0004 t/kWh * 12)
+            'gaz'          => 0.0024, // t/an per kWh/mois (0.0002 t/kWh * 12)
+            'clim'         => 0.0048, // t/an per kWh/mois
+            'machine'      => 0.0048, // assume kWh/mois
+            'camion'       => 3.6,   // t/an per km/mois (0.3 kg/km * 12)
+        ];
+
+        // --- Calcul émission CO2 ---
+        $emission = 0.0;
+        if ($request->has('emissions')) {
+            foreach ($request->emissions as $key => $data) {
+                if (isset($data['check']) && $data['check'] == 1) {
+                    $nb = (int)($data['nb'] ?? 0);
+                    $emission += $nb * ($factors[$key] ?? 0);
+                }
+            }
+        }
+
+        $b->emission_c_o2 = $emission;
+
+        // --- Calcul consommation énergétique (kWh/an) ---
+        $consommationKwhAn = 0.0;
+        if ($request->has('emissions')) {
+            $electricite = (float)($request->emissions['electricite']['nb'] ?? 0);
+            $gaz = (float)($request->emissions['gaz']['nb'] ?? 0);
+            $clim = (float)($request->emissions['clim']['nb'] ?? 0);
+            $machine = (float)($request->emissions['machine']['nb'] ?? 0);
+            $consommationKwhAn = ($electricite + $gaz + $clim + $machine) * 12;
+        }
+
+        // --- Calcul énergie renouvelable (kWh/an) ---
+        $energieRenouvelableKwhAn = 0.0;
+        if ($request->has('energies_renouvelables')) {
+            foreach ($request->energies_renouvelables as $key => $data) {
+                if (isset($data['check']) && $data['check'] == 1) {
+                    $nb = (float)($data['nb'] ?? 0);
+                    if ($key === 'panneaux_solaires') {
+                        // nb = kW produits/mois, kWh/an = nb * 24 * 30 * 12
+                        $energieRenouvelableKwhAn += $nb * 24 * 30 * 12;
+                    } elseif ($key === 'energie_eolienne') {
+                        // nb = MW produits/mois, kWh/an = nb * 1000 * 24 * 30 * 12
+                        $energieRenouvelableKwhAn += $nb * 1000 * 24 * 30 * 12;
+                    } elseif ($key === 'energie_hydroelectrique') {
+                        // nb = TWh produits/an, kWh/an = nb * 1000000
+                        $energieRenouvelableKwhAn += $nb * 1000000;
+                    } elseif ($key === 'voitures_electriques') {
+                        // nb = km/mois, assume 0.15 kWh/km, kWh/an = nb * 0.15 * 12
+                        $energieRenouvelableKwhAn += $nb * 0.15 * 12;
+                    } elseif ($key === 'camions_electriques') {
+                        // nb = km/mois, assume 1 kWh/km, kWh/an = nb * 1 * 12
+                        $energieRenouvelableKwhAn += $nb * 1 * 12;
+                    }
+                }
+            }
+        }
+
+        // --- Calcul pourcentage renouvelable ---
+        $pourcentageRenouvelable = 0.0;
+        if ($consommationKwhAn > 0) {
+            $pourcentageRenouvelable = min(($energieRenouvelableKwhAn / $consommationKwhAn) * 100, 100.0);
+        }
+        $b->pourcentage_renouvelable = $pourcentageRenouvelable;
+
+        // --- Traitement des données de recyclage ---
+        $recyclageData = null;
+        if ($request->has('recyclage') && isset($request->recyclage['existe']) && $request->recyclage['existe'] == 1) {
+            // Initialiser les quantités avec 0 pour tous les produits recyclés
+            $quantites = [];
+            $produitsRecycles = $request->recyclage['produit_recycle'] ?? [];
+            foreach ($produitsRecycles as $produit) {
+                $quantites[$produit] = isset($request->recyclage['quantites'][$produit]) ? (float)$request->recyclage['quantites'][$produit] : 0;
+            }
+
+            $recyclageData = [
+                'existe' => true,
+                'produit_recycle' => $produitsRecycles,
+                'quantites' => $quantites
+            ];
+        }
+
+        $b->recyclage_data = $recyclageData;
+
+        // --- Traitement des données d'énergies renouvelables ---
+        $energiesRenouvelablesData = [];
+        if ($request->has('energies_renouvelables')) {
+            foreach ($request->energies_renouvelables as $key => $data) {
+                if (isset($data['check']) && $data['check'] == 1) {
+                    $energiesRenouvelablesData[$key] = [
+                        'check' => true,
+                        'nb' => (float)($data['nb'] ?? 0)
+                    ];
+                }
+            }
+        }
+
+        $b->energies_renouvelables_data = !empty($energiesRenouvelablesData) ? json_encode($energiesRenouvelablesData) : null;
+
+        // Assigner l'utilisateur connecté comme propriétaire du bâtiment
+        $b->user_id = auth()->id();
+
+        $b->save();
+
+        return redirect()->route('backoffice.indexbatiment')->with('success', 'Bâtiment créé avec succès.');
     }
 public function update(Request $request, Batiment $batiment)
 {
@@ -334,7 +487,7 @@ public function update(Request $request, Batiment $batiment)
             }
         }
 
-        $b->emissionCO2 = $emission;
+        $b->emission_c_o2 = $emission;
 
         // --- Calcul consommation énergétique (kWh/an) ---
         $consommationKwhAn = 0.0;
@@ -377,7 +530,7 @@ public function update(Request $request, Batiment $batiment)
         if ($consommationKwhAn > 0) {
             $pourcentageRenouvelable = min(($energieRenouvelableKwhAn / $consommationKwhAn) * 100, 100.0);
         }
-        $b->pourcentageRenouvelable = $pourcentageRenouvelable;
+        $b->pourcentage_renouvelable = $pourcentageRenouvelable;
 
         // --- Traitement des données de recyclage ---
         $recyclageData = null;
@@ -428,8 +581,9 @@ public function update(Request $request, Batiment $batiment)
 
    public function edit($id)
 {
-    $batiment = Batiment::findOrFail($id);
-    return view('batiments.edit', compact('batiment'));
+    $batiment = Batiment::with('zone')->findOrFail($id);
+    $zones = ZoneUrbaine::all();
+    return view('admin_dashboard.batiment_edit', compact('batiment', 'zones'));
 }
 
     // Suppression depuis le backoffice
@@ -502,5 +656,35 @@ public function update(Request $request, Batiment $batiment)
                 'recyclage_data' => $batiment->recyclage_data ?? [],
             ]
         ]);
+    }
+
+    // Admin methods
+    public function show($id)
+    {
+        $batiment = Batiment::with(['zone', 'user'])->findOrFail($id);
+        return view('admin_dashboard.batiment_show', compact('batiment'));
+    }
+
+    public function updateAdmin(Request $request, $id)
+    {
+        $batiment = Batiment::findOrFail($id);
+
+        $request->validate([
+            'type_batiment' => 'required|in:Maison,Usine',
+            'adresse' => 'required|string|max:255',
+            'zone_id' => 'required|exists:zone_urbaines,id',
+        ]);
+
+        $batiment->update($request->only(['type_batiment', 'adresse', 'zone_id']));
+
+        return redirect()->route('backoffice.indexbatiment')->with('success', 'Bâtiment mis à jour avec succès.');
+    }
+
+    public function destroyAdmin($id)
+    {
+        $batiment = Batiment::findOrFail($id);
+        $batiment->delete();
+
+        return redirect()->route('backoffice.indexbatiment')->with('success', 'Bâtiment supprimé avec succès.');
     }
 }

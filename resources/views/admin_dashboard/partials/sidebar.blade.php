@@ -17,6 +17,10 @@
             <a class="nav-link" href="/adminpublication">
             <i class="fas fa-tree"></i>
             <span>Gestion Publication</span></a>
+            <a class="nav-link" href="/adminbatiment">
+                <i class="fas fa-building"></i>
+                <span>Gestion Bâtiments</span>
+            </a>
     </li>
     <!-- Divider -->
     <hr class="sidebar-divider">

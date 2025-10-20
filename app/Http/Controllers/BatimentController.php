@@ -14,10 +14,23 @@ class BatimentController extends Controller
     }
 
     // Affiche la vue frontoffice pour /batiments
-    public function index()
+    public function index(Request $request)
     {
         if (request()->routeIs('backoffice.indexbatiment')) {
-            $batiments = Batiment::with(['zone', 'user'])->paginate(10);
+            $query = Batiment::with(['zone', 'user']);
+
+            // Recherche par adresse
+            if ($request->filled('search')) {
+                $search = $request->search;
+                $query->where('adresse', 'LIKE', '%' . $search . '%');
+            }
+
+            // Filtre par type de bâtiment
+            if ($request->filled('type')) {
+                $query->where('type_batiment', $request->type);
+            }
+
+            $batiments = $query->paginate(10)->appends($request->query());
             return view('admin_dashboard.batiment', compact('batiments'));
         } elseif (request()->is('backoffice/indexbatiment')) {
             $batiments = Batiment::all();
@@ -630,15 +643,18 @@ public function update(Request $request, Batiment $batiment)
     }
 
     /**
-     * Get batiment data for editing modal
+     * Get batiment data for editing modal and admin details modal
      */
     public function getBatimentData($id)
     {
-        $batiment = Batiment::with('zone')->findOrFail($id);
+        $batiment = Batiment::with(['zone', 'user'])->findOrFail($id);
 
-        // Vérifier que l'utilisateur connecté est le propriétaire du bâtiment
-        if ($batiment->user_id !== auth()->id()) {
-            return response()->json(['error' => 'Vous n\'avez pas l\'autorisation d\'accéder à ce bâtiment.'], 403);
+        // Pour l'admin, pas de vérification d'autorisation
+        if (!auth()->user()->isAdmin()) {
+            // Vérifier que l'utilisateur connecté est le propriétaire du bâtiment
+            if ($batiment->user_id !== auth()->id()) {
+                return response()->json(['error' => 'Vous n\'avez pas l\'autorisation d\'accéder à ce bâtiment.'], 403);
+            }
         }
 
         return response()->json([
@@ -646,15 +662,35 @@ public function update(Request $request, Batiment $batiment)
                 'id' => $batiment->id,
                 'type_batiment' => $batiment->type_batiment,
                 'adresse' => $batiment->adresse,
+                'zone' => $batiment->zone,
+                'user' => $batiment->user,
                 'zone_id' => $batiment->zone_id,
                 'type_zone_urbaine' => $batiment->type_zone_urbaine,
-                'nbHabitants' => $batiment->nb_habitants,
-                'nbEmployes' => $batiment->nb_employes,
-                'typeIndustrie' => $batiment->type_industrie,
+                'nb_habitants' => $batiment->nb_habitants,
+                'nb_employes' => $batiment->nb_employes,
+                'type_industrie' => $batiment->type_industrie,
+                'emission_c_o2' => $batiment->emission_c_o2,
+                'emission_reelle' => $batiment->emission_reelle,
+                'pourcentage_renouvelable' => $batiment->pourcentage_renouvelable,
+                'nbArbresBesoin' => $batiment->nbArbresBesoin,
                 'emissions_data' => $batiment->emissions_data ?? [],
                 'energies_renouvelables_data' => $batiment->energies_renouvelables_data ?? [],
                 'recyclage_data' => $batiment->recyclage_data ?? [],
+                'created_at' => $batiment->created_at,
+                'updated_at' => $batiment->updated_at,
             ]
+        ]);
+    }
+
+    /**
+     * Get zones data for API
+     */
+    public function getZones()
+    {
+        $zones = ZoneUrbaine::select('id', 'nom')->get();
+
+        return response()->json([
+            'zones' => $zones
         ]);
     }
 
@@ -673,9 +709,28 @@ public function update(Request $request, Batiment $batiment)
             'type_batiment' => 'required|in:Maison,Usine',
             'adresse' => 'required|string|max:255',
             'zone_id' => 'required|exists:zone_urbaines,id',
+            'nb_habitants' => 'nullable|integer|min:1',
+            'nb_employes' => 'nullable|integer|min:0',
+            'type_industrie' => 'nullable|string|max:255',
         ]);
 
+        // Mise à jour des champs de base
         $batiment->update($request->only(['type_batiment', 'adresse', 'zone_id']));
+
+        // Mise à jour des champs spécifiques selon le type
+        if ($request->type_batiment === 'Maison') {
+            $batiment->update([
+                'nb_habitants' => $request->nb_habitants,
+                'nb_employes' => null,
+                'type_industrie' => null,
+            ]);
+        } elseif ($request->type_batiment === 'Usine') {
+            $batiment->update([
+                'nb_habitants' => null,
+                'nb_employes' => $request->nb_employes,
+                'type_industrie' => $request->type_industrie,
+            ]);
+        }
 
         return redirect()->route('backoffice.indexbatiment')->with('success', 'Bâtiment mis à jour avec succès.');
     }

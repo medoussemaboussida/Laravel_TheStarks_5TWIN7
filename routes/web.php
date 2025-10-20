@@ -23,9 +23,9 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/adminbatiment/create', [BatimentController::class, 'create'])->name('backoffice.createbatiment');
     Route::post('/adminbatiment', [BatimentController::class, 'storeAdmin'])->name('backoffice.storebatiment');
     Route::get('/adminbatiment/{batiment}', [BatimentController::class, 'show'])->name('backoffice.showbatiment');
+    Route::get('/adminbatiment/{batiment}/edit', [BatimentController::class, 'edit'])->name('backoffice.editbatiment');
     Route::get('/api/batiment/{batiment}', [BatimentController::class, 'getBatimentData'])->name('api.batiment.data');
     Route::get('/api/zones', [BatimentController::class, 'getZones'])->name('api.zones');
-    Route::get('/adminbatiment/{batiment}/edit', [BatimentController::class, 'edit'])->name('backoffice.editbatiment');
     Route::put('/adminbatiment/{batiment}', [BatimentController::class, 'updateAdmin'])->name('backoffice.updatebatiment');
     Route::delete('/adminbatiment/{batiment}', [BatimentController::class, 'destroyAdmin'])->name('backoffice.destroybatiment');
 });

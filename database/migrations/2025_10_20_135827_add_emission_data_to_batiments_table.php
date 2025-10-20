@@ -11,9 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('plants', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
+        Schema::table('batiments', function (Blueprint $table) {
+            $table->json('emission_data')->nullable()->after('type_zone_urbaine');
         });
     }
 
@@ -22,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('plants');
+        Schema::table('batiments', function (Blueprint $table) {
+            $table->dropColumn('emission_data');
+        });
     }
 };

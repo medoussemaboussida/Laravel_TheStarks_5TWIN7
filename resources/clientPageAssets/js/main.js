@@ -85,12 +85,16 @@
    * Animation on scroll function and init
    */
   function aosInit() {
-    AOS.init({
-      duration: 600,
-      easing: 'ease-in-out',
-      once: true,
-      mirror: false
-    });
+    if (typeof window.AOS !== 'undefined') {
+      window.AOS.init({
+        duration: 600,
+        easing: 'ease-in-out',
+        once: true,
+        mirror: false
+      });
+    } else {
+      console.warn('AOS library not loaded');
+    }
   }
   window.addEventListener('load', aosInit);
 

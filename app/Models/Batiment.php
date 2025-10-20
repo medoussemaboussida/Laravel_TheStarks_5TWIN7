@@ -26,6 +26,7 @@ class Batiment extends Model
         'type_zone_urbaine',
         'recyclage_data',
         'energies_renouvelables_data',
+        'emission_data',
         'user_id',
     ];
 
@@ -37,6 +38,7 @@ class Batiment extends Model
         'nb_employes' => 'integer',
         'recyclage_data' => 'array',
         'energies_renouvelables_data' => 'array',
+        'emission_data' => 'array',
     ];
 
     public function zone(): BelongsTo
@@ -145,36 +147,42 @@ class Batiment extends Model
     // Accesseur pour vérifier si les énergies renouvelables existent
     public function getEnergiesRenouvelablesExisteAttribute()
     {
-        $data = $this->energiesRenouvelablesData;
+        $data = $this->energies_renouvelables_data;
         return !empty($data);
     }
 
     public function setEnergiesRenouvelablesDataAttribute($value)
     {
-        $this->attributes['energies_renouvelables_data'] = json_encode($value);
+        if (is_array($value)) {
+            $this->attributes['energies_renouvelables_data'] = json_encode($value);
+        } elseif (is_string($value)) {
+            // Si c'est déjà du JSON, on le garde tel quel
+            $this->attributes['energies_renouvelables_data'] = $value;
+        } else {
+            $this->attributes['energies_renouvelables_data'] = null;
+        }
     }
 
-    public function getEnergiesRenouvelablesDataAttribute($value)
-{
-    // Si Laravel te renvoie déjà un array
-    if (is_array($value)) {
-        return $value;
-    }
+    // Accesseur pour s'assurer que energies_renouvelables_data retourne toujours un tableau
+    public function getEnergiesRenouvelablesDataAttribute()
+    {
+        $value = $this->attributes['energies_renouvelables_data'] ?? null;
 
-    // Si c’est une chaîne JSON doublement encodée, on décode deux fois
-    if (is_string($value)) {
-        $decoded = json_decode($value, true);
-
-        // Si le premier decode donne encore une string JSON, on redécode
-        if (is_string($decoded)) {
-            $decoded = json_decode($decoded, true);
+        if (is_null($value)) {
+            return [];
         }
 
-        return is_array($decoded) ? $decoded : [];
-    }
+        if (is_array($value)) {
+            return $value;
+        }
 
-    return [];
-}
+        if (is_string($value)) {
+            $decoded = json_decode($value, true);
+            return is_array($decoded) ? $decoded : [];
+        }
+
+        return [];
+    }
 
     // Accesseur pour le type de zone urbaine formaté
     public function getTypeZoneUrbaineFormattedAttribute()
@@ -187,4 +195,425 @@ class Batiment extends Model
 
         return $this->type_zone_urbaine ? ($types[$this->type_zone_urbaine] ?? $this->type_zone_urbaine) : null;
     }
+
+    /**
+     * Prédire les émissions CO2 et le pourcentage renouvelable en utilisant une API IA
+     */
+    public static function predictEmissionsWithAI(array $buildingData): array
+    {
+        try {
+            // Préparer les données pour l'API IA
+            $apiData = [
+                'type_batiment' => $buildingData['type_batiment'] ?? null,
+                'emission_data' => $buildingData['emission_data'] ?? [],
+                'energies_renouvelables_data' => $buildingData['energies_renouvelables_data'] ?? [],
+                'recyclage_data' => $buildingData['recyclage_data'] ?? [],
+                'type_industrie' => $buildingData['type_industrie'] ?? null,
+            ];
+
+            // Configuration de l'API IA (exemple avec OpenAI ou autre service)
+            $apiKey = config('services.openai.api_key', env('OPENAI_API_KEY'));
+            $apiUrl = 'https://api.openai.com/v1/chat/completions';
+
+            if (!$apiKey) {
+                // Fallback vers des valeurs par défaut si pas d'API configurée
+                return self::getDefaultPredictions($apiData);
+            }
+
+            // Préparer le prompt pour l'IA
+            $prompt = self::buildAIPrompt($apiData);
+
+            // Appel à l'API OpenAI
+            $response = self::callOpenAI($apiUrl, $apiKey, $prompt);
+
+            // Parser la réponse et retourner les prédictions
+            return self::parseAIResponse($response);
+
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Erreur lors de la prédiction IA des émissions: ' . $e->getMessage());
+
+            // Fallback vers des valeurs par défaut
+            return self::getDefaultPredictions($buildingData);
+        }
+    }
+
+    /**
+     * Construire le prompt pour l'IA
+     */
+    private static function buildAIPrompt(array $data): string
+    {
+        $typeBatiment = $data['type_batiment'] ?? 'inconnu';
+        $typeIndustrie = $data['type_industrie'] ?? 'général';
+
+        $prompt = "En tant qu'expert en analyse environnementale et bâtiment, prédis les émissions de CO2 annuelles, le pourcentage d'énergie renouvelable et les émissions réelles pour le bâtiment suivant :\n\n";
+
+        $prompt .= "Type de bâtiment: {$typeBatiment}\n";
+        if ($typeIndustrie !== 'général') {
+            $prompt .= "Type d'industrie: {$typeIndustrie}\n";
+        }
+
+        // Ajouter les données d'émission si disponibles
+        if (!empty($data['emission_data'])) {
+            $prompt .= "Données d'émission fournies: " . json_encode($data['emission_data']) . "\n";
+        }
+
+        // Ajouter les données d'énergies renouvelables
+        if (!empty($data['energies_renouvelables_data'])) {
+            $prompt .= "Énergies renouvelables installées: " . json_encode($data['energies_renouvelables_data']) . "\n";
+        }
+
+        // Ajouter les données de recyclage
+        if (!empty($data['recyclage_data'])) {
+            $prompt .= "Données de recyclage: " . json_encode($data['recyclage_data']) . "\n";
+        }
+
+        $prompt .= "\nFournis ta réponse au format JSON avec exactement ces clés :\n";
+        $prompt .= "{\n";
+        $prompt .= "  \"emission_c_o2\": <valeur numérique en tonnes par an>,\n";
+        $prompt .= "  \"pourcentage_renouvelable\": <valeur entre 0 et 100>,\n";
+        $prompt .= "  \"emission_reelle\": <valeur numérique calculée>\n";
+        $prompt .= "}\n\n";
+        $prompt .= "Sois précis et réaliste dans tes estimations basées sur des données environnementales standard.";
+
+        return $prompt;
+    }
+
+    /**
+     * Appeler l'API OpenAI
+     */
+    private static function callOpenAI(string $url, string $apiKey, string $prompt): array
+    {
+        $client = new \GuzzleHttp\Client();
+
+        $response = $client->post($url, [
+            'headers' => [
+                'Authorization' => 'Bearer ' . $apiKey,
+                'Content-Type' => 'application/json',
+            ],
+            'json' => [
+                'model' => 'gpt-3.5-turbo',
+                'messages' => [
+                    [
+                        'role' => 'user',
+                        'content' => $prompt
+                    ]
+                ],
+                'max_tokens' => 300,
+                'temperature' => 0.3,
+            ],
+            'timeout' => 30,
+        ]);
+
+        return json_decode($response->getBody()->getContents(), true);
+    }
+
+    /**
+     * Parser la réponse de l'IA
+     */
+    private static function parseAIResponse(array $response): array
+    {
+        if (!isset($response['choices'][0]['message']['content'])) {
+            throw new \Exception('Réponse IA invalide');
+        }
+
+        $content = $response['choices'][0]['message']['content'];
+
+        // Essayer de parser le JSON de la réponse
+        $predictions = json_decode($content, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            // Si ce n'est pas du JSON valide, essayer d'extraire les valeurs avec regex
+            $predictions = self::extractValuesFromText($content);
+        }
+
+        // Valider et nettoyer les valeurs
+        return self::validatePredictions($predictions);
+    }
+
+    /**
+     * Extraire les recommandations du texte si le JSON échoue
+     */
+    private function extractRecommendationsFromText(string $text): array
+    {
+        $recommendations = [];
+
+        // Essayer d'extraire les différentes sections
+        $patterns = [
+            'recommandations_principales' => '/"recommandations_principales"\s*:\s*\[([^\]]*)\]/',
+            'actions_courte_terme' => '/"actions_courte_terme"\s*:\s*\[([^\]]*)\]/',
+            'actions_long_terme' => '/"actions_long_terme"\s*:\s*\[([^\]]*)\]/',
+        ];
+
+        foreach ($patterns as $key => $pattern) {
+            if (preg_match($pattern, $text, $matches)) {
+                // Extraire les éléments du tableau
+                $content = $matches[1];
+                $items = [];
+                if (preg_match_all('/"([^"]+)"/', $content, $itemMatches)) {
+                    $items = $itemMatches[1];
+                }
+                $recommendations[$key] = $items;
+            }
+        }
+
+        // Extraire les champs simples
+        $simplePatterns = [
+            'impact_estime' => '/"impact_estime"\s*:\s*"([^"]+)"/',
+            'cout_estime' => '/"cout_estime"\s*:\s*"([^"]+)"/',
+            'duree_implementation' => '/"duree_implementation"\s*:\s*"([^"]+)"/',
+        ];
+
+        foreach ($simplePatterns as $key => $pattern) {
+            if (preg_match($pattern, $text, $matches)) {
+                $recommendations[$key] = $matches[1];
+            }
+        }
+
+        return $recommendations;
+    }
+
+    /**
+     * Valider et nettoyer les prédictions
+     */
+    private static function validatePredictions(array $predictions): array
+    {
+        $defaults = self::getDefaultPredictions([]);
+
+        return [
+            'emission_c_o2' => isset($predictions['emission_c_o2']) && is_numeric($predictions['emission_c_o2'])
+                ? max(0, (float) $predictions['emission_c_o2'])
+                : $defaults['emission_c_o2'],
+
+            'pourcentage_renouvelable' => isset($predictions['pourcentage_renouvelable']) && is_numeric($predictions['pourcentage_renouvelable'])
+                ? max(0, min(100, (float) $predictions['pourcentage_renouvelable']))
+                : $defaults['pourcentage_renouvelable'],
+
+            'emission_reelle' => isset($predictions['emission_reelle']) && is_numeric($predictions['emission_reelle'])
+                ? max(0, (float) $predictions['emission_reelle'])
+                : $defaults['emission_reelle'],
+        ];
+    }
+
+    /**
+     * Générer des recommandations IA pour protéger la nature et UrbanGreen
+     */
+    public function generateNatureProtectionRecommendations(): array
+    {
+        try {
+            // Configuration de l'API IA
+            $apiKey = config('services.openai.api_key', env('OPENAI_API_KEY'));
+            $apiUrl = 'https://api.openai.com/v1/chat/completions';
+
+            if (!$apiKey) {
+                throw new \Exception('Clé API OpenAI non configurée');
+            }
+
+            // Préparer le prompt pour l'IA
+            $prompt = $this->buildNatureProtectionPrompt();
+
+            // Appel à l'API OpenAI
+            $response = $this->callOpenAI($apiUrl, $apiKey, $prompt);
+
+            // Parser la réponse et retourner les recommandations
+            return $this->parseNatureRecommendationsResponse($response);
+
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Erreur lors de la génération des recommandations IA: ' . $e->getMessage());
+
+            // Fallback vers des recommandations adaptées au bâtiment
+            return $this->getFallbackRecommendations();
+        }
+    }
+
+    /**
+     * Construire le prompt pour les recommandations de protection de la nature
+     */
+    private function buildNatureProtectionPrompt(): string
+    {
+        $prompt = "En tant qu'expert en environnement urbain et développement durable, analyse ce bâtiment et fournis des recommandations concrètes pour protéger la nature et améliorer UrbanGreen :\n\n";
+
+        $prompt .= "Informations du bâtiment :\n";
+        $prompt .= "- Type : {$this->type_batiment}\n";
+        $prompt .= "- Adresse : {$this->adresse}\n";
+        $prompt .= "- Zone urbaine : {$this->type_zone_urbaine}\n";
+        $prompt .= "- Émissions CO2 : {$this->emission_c_o2} tonnes/an\n";
+        $prompt .= "- Pourcentage renouvelable : {$this->pourcentage_renouvelable}%\n";
+        $prompt .= "- Émissions réelles : {$this->emission_reelle} tonnes/an\n";
+        $prompt .= "- Nombre d'arbres nécessaires : {$this->nb_arbres_besoin}\n";
+
+        if ($this->nb_habitants) {
+            $prompt .= "- Nombre d'habitants : {$this->nb_habitants}\n";
+        }
+
+        if ($this->nb_employes) {
+            $prompt .= "- Nombre d'employés : {$this->nb_employes}\n";
+        }
+
+        if ($this->type_industrie && $this->type_industrie !== 'général') {
+            $prompt .= "- Type d'industrie : {$this->type_industrie}\n";
+        }
+
+        // Ajouter les données environnementales
+        if (!empty($this->energies_renouvelables_data)) {
+            $prompt .= "- Énergies renouvelables : " . json_encode($this->energies_renouvelables_data) . "\n";
+        }
+
+        if (!empty($this->recyclage_data)) {
+            $prompt .= "- Recyclage : " . json_encode($this->recyclage_data) . "\n";
+        }
+
+        if (!empty($this->emission_data)) {
+            $prompt .= "- Données d'émission : " . json_encode($this->emission_data) . "\n";
+        }
+
+        $prompt .= "\nFournis ta réponse au format JSON avec ces clés :\n";
+        $prompt .= "{\n";
+        $prompt .= "  \"recommandations_principales\": [\"recommandation 1\", \"recommandation 2\", ...],\n";
+        $prompt .= "  \"actions_courte_terme\": [\"action 1\", \"action 2\", ...],\n";
+        $prompt .= "  \"actions_long_terme\": [\"action 1\", \"action 2\", ...],\n";
+        $prompt .= "  \"impact_estime\": \"description de l'impact environnemental\",\n";
+        $prompt .= "  \"cout_estime\": \"estimation des coûts en dinar tunisien (TND)\",\n";
+        $prompt .= "  \"duree_implementation\": \"temps nécessaire pour l'implémentation\"\n";
+        $prompt .= "}\n\n";
+        $prompt .= "Sois spécifique, réalisable et concentre-toi sur des solutions pratiques pour UrbanGreen. Fournis tous les coûts en dinar tunisien (TND).";
+
+        return $prompt;
+    }
+
+    /**
+     * Parser la réponse des recommandations IA
+     */
+    private function parseNatureRecommendationsResponse(array $response): array
+    {
+        if (!isset($response['choices'][0]['message']['content'])) {
+            throw new \Exception('Réponse IA invalide - contenu manquant');
+        }
+
+        $content = $response['choices'][0]['message']['content'];
+
+        // Essayer de parser le JSON de la réponse
+        $recommendations = json_decode($content, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            // Si ce n'est pas du JSON valide, essayer d'extraire les valeurs avec regex
+            $recommendations = $this->extractRecommendationsFromText($content);
+        }
+
+        // Valider et nettoyer les recommandations
+        return $this->validateNatureRecommendations($recommendations);
+    }
+
+    /**
+     * Valider et nettoyer les recommandations
+     */
+    private function validateNatureRecommendations(array $recommendations): array
+    {
+        // Valeurs par défaut minimales en cas d'extraction incomplète
+        $defaults = [
+            'recommandations_principales' => ['Recommandations générées par IA'],
+            'actions_courte_terme' => ['Actions à court terme générées par IA'],
+            'actions_long_terme' => ['Actions à long terme générées par IA'],
+            'impact_estime' => 'Impact estimé par l\'IA',
+            'cout_estime' => 'Coût estimé par l\'IA en TND',
+            'duree_implementation' => 'Durée estimée par l\'IA',
+        ];
+
+        return [
+            'recommandations_principales' => isset($recommendations['recommandations_principales']) && is_array($recommendations['recommandations_principales']) && !empty($recommendations['recommandations_principales'])
+                ? $recommendations['recommandations_principales']
+                : $defaults['recommandations_principales'],
+
+            'actions_courte_terme' => isset($recommendations['actions_courte_terme']) && is_array($recommendations['actions_courte_terme']) && !empty($recommendations['actions_courte_terme'])
+                ? $recommendations['actions_courte_terme']
+                : $defaults['actions_courte_terme'],
+
+            'actions_long_terme' => isset($recommendations['actions_long_terme']) && is_array($recommendations['actions_long_terme']) && !empty($recommendations['actions_long_terme'])
+                ? $recommendations['actions_long_terme']
+                : $defaults['actions_long_terme'],
+
+            'impact_estime' => $recommendations['impact_estime'] ?? $defaults['impact_estime'],
+            'cout_estime' => $recommendations['cout_estime'] ?? $defaults['cout_estime'],
+            'duree_implementation' => $recommendations['duree_implementation'] ?? $defaults['duree_implementation'],
+        ];
+    }
+
+
+    /**
+     * Générer des recommandations de fallback adaptées au bâtiment
+     */
+    private function getFallbackRecommendations(): array
+    {
+        $typeBatiment = $this->type_batiment ?? 'bâtiment';
+        $zoneUrbaine = $this->type_zone_urbaine ?? 'zone urbaine';
+        $emissions = $this->emission_c_o2 ?? 0;
+        $pourcentageRenouvelable = $this->pourcentage_renouvelable ?? 0;
+
+        // Recommandations adaptées selon le type de bâtiment
+        $recommendationsBase = [
+            'Maison' => [
+                'recommandations_principales' => [
+                    'Installer des panneaux solaires pour réduire les émissions de CO2 de ' . number_format($emissions, 1) . ' tonnes/an',
+                    'Créer un jardin potager pour favoriser la biodiversité locale',
+                    'Mettre en place un système de récupération d\'eau de pluie'
+                ],
+                'actions_courte_terme' => [
+                    'Planter des arbres indigènes dans le jardin (besoin: ' . $this->nb_arbres_besoin . ' arbres)',
+                    'Installer des nichoirs à oiseaux',
+                    'Réduire la consommation d\'eau avec des économiseurs'
+                ],
+                'actions_long_terme' => [
+                    'Convertir complètement à l\'énergie solaire (actuellement ' . $pourcentageRenouvelable . '% renouvelable)',
+                    'Créer une zone de compostage communautaire',
+                    'Participer à un programme de reforestation urbaine'
+                ],
+                'impact_estime' => 'Réduction de 40-60% des émissions de CO2 et amélioration significative de la biodiversité locale',
+                'cout_estime' => '6,600 TND - 26,400 TND selon les installations choisies',
+                'duree_implementation' => '6-18 mois'
+            ],
+            'Usine' => [
+                'recommandations_principales' => [
+                    'Mettre en place un système de management environnemental ISO 14001',
+                    'Optimiser les processus industriels pour réduire les déchets',
+                    'Développer un programme de compensation carbone pour ' . number_format($emissions, 1) . ' tonnes/an d\'émissions'
+                ],
+                'actions_courte_terme' => [
+                    'Auditer les consommations énergétiques',
+                    'Mettre en place le tri sélectif des déchets',
+                    'Former le personnel aux pratiques écologiques'
+                ],
+                'actions_long_terme' => [
+                    'Investir dans des technologies propres',
+                    'Créer des partenariats avec des entreprises vertes',
+                    'Développer une stratégie de développement durable à long terme'
+                ],
+                'impact_estime' => 'Réduction de 30-50% des émissions industrielles et amélioration de l\'image environnementale',
+                'cout_estime' => '165,000 TND - 660,000 TND selon l\'échelle des changements',
+                'duree_implementation' => '12-36 mois'
+            ],
+            'Immeuble' => [
+                'recommandations_principales' => [
+                    'Installer des panneaux solaires sur le toit pour ' . ($this->nb_habitants ?? 0) . ' habitants',
+                    'Mettre en place un système de gestion des déchets collectif',
+                    'Améliorer l\'isolation thermique du bâtiment'
+                ],
+                'actions_courte_terme' => [
+                    'Sensibiliser les résidents aux économies d\'énergie',
+                    'Installer des composteurs collectifs',
+                    'Mettre en place un système de vélos partagés'
+                ],
+                'actions_long_terme' => [
+                    'Rénovation énergétique complète du bâtiment',
+                    'Créer des espaces verts sur les toits',
+                    'Développer un programme de mobilité durable'
+                ],
+                'impact_estime' => 'Réduction de 35-55% des émissions collectives et amélioration de la qualité de vie',
+                'cout_estime' => '50,000 TND - 150,000 TND selon l\'ampleur des travaux',
+                'duree_implementation' => '8-24 mois'
+            ]
+        ];
+
+        // Retourner les recommandations adaptées ou des recommandations générales
+        return $recommendationsBase[$typeBatiment] ?? $recommendationsBase['Maison'];
+    }
+
 }

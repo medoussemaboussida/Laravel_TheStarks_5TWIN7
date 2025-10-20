@@ -200,13 +200,11 @@
   <!-- Vendor JS Files -->
   <script src="{{ asset('resources/clientPageAssets/vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
   <script src="{{ asset('resources/clientPageAssets/vendor/php-email-form/validate.js') }}"></script>
-  <script src="{{ asset('resources/clientPageAssets/vendor/aos/aos.js') }}"></script>
   <script src="{{ asset('resources/clientPageAssets/vendor/glightbox/js/glightbox.min.js') }}"></script>
   <script src="{{ asset('resources/clientPageAssets/vendor/swiper/swiper-bundle.min.js') }}"></script>
   <script src="{{ asset('resources/clientPageAssets/vendor/purecounter/purecounter_vanilla.js') }}"></script>
 
-  <!-- Main JS File -->
-  <script src="{{ asset('resources/clientPageAssets/js/main.js') }}"></script>
+  <!-- Main JS File is loaded via Vite -->
 
   <!-- Modern publication grid CSS (ajouté pour un look agréable) -->
   <style>

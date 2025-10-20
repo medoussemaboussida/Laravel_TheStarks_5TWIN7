@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\EspaceVert;
+use App\Models\Plant;
+
 use Illuminate\Support\Facades\Http;
 class EspaceVertController extends Controller
 {
@@ -268,7 +270,8 @@ public function chat(Request $request)
         }
 
         $batiments = $queryBatiments->orderBy('created_at', 'desc')->get();
-
+   $plants = Plant::with('type')->paginate(5);
+        $allPlants = Plant::with('type')->get(); // Toutes les plantes pour les statistiques
         // Si c'est une requête AJAX pour les bâtiments (recherche ou pagination)
         if ($request->ajax() && ($request->has('search_batiment') || $request->has('page') || $request->has('filter_type') || $request->has('filter_zone') || $request->has('filter_etat'))) {
             return response()->json([
@@ -295,6 +298,15 @@ public function chat(Request $request)
             ]);
         }
 
-        return view('client_page.client', compact('espacesVerts', 'publications', 'batiments', 'zonesUrbaines', 'gouvernorats', 'typesZoneUrbaine'));
+        return view('client_page.client', compact('espacesVerts', 'publications', 'batiments', 'zonesUrbaines', 'gouvernorats', 'typesZoneUrbaine','plants','allPlants'));
+    }
+        public function plants(Request $request)
+    {
+        // pagination serveur : 5 éléments / page
+        $plants = Plant::with('type')->paginate(5);
+
+        // si requête AJAX, renvoyer le partial (HTML fragment)
+        return view('client_page.partials.plants_table', compact('plants'));
+
     }
 }

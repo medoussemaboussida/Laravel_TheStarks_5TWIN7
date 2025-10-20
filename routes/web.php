@@ -7,6 +7,9 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EspaceVertController;
 use App\Http\Controllers\BatimentController;
 use App\Http\Controllers\RapportBesoinController;
+use App\Http\Controllers\PlantTypeController;
+use App\Http\Controllers\PlantController;
+use App\Http\Controllers\ClientController;
 
 Route::get('/', function () {
     return redirect('/login');
@@ -72,5 +75,11 @@ Route::post('/publications', [PublicationController::class, 'store'])->name('pub
 Route::patch('/publications/{publication}', [PublicationController::class, 'update'])->name('publications.update');
 // Route de suppression de publication
 Route::delete('/publications/{publication}', [PublicationController::class, 'destroy'])->name('publications.destroy');
+
+//Route::get('/clientt', [ClientController::class, 'index'])->name('client_page.client');
+/*Route::get('/clientt/plants', [EspaceVertController::class, 'plants'])->name('client_page.plants'); // renvoie uniquement le tableau HTML (partial)
+*/
+Route::resource('plant-types', PlantTypeController::class);
+Route::resource('plants', PlantController::class);
 
 require __DIR__.'/auth.php';

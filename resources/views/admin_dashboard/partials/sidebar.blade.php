@@ -22,6 +22,22 @@
                 <span>Gestion Bâtiments</span>
             </a>
     </li>
+        <!-- Liens vers les entités Plantes et Type de Plantes -->
+    <div class="sidebar-heading">Gestion des Plantes</div>
+
+    <li class="nav-item">
+        <a class="nav-link" href="{{ route('plants.index') }}">
+            <i class="fas fa-seedling"></i>
+            <span>Plantes</span>
+        </a>
+    </li>
+
+    <li class="nav-item">
+        <a class="nav-link" href="{{ route('plant-types.index') }}">
+            <i class="fas fa-leaf"></i>
+            <span>Type de Plantes</span>
+        </a>
+    </li>
     <!-- Divider -->
     <hr class="sidebar-divider">
     <!-- Heading -->

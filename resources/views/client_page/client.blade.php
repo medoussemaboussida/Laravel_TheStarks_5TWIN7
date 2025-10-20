@@ -16,6 +16,23 @@
     <link href="https://fonts.googleapis.com" rel="preconnect">
     <link href="https://fonts.gstatic.com" rel="preconnect crossorigin">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&family=Rubik:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+<link href="{{ asset('client-assets/img/favicon.png') }}" rel="icon">
+<link href="{{ asset('client-assets/img/apple-touch-icon.png') }}" rel="apple-touch-icon">
+
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900&family=Ubuntu:wght@300;400;500;700&family=Rubik:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+<!-- Vendor CSS Files -->
+<link href="{{ asset('client-assets/vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
+<link href="{{ asset('client-assets/vendor/bootstrap-icons/bootstrap-icons.css') }}" rel="stylesheet">
+<link href="{{ asset('client-assets/vendor/aos/aos.css') }}" rel="stylesheet">
+<link href="{{ asset('client-assets/vendor/glightbox/css/glightbox.min.css') }}" rel="stylesheet">
+<link href="{{ asset('client-assets/vendor/swiper/swiper-bundle.min.css') }}" rel="stylesheet">
+
+<!-- Main CSS File -->
+<link href="{{ asset('client-assets/css/main.css') }}" rel="stylesheet">
 
     <!-- Vendor CSS Files -->
     @vite([
@@ -222,6 +239,8 @@
                         <div class="container">
                             <h2 class="text-center mb-4">Projets Espaces Verts</h2>
                             <div class="horizontal-scroll">
+                                @if(isset($espacesVerts))
+
                                 @forelse ($espacesVerts as $espaceVert)
                                     <div class="card">
                                         <div class="card-body">
@@ -237,6 +256,8 @@
                                 @empty
                                     <p class="text-center">No green spaces available.</p>
                                 @endforelse
+@endif
+
                             </div>
                         </div>
                     </section>
@@ -959,6 +980,495 @@
                 </section>
 
                 <!-- /Bâtiments Section -->
+
+
+<!-- /Services Section -->
+
+    <section id="plantes" class="plantes section">
+  <div class="container" data-aos="fade-up">
+
+    <div class="section-header d-flex justify-content-between align-items-center">
+      <div>
+        <h2>Nos Plantes</h2>
+        <p>Découvrez la liste de nos plantes disponibles</p>
+      </div>
+      <div>
+        <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#statisticsModal">
+          <i class="bi bi-bar-chart"></i> Statistiques
+        </button>
+      </div>
+    </div>
+
+    <div class="table-responsive shadow-sm">
+      <table class="table table-bordered table-striped">
+        <thead class="text-white" style="background-color:#00a19e;">
+          <tr>
+            <th>Nom</th>
+            <th>Type</th>
+            <th>Âge</th>
+            <th>Localisation</th>
+          </tr>
+        </thead>
+        <tbody>
+          @foreach($plants as $plant)
+          <tr>
+            <td>{{ $plant->name }}</td>
+            <td>{{ $plant->type->name }}</td>
+            <td>{{ $plant->age ?? 'N/A' }}</td>
+            <td>
+              @if($plant->location)
+                <span class="location-link" data-location="{{ $plant->location }}" style="color: #007bff; text-decoration: underline; cursor: pointer;">
+                  {{ $plant->location }}
+                </span>
+              @else
+                Non spécifiée
+              @endif
+            </td>
+          </tr>
+          @endforeach
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Carte Modal -->
+    <div id="mapModal" class="map-modal" style="display: none;">
+      <div class="map-container">
+        <div class="map-header">
+          <h4 id="mapTitle">Localisation de la plante</h4>
+          <button id="openGoogleMaps" class="btn btn-primary btn-sm">
+            <i class="bi bi-geo-alt"></i> Maps
+          </button>
+          <button id="closeMapModal" class="btn btn-secondary btn-sm">
+            <i class="bi bi-x"></i> Fermer
+          </button>
+        </div>
+        <div class="map-content">
+          <div id="map" style="width: 100%; height: 400px; border-radius: 8px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Statistiques -->
+    <div class="modal fade" id="statisticsModal" tabindex="-1" aria-labelledby="statisticsModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+          <div class="modal-header" style="background-color: #00a19e; color: white;">
+            <h5 class="modal-title" id="statisticsModalLabel">
+              <i class="bi bi-bar-chart"></i> Statistiques des Plantes
+            </h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <!-- Statistiques générales -->
+            <div class="row mb-4">
+              <div class="col-md-3">
+                <div class="stat-card text-center p-3" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 10px;">
+                  <h3 id="totalPlants">{{ $allPlants->count() }}</h3>
+                  <p class="mb-0">Total Plantes</p>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="stat-card text-center p-3" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; border-radius: 10px;">
+                  <h3 id="uniqueTypes">{{ $allPlants->unique('type_id')->count() }}</h3>
+                  <p class="mb-0">Types Uniques</p>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="stat-card text-center p-3" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; border-radius: 10px;">
+                  <h3 id="avgAge">{{ number_format($allPlants->where('age', '!=', null)->avg('age'), 1) }}</h3>
+                  <p class="mb-0">Âge Moyen</p>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="stat-card text-center p-3" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white; border-radius: 10px;">
+                  <h3 id="withLocation">{{ $allPlants->where('location', '!=', null)->count() }}</h3>
+                  <p class="mb-0">Avec Localisation</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Graphiques -->
+            <div class="row">
+              <div class="col-md-6 mb-4">
+                <div class="chart-container" style="height: 350px;">
+                  <h5 class="text-center mb-3">Répartition par Type de Plante</h5>
+                  <canvas id="typeChart"></canvas>
+                </div>
+              </div>
+              <div class="col-md-6 mb-4">
+                <div class="chart-container" style="height: 350px;">
+                  <h5 class="text-center mb-3">Répartition par Âge</h5>
+                  <canvas id="ageChart"></canvas>
+                </div>
+              </div>
+            </div>
+
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+            <button type="button" class="btn btn-primary" onclick="exportStatistics()">
+              <i class="bi bi-download"></i> Exporter
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="d-flex justify-content-center mt-4">
+      <nav aria-label="Pagination des plantes">
+        <ul class="pagination">
+          <!-- Bouton Previous -->
+          <li class="page-item {{ $plants->onFirstPage() ? 'disabled' : '' }}">
+            <a class="page-link" href="{{ $plants->previousPageUrl() }}#plantes" aria-label="Précédent">
+              <i class="bi bi-chevron-left"></i> Précédent
+            </a>
+          </li>
+          
+          <!-- Bouton Next -->
+          <li class="page-item {{ $plants->hasMorePages() ? '' : 'disabled' }}">
+            <a class="page-link" href="{{ $plants->nextPageUrl() }}#plantes" aria-label="Suivant">
+              Suivant <i class="bi bi-chevron-right"></i>
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+
+  </div>
+</section>
+
+<style>
+  /* Style du tableau pour coller au template client */
+  #plantes table {
+    background-color: #f8f9fa; /* couleur légère de fond */
+    border-radius: 5px;
+    overflow: hidden;
+  }
+  #plantes th {
+    background-color: #00a19e;
+    color: #fff;
+    font-weight: 600;
+    text-align: center;
+  }
+  #plantes td {
+    text-align: center;
+    vertical-align: middle;
+  }
+  #plantes tr:nth-child(even) {
+    background-color: #e8f5e9;
+  }
+
+  /* Style de la pagination */
+  #plantes .pagination {
+    margin: 0;
+    gap: 10px;
+  }
+  #plantes .pagination .page-link {
+    color: #00a19e;
+    border-color: #00a19e;
+    background-color: #fff;
+    border-radius: 25px;
+    margin: 0 5px;
+    padding: 10px 20px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border: 2px solid #00a19e;
+    min-width: 120px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+  }
+  #plantes .pagination .page-link:hover:not(.disabled) {
+    color: #fff;
+    background-color: #00a19e;
+    border-color: #00a19e;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 161, 158, 0.3);
+  }
+  #plantes .pagination .page-item.disabled .page-link {
+    color: #6c757d;
+    background-color: #f8f9fa;
+    border-color: #dee2e6;
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+  #plantes .pagination .page-item.disabled .page-link:hover {
+    transform: none;
+    box-shadow: none;
+  }
+
+  /* Styles pour le modal de carte */
+  .map-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .map-container {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    max-width: 90%;
+    width: 800px;
+    max-height: 90vh;
+    overflow: hidden;
+  }
+
+  .map-header {
+    background: #00a19e;
+    color: white;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .map-header h4 {
+    margin: 0;
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .map-header .btn {
+    margin-left: 10px;
+  }
+
+  .map-content {
+    padding: 20px;
+  }
+
+  .location-link:hover {
+    color: #0056b3 !important;
+    text-decoration: underline !important;
+  }
+
+  /* Styles pour les graphiques optimisés */
+  .chart-container {
+    position: relative;
+    width: 100%;
+    min-height: 250px;
+  }
+
+  .chart-container canvas {
+    max-width: 100%;
+    height: auto !important;
+  }
+
+  .stat-card {
+    transition: transform 0.2s ease;
+  }
+
+  .stat-card:hover {
+    transform: translateY(-2px);
+  }
+
+  /* Optimisation pour les écrans */
+  @media (max-width: 768px) {
+    .chart-container {
+      min-height: 200px;
+    }
+    
+    .modal-xl {
+      max-width: 95%;
+    }
+  }
+</style>
+
+
+
+
+                 <script>
+// Données de TOUTES les plantes pour les graphiques (pas seulement la page actuelle)
+const plantsData = @json($allPlants);
+
+// Fonction pour préparer les données des types de plantes
+function prepareTypeData() {
+    const typeCount = {};
+    plantsData.forEach(plant => {
+        const typeName = plant.type ? plant.type.name : 'Non spécifié';
+        typeCount[typeName] = (typeCount[typeName] || 0) + 1;
+    });
+    
+    return {
+        labels: Object.keys(typeCount),
+        data: Object.values(typeCount)
+    };
+}
+
+// Fonction pour préparer les données des âges (simplifiée)
+function prepareAgeData() {
+    const ageRanges = {
+        'Jeunes (0-2 ans)': 0,
+        'Adultes (3-5 ans)': 0,
+        'Matures (6+ ans)': 0,
+        'Non spécifié': 0
+    };
+    
+    plantsData.forEach(plant => {
+        const age = plant.age;
+        if (age === null || age === undefined || age === '') {
+            ageRanges['Non spécifié']++;
+        } else if (age <= 2) {
+            ageRanges['Jeunes (0-2 ans)']++;
+        } else if (age <= 5) {
+            ageRanges['Adultes (3-5 ans)']++;
+        } else {
+            ageRanges['Matures (6+ ans)']++;
+        }
+    });
+    
+    return {
+        labels: Object.keys(ageRanges),
+        data: Object.values(ageRanges)
+    };
+}
+
+
+
+// Couleurs pour les graphiques
+const colors = [
+    '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
+    '#FF9F40', '#FF6384', '#C9CBCF', '#4BC0C0', '#FF6384'
+];
+
+// Fonction pour créer le graphique des types
+function createTypeChart() {
+    const typeData = prepareTypeData();
+    const ctx = document.getElementById('typeChart').getContext('2d');
+    
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: typeData.labels,
+            datasets: [{
+                data: typeData.data,
+                backgroundColor: colors.slice(0, typeData.labels.length),
+                borderWidth: 1,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: {
+                duration: 1000
+            },
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 10,
+                        usePointStyle: true
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Fonction pour créer le graphique des âges (simplifiée)
+function createAgeChart() {
+    const ageData = prepareAgeData();
+    const ctx = document.getElementById('ageChart').getContext('2d');
+    
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ageData.labels,
+            datasets: [{
+                label: 'Nombre de plantes',
+                data: ageData.data,
+                backgroundColor: colors.slice(0, ageData.labels.length),
+                borderColor: colors.slice(0, ageData.labels.length),
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: {
+                duration: 800
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+}
+
+
+
+// Fonction pour exporter les statistiques
+function exportStatistics() {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = 800;
+    canvas.height = 600;
+    
+    // Créer un PDF simple (version basique)
+    const link = document.createElement('a');
+    link.download = 'statistiques-plantes.txt';
+    
+    let content = 'STATISTIQUES DES PLANTES\n';
+    content += '========================\n\n';
+    content += `Total des plantes: ${document.getElementById('totalPlants').textContent}\n`;
+    content += `Types uniques: ${document.getElementById('uniqueTypes').textContent}\n`;
+    content += `Âge moyen: ${document.getElementById('avgAge').textContent} ans\n`;
+    content += `Avec localisation: ${document.getElementById('withLocation').textContent}\n\n`;
+    
+    const typeData = prepareTypeData();
+    content += 'RÉPARTITION PAR TYPE:\n';
+    typeData.labels.forEach((label, index) => {
+        content += `${label}: ${typeData.data[index]} plantes\n`;
+    });
+    
+    const blob = new Blob([content], { type: 'text/plain' });
+    link.href = URL.createObjectURL(blob);
+    link.click();
+}
+
+// Initialiser les graphiques quand le modal s'ouvre
+document.addEventListener('DOMContentLoaded', function() {
+    const statisticsModal = document.getElementById('statisticsModal');
+    
+    statisticsModal.addEventListener('shown.bs.modal', function() {
+        // Détruire les graphiques existants s'ils existent
+        Chart.helpers.each(Chart.instances, function(instance) {
+            instance.destroy();
+        });
+        
+        // Créer les nouveaux graphiques (simplifiés)
+        setTimeout(() => {
+            createTypeChart();
+            createAgeChart();
+        }, 50);
+    });
+});
+</script>
+
+                 
             </div>
         </div>
 
@@ -1565,5 +2075,296 @@
             }
         });
     </script>
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+    let map;
+    let currentLocation = '';
+    
+    // Gestion des clics sur les localisations
+    document.querySelectorAll('.location-link').forEach(function(link) {
+        link.addEventListener('click', function() {
+            currentLocation = this.getAttribute('data-location');
+            document.getElementById('mapTitle').textContent = 'Localisation: ' + currentLocation;
+            showMapModal();
+            initializeMap(currentLocation);
+        });
+    });
+    
+    // Gestion du bouton fermer
+    document.getElementById('closeMapModal').addEventListener('click', function() {
+        hideMapModal();
+    });
+    
+    // Gestion du bouton Maps (Google Maps)
+    document.getElementById('openGoogleMaps').addEventListener('click', function() {
+        if (currentLocation) {
+            const encodedLocation = encodeURIComponent(currentLocation);
+            window.open('https://www.google.com/maps/search/?api=1&query=' + encodedLocation, '_blank');
+        }
+    });
+    
+    // Fermer le modal en cliquant à l'extérieur
+    document.getElementById('mapModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            hideMapModal();
+        }
+    });
+    
+    function showMapModal() {
+        document.getElementById('mapModal').style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+    
+    function hideMapModal() {
+        document.getElementById('mapModal').style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+    
+    function initializeMap(location) {
+        // Utilisation de l'API OpenStreetMap avec Leaflet (gratuite)
+        if (map) {
+            map.remove();
+        }
+        
+        map = L.map('map').setView([0, 0], 2);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+        
+        // Géocodage simple - pour une vraie application, utilisez un service de géocodage
+        geocodeLocation(location);
+    }
+    
+    function geocodeLocation(location) {
+        // Utilisation de l'API de géocodage d'OpenStreetMap (Nominatim)
+        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location)}&limit=1`)
+            .then(response => response.json())
+            .then(data => {
+                if (data && data.length > 0) {
+                    const lat = parseFloat(data[0].lat);
+                    const lon = parseFloat(data[0].lon);
+                    
+                    map.setView([lat, lon], 13);
+                    
+                    L.marker([lat, lon])
+                        .addTo(map)
+                        .bindPopup(`<b>${location}</b>`)
+                        .openPopup();
+                } else {
+                    // Si la localisation n'est pas trouvée, afficher un message
+                    map.setView([0, 0], 2);
+                    L.marker([0, 0])
+                        .addTo(map)
+                        .bindPopup(`<b>Localisation non trouvée:</b><br>${location}`)
+                        .openPopup();
+                }
+            })
+            .catch(error => {
+                console.error('Erreur de géocodage:', error);
+                // Afficher un message d'erreur
+                map.setView([0, 0], 2);
+                L.marker([0, 0])
+                    .addTo(map)
+                    .bindPopup(`<b>Erreur:</b><br>Impossible de localiser: ${location}`)
+                    .openPopup();
+            });
+    }
+});
+
+// Inclure Leaflet CSS et JS
+const leafletCSS = document.createElement('link');
+leafletCSS.rel = 'stylesheet';
+leafletCSS.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+document.head.appendChild(leafletCSS);
+
+const leafletJS = document.createElement('script');
+leafletJS.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+leafletJS.onload = function() {
+    console.log('Leaflet chargé avec succès');
+};
+document.head.appendChild(leafletJS);
+</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+// Données de TOUTES les plantes pour les graphiques (pas seulement la page actuelle)
+const plantsData = @json($allPlants);
+
+// Fonction pour préparer les données des types de plantes
+function prepareTypeData() {
+    const typeCount = {};
+    plantsData.forEach(plant => {
+        const typeName = plant.type ? plant.type.name : 'Non spécifié';
+        typeCount[typeName] = (typeCount[typeName] || 0) + 1;
+    });
+    
+    return {
+        labels: Object.keys(typeCount),
+        data: Object.values(typeCount)
+    };
+}
+
+// Fonction pour préparer les données des âges (simplifiée)
+function prepareAgeData() {
+    const ageRanges = {
+        'Jeunes (0-2 ans)': 0,
+        'Adultes (3-5 ans)': 0,
+        'Matures (6+ ans)': 0,
+        'Non spécifié': 0
+    };
+    
+    plantsData.forEach(plant => {
+        const age = plant.age;
+        if (age === null || age === undefined || age === '') {
+            ageRanges['Non spécifié']++;
+        } else if (age <= 2) {
+            ageRanges['Jeunes (0-2 ans)']++;
+        } else if (age <= 5) {
+            ageRanges['Adultes (3-5 ans)']++;
+        } else {
+            ageRanges['Matures (6+ ans)']++;
+        }
+    });
+    
+    return {
+        labels: Object.keys(ageRanges),
+        data: Object.values(ageRanges)
+    };
+}
+
+
+
+// Couleurs pour les graphiques
+const colors = [
+    '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
+    '#FF9F40', '#FF6384', '#C9CBCF', '#4BC0C0', '#FF6384'
+];
+
+// Fonction pour créer le graphique des types
+function createTypeChart() {
+    const typeData = prepareTypeData();
+    const ctx = document.getElementById('typeChart').getContext('2d');
+    
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: typeData.labels,
+            datasets: [{
+                data: typeData.data,
+                backgroundColor: colors.slice(0, typeData.labels.length),
+                borderWidth: 1,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: {
+                duration: 1000
+            },
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 10,
+                        usePointStyle: true
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Fonction pour créer le graphique des âges (simplifiée)
+function createAgeChart() {
+    const ageData = prepareAgeData();
+    const ctx = document.getElementById('ageChart').getContext('2d');
+    
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ageData.labels,
+            datasets: [{
+                label: 'Nombre de plantes',
+                data: ageData.data,
+                backgroundColor: colors.slice(0, ageData.labels.length),
+                borderColor: colors.slice(0, ageData.labels.length),
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: {
+                duration: 800
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+}
+
+
+
+// Fonction pour exporter les statistiques
+function exportStatistics() {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = 800;
+    canvas.height = 600;
+    
+    // Créer un PDF simple (version basique)
+    const link = document.createElement('a');
+    link.download = 'statistiques-plantes.txt';
+    
+    let content = 'STATISTIQUES DES PLANTES\n';
+    content += '========================\n\n';
+    content += `Total des plantes: ${document.getElementById('totalPlants').textContent}\n`;
+    content += `Types uniques: ${document.getElementById('uniqueTypes').textContent}\n`;
+    content += `Âge moyen: ${document.getElementById('avgAge').textContent} ans\n`;
+    content += `Avec localisation: ${document.getElementById('withLocation').textContent}\n\n`;
+    
+    const typeData = prepareTypeData();
+    content += 'RÉPARTITION PAR TYPE:\n';
+    typeData.labels.forEach((label, index) => {
+        content += `${label}: ${typeData.data[index]} plantes\n`;
+    });
+    
+    const blob = new Blob([content], { type: 'text/plain' });
+    link.href = URL.createObjectURL(blob);
+    link.click();
+}
+
+// Initialiser les graphiques quand le modal s'ouvre
+document.addEventListener('DOMContentLoaded', function() {
+    const statisticsModal = document.getElementById('statisticsModal');
+    
+    statisticsModal.addEventListener('shown.bs.modal', function() {
+        // Détruire les graphiques existants s'ils existent
+        Chart.helpers.each(Chart.instances, function(instance) {
+            instance.destroy();
+        });
+        
+        // Créer les nouveaux graphiques (simplifiés)
+        setTimeout(() => {
+            createTypeChart();
+            createAgeChart();
+        }, 50);
+    });
+});
+</script>
+
 </body>
 </html>

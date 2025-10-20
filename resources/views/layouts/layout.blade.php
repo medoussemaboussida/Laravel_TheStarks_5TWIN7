@@ -132,6 +132,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     <!-- Content Row -->
                     <div class="row" id="publications-list">
+                        @if(isset($publications))
+
                         @forelse($publications as $publication)
                             <div class="col-md-6 col-lg-4 mb-4">
                                 <div class="card shadow h-100 publication-card position-relative" style="border-radius:20px;overflow:hidden;">
@@ -199,6 +201,8 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <div class="alert alert-info text-center">Aucune publication trouvée.</div>
                             </div>
                         @endforelse
+                        @endif
+
                     </div>
 
                     <!-- Modal de confirmation suppression publication (à placer en dehors de la boucle) -->

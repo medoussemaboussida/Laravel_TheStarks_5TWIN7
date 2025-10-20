@@ -11,6 +11,8 @@
                 <li><a href="{{ route('client.index') }}#batiments">Bâtiments</a></li>
                 <li><a href="{{ route('client.index') }}#publications">Publication</a></li>
                 <li><a href="{{ route('client.index') }}#pricing">Pricing</a></li>
+                <li><a href="#plantes">Plantes</a></li>
+
                 <li class="dropdown"><a href="#"><span>Dropdown</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
                     <ul>
                         <li><a href="#">Dropdown 1</a></li>

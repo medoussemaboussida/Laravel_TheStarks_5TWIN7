@@ -960,4 +960,41 @@ class BatimentController extends Controller
 
         return $unites[$type] ?? '';
     }
+
+    /**
+     * Générer un rapport PDF pour tous les bâtiments
+     */
+    public function generatePdfReport()
+    {
+        $batiments = Batiment::with(['zone', 'user'])->get();
+
+        // Calculer les statistiques globales
+        $stats = [
+            'total_batiments' => $batiments->count(),
+            'total_emissions' => $batiments->sum('emission_c_o2'),
+            'moyenne_emissions' => $batiments->avg('emission_c_o2'),
+            'total_employes' => $batiments->sum('nb_employes'),
+            'total_habitants' => $batiments->sum('nb_habitants'),
+            'moyenne_renouvelable' => $batiments->avg('pourcentage_renouvelable'),
+            'types_batiment' => $batiments->groupBy('type_batiment')->map->count(),
+            'zones' => $batiments->groupBy('type_zone_urbaine')->map->count(),
+        ];
+
+        // Générer les recommandations pour chaque bâtiment
+        $batimentsAvecRecommandations = $batiments->map(function ($batiment) {
+            try {
+                $recommandations = $batiment->generateNatureProtectionRecommendations();
+                $batiment->recommandations = $recommandations;
+            } catch (\Exception $e) {
+                $batiment->recommandations = ['Erreur lors de la génération des recommandations'];
+            }
+            return $batiment;
+        });
+
+        $pdf = \PDF::loadView('admin_dashboard.batiments_report_pdf', compact('batimentsAvecRecommandations', 'stats'));
+
+        $nomFichier = 'rapport_batiments_' . date('Y-m-d_H-i-s') . '.pdf';
+
+        return $pdf->download($nomFichier);
+    }
 }

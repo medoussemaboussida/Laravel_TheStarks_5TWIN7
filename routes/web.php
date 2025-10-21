@@ -28,6 +28,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/api/zones', [BatimentController::class, 'getZones'])->name('api.zones');
     Route::put('/adminbatiment/{batiment}', [BatimentController::class, 'updateAdmin'])->name('backoffice.updatebatiment');
     Route::delete('/adminbatiment/{batiment}', [BatimentController::class, 'destroyAdmin'])->name('backoffice.destroybatiment');
+    Route::get('/adminbatiment/rapport/pdf', [BatimentController::class, 'generatePdfReport'])->name('backoffice.batiments.report.pdf');
 });
 
 

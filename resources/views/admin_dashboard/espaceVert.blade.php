@@ -83,6 +83,7 @@
                                             <th>Type</th>
                                             <th>Condition</th>
                                             <th>Besoin specifique</th>
+                                            <th>QR Code</th>
                                             <th>Action</th>
                                         </tr>
                                     </thead>
@@ -95,6 +96,9 @@
                                                 <td>{{ $espaceVert->type }}</td>
                                                 <td>{{ $espaceVert->etat }}</td>
                                                 <td>{{ $espaceVert->besoin_specifique }}</td>
+                                                <td>
+                                                    <img src="https://api.qrserver.com/v1/create-qr-code/?data={{ urlencode('Nom: ' . $espaceVert->nom . ' - Etat: ' . $espaceVert->etat) }}&size=100x100" alt="QR Code for {{ $espaceVert->nom }}" style="width:50px; height:50px; border:1px solid #ddd;">
+                                                </td>
                                                 <td>
                                                     <button type="button" class="btn btn-warning btn-sm mr-2" data-toggle="modal" data-target="#editModal-{{ $espaceVert->id }}">
                                                         <i class="fas fa-edit"></i>
@@ -411,6 +415,9 @@
                             <td>${item.type}</td>
                             <td>${item.etat}</td>
                             <td>${item.besoin_specifique}</td>
+                            <td>
+                                <img src="https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent('Nom: ' + item.nom + ' - Etat: ' + item.etat)}&size=100x100" alt="QR Code for ${item.nom}" style="width:50px; height:50px; border:1px solid #ddd;">
+                            </td>
                             <td>
                                 <button type="button" class="btn btn-warning btn-sm mr-2" data-toggle="modal" data-target="#editModal-${item.id}">
                                     <i class="fas fa-edit"></i>

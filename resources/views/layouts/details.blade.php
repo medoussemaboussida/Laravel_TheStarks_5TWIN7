@@ -957,6 +957,23 @@
                   <img src="{{ asset('img/undraw_profile_1.svg') }}" alt="Votre avatar" class="rounded-circle">
                   <div class="flex-grow-1">
                     <textarea name="content" class="form-control w-100" rows="3" placeholder="Partagez vos pensées sur cette publication... Soyez constructif et respectueux !" id="comment-content"></textarea>
+                    <div class="mt-2">
+                      <button type="button" class="btn btn-sm btn-outline-secondary emoji-toggle-btn" data-textarea="comment-content" style="font-size: 0.9rem;">
+                        <i class="fas fa-smile"></i> Emojis
+                      </button>
+                      <div class="emoji-picker mt-2 d-flex" id="emoji-picker-comment" style="display:none; flex-wrap: wrap; gap: 5px;">
+                        <button type="button" class="emoji-btn btn btn-sm btn-light" data-emoji="😊">😊</button>
+                        <button type="button" class="emoji-btn btn btn-sm btn-light" data-emoji="😂">😂</button>
+                        <button type="button" class="emoji-btn btn btn-sm btn-light" data-emoji="❤️">❤️</button>
+                        <button type="button" class="emoji-btn btn btn-sm btn-light" data-emoji="👍">👍</button>
+                        <button type="button" class="emoji-btn btn btn-sm btn-light" data-emoji="👎">👎</button>
+                        <button type="button" class="emoji-btn btn btn-sm btn-light" data-emoji="🔥">🔥</button>
+                        <button type="button" class="emoji-btn btn btn-sm btn-light" data-emoji="😢">😢</button>
+                        <button type="button" class="emoji-btn btn btn-sm btn-light" data-emoji="😮">😮</button>
+                        <button type="button" class="emoji-btn btn btn-sm btn-light" data-emoji="🙌">🙌</button>
+                        <button type="button" class="emoji-btn btn btn-sm btn-light" data-emoji="👏">👏</button>
+                      </div>
+                    </div>
                     <div id="comment-error" class="custom-error"></div>
                     @error('content')
                       <div class="text-danger small mt-1">{{ $message }}</div>
@@ -1225,6 +1242,36 @@ function updateButtonStates(userLiked, userDisliked) {
     dislikeBtn.classList.add('btn-outline-danger');
   }
 }
+
+// Emoji picker toggle
+document.querySelectorAll('.emoji-toggle-btn').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    var textareaId = btn.getAttribute('data-textarea');
+    var picker = document.getElementById('emoji-picker-comment');
+    if (picker.style.display === 'none' || picker.style.display === '') {
+      picker.style.display = 'flex';
+    } else {
+      picker.style.display = 'none';
+    }
+  });
+});
+
+// Insert emoji into textarea
+document.querySelectorAll('.emoji-btn').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    var emoji = btn.getAttribute('data-emoji');
+    var textarea = document.getElementById('comment-content');
+    var cursorPos = textarea.selectionStart;
+    var textBefore = textarea.value.substring(0, cursorPos);
+    var textAfter = textarea.value.substring(cursorPos);
+    textarea.value = textBefore + emoji + textAfter;
+    textarea.focus();
+    textarea.setSelectionRange(cursorPos + emoji.length, cursorPos + emoji.length);
+    // Hide the picker after inserting
+    var picker = document.getElementById('emoji-picker-comment');
+    picker.style.display = 'none';
+  });
+});
 
 // Effet de scroll pour l'en-tête
 window.addEventListener('scroll', function() {

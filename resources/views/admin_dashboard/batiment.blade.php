@@ -8,6 +8,9 @@
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <h1 class="h3 mb-0 text-gray-800">Gestion des Bâtiments</h1>
         <div>
+            <a href="{{ route('admin.zones.index') }}" class="d-none d-sm-inline-block btn btn-sm btn-info shadow-sm mr-2" title="Gérer les zones urbaines">
+                <i class="fas fa-map-marked-alt fa-sm text-white-50"></i> Gestion Zones Urbaines
+            </a>
             <a href="{{ route('backoffice.batiments.report.pdf') }}" class="d-none d-sm-inline-block btn btn-sm btn-success shadow-sm mr-2" target="_blank">
                 <i class="fas fa-file-pdf fa-sm text-white-50"></i> Générer Rapport PDF
             </a>

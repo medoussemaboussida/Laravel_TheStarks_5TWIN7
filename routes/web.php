@@ -9,7 +9,7 @@ use App\Http\Controllers\BatimentController;
 use App\Http\Controllers\RapportBesoinController;
 use App\Http\Controllers\PlantTypeController;
 use App\Http\Controllers\PlantController;
-use App\Http\Controllers\ClientController;
+use App\Http\Controllers\ZoneUrbaineController;
 
 Route::get('/', function () {
     return redirect('/login');
@@ -29,6 +29,16 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::put('/adminbatiment/{batiment}', [BatimentController::class, 'updateAdmin'])->name('backoffice.updatebatiment');
     Route::delete('/adminbatiment/{batiment}', [BatimentController::class, 'destroyAdmin'])->name('backoffice.destroybatiment');
     Route::get('/adminbatiment/rapport/pdf', [BatimentController::class, 'generatePdfReport'])->name('backoffice.batiments.report.pdf');
+
+    // Gestion des zones urbaines - Admin
+    Route::get('/adminzones', [ZoneUrbaineController::class, 'index'])->name('admin.zones.index');
+    Route::get('/adminzones/create', [ZoneUrbaineController::class, 'create'])->name('admin.zones.create');
+    Route::post('/adminzones', [ZoneUrbaineController::class, 'store'])->name('admin.zones.store');
+    Route::get('/adminzones/{zone}', [ZoneUrbaineController::class, 'show'])->name('admin.zones.show');
+    Route::get('/adminzones/{zone}/edit', [ZoneUrbaineController::class, 'edit'])->name('admin.zones.edit');
+    Route::put('/adminzones/{zone}', [ZoneUrbaineController::class, 'update'])->name('admin.zones.update');
+    Route::delete('/adminzones/{zone}', [ZoneUrbaineController::class, 'destroy'])->name('admin.zones.destroy');
+    Route::get('/api/zones-admin', [ZoneUrbaineController::class, 'getZones'])->name('api.zones.admin');
 });
 
 

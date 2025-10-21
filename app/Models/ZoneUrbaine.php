@@ -14,19 +14,11 @@ class ZoneUrbaine extends Model
 
     protected $fillable = [
         'nom',
-        'population',
         'surface',
-        'niveau_pollution',
-        'nb_arbres_exist',
-        'superficie',
     ];
 
     protected $casts = [
-        'population' => 'integer',
         'surface' => 'float',
-        'niveau_pollution' => 'float',
-        'nb_arbres_exist' => 'integer',
-        'superficie' => 'float',
     ];
 
     public function batiments(): HasMany

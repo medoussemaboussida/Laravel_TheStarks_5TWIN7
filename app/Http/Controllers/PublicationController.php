@@ -25,6 +25,14 @@ class PublicationController extends Controller
             ->orderBy('created_at', $sort)
             ->get();
 
+        // Ajouter les compteurs de likes, dislikes et commentaires pour chaque publication
+        $publications->transform(function ($publication) {
+            $publication->likes_count = $publication->getLikesCount();
+            $publication->dislikes_count = $publication->getDislikesCount();
+            $publication->comments_count = $publication->comments()->count();
+            return $publication;
+        });
+
         if ($request->header('X-Requested-With') === 'XMLHttpRequest') {
             // Retourner uniquement le fragment HTML de la liste des publications
             return response()->view('client_page.partials.publications_list', compact('publications'))->header('Vary', 'Accept');

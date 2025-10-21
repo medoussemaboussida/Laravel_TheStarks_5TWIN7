@@ -41,4 +41,10 @@ return [
         'timeout' => env('OPENAI_TIMEOUT', 30),
     ],
 
+    'google' => [
+        'api_key' => env('GOOGLE_API_KEY'),
+        'model' => env('GOOGLE_MODEL', 'gemini-2.0-flash-exp'),
+        'timeout' => env('GOOGLE_TIMEOUT', 30),
+    ],
+
 ];

@@ -201,40 +201,36 @@ class Batiment extends Model
      */
     public static function predictEmissionsWithAI(array $buildingData): array
     {
+        // Essayer d'abord Google Gemini (gratuit)
         try {
-            // Préparer les données pour l'API IA
-            $apiData = [
-                'type_batiment' => $buildingData['type_batiment'] ?? null,
-                'emission_data' => $buildingData['emission_data'] ?? [],
-                'energies_renouvelables_data' => $buildingData['energies_renouvelables_data'] ?? [],
-                'recyclage_data' => $buildingData['recyclage_data'] ?? [],
-                'type_industrie' => $buildingData['type_industrie'] ?? null,
-            ];
+            $apiKey = config('services.google.api_key', env('GOOGLE_API_KEY'));
 
-            // Configuration de l'API IA (exemple avec OpenAI ou autre service)
-            $apiKey = config('services.openai.api_key', env('OPENAI_API_KEY'));
-            $apiUrl = 'https://api.openai.com/v1/chat/completions';
-
-            if (!$apiKey) {
-                // Fallback vers des valeurs par défaut si pas d'API configurée
-                return self::getDefaultPredictions($apiData);
+            if ($apiKey && $apiKey !== 'YOUR_GOOGLE_API_KEY_HERE') {
+                \Illuminate\Support\Facades\Log::info('Tentative de prédiction avec Google Gemini');
+                return self::predictWithGoogleGemini($buildingData);
             }
-
-            // Préparer le prompt pour l'IA
-            $prompt = self::buildAIPrompt($apiData);
-
-            // Appel à l'API OpenAI
-            $response = self::callOpenAI($apiUrl, $apiKey, $prompt);
-
-            // Parser la réponse et retourner les prédictions
-            return self::parseAIResponse($response);
-
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Erreur lors de la prédiction IA des émissions: ' . $e->getMessage());
-
-            // Fallback vers des valeurs par défaut
-            return self::getDefaultPredictions($buildingData);
+            \Illuminate\Support\Facades\Log::warning('Échec Google Gemini pour prédiction, tentative avec OpenAI', [
+                'error' => $e->getMessage()
+            ]);
         }
+
+        // Essayer ensuite OpenAI
+        try {
+            $apiKey = config('services.openai.api_key', env('OPENAI_API_KEY'));
+
+            if ($apiKey) {
+                \Illuminate\Support\Facades\Log::info('Tentative de prédiction avec OpenAI');
+                return self::predictWithOpenAI($buildingData);
+            }
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::warning('Échec OpenAI pour prédiction, utilisation du fallback', [
+                'error' => $e->getMessage()
+            ]);
+        }
+
+        // Fallback en dernier recours
+        return self::getDefaultPredictions($buildingData);
     }
 
     /**
@@ -279,13 +275,54 @@ class Batiment extends Model
     }
 
     /**
-     * Appeler l'API OpenAI
+     * Prédire avec Google Gemini
      */
-    private static function callOpenAI(string $url, string $apiKey, string $prompt): array
+    private static function predictWithGoogleGemini(array $buildingData): array
     {
+        $apiKey = config('services.google.api_key');
+        $model = config('services.google.model', 'gemini-2.0-flash-exp');
+        $url = 'https://generativelanguage.googleapis.com/v1beta/models/' . $model . ':generateContent?key=' . $apiKey;
+
+        $prompt = self::buildAIPrompt($buildingData);
+
         $client = new \GuzzleHttp\Client();
 
         $response = $client->post($url, [
+            'headers' => [
+                'Content-Type' => 'application/json',
+            ],
+            'json' => [
+                'contents' => [
+                    [
+                        'parts' => [
+                            [
+                                'text' => $prompt
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+            'timeout' => 30,
+        ]);
+
+        $responseData = json_decode($response->getBody()->getContents(), true);
+
+        return self::parseGoogleGeminiPredictionResponse($responseData);
+    }
+
+    /**
+     * Prédire avec OpenAI
+     */
+    private static function predictWithOpenAI(array $buildingData): array
+    {
+        $apiKey = config('services.openai.api_key');
+        $apiUrl = 'https://api.openai.com/v1/chat/completions';
+
+        $prompt = self::buildAIPrompt($buildingData);
+
+        $client = new \GuzzleHttp\Client();
+
+        $response = $client->post($apiUrl, [
             'headers' => [
                 'Authorization' => 'Bearer ' . $apiKey,
                 'Content-Type' => 'application/json',
@@ -298,25 +335,27 @@ class Batiment extends Model
                         'content' => $prompt
                     ]
                 ],
-                'max_tokens' => 300,
-                'temperature' => 0.3,
+                'max_tokens' => 1000,
+                'temperature' => 0.7,
             ],
             'timeout' => 30,
         ]);
 
-        return json_decode($response->getBody()->getContents(), true);
+        $responseData = json_decode($response->getBody()->getContents(), true);
+
+        return self::parseAIResponse($responseData);
     }
 
     /**
-     * Parser la réponse de l'IA
+     * Parser la réponse de Google Gemini pour les prédictions
      */
-    private static function parseAIResponse(array $response): array
+    private static function parseGoogleGeminiPredictionResponse(array $responseData): array
     {
-        if (!isset($response['choices'][0]['message']['content'])) {
-            throw new \Exception('Réponse IA invalide');
+        if (!isset($responseData['candidates'][0]['content']['parts'][0]['text'])) {
+            throw new \Exception('Réponse Google Gemini invalide pour les prédictions');
         }
 
-        $content = $response['choices'][0]['message']['content'];
+        $content = $responseData['candidates'][0]['content']['parts'][0]['text'];
 
         // Essayer de parser le JSON de la réponse
         $predictions = json_decode($content, true);
@@ -328,6 +367,170 @@ class Batiment extends Model
 
         // Valider et nettoyer les valeurs
         return self::validatePredictions($predictions);
+    }
+
+    /**
+     * Générer des recommandations IA pour protéger la nature et UrbanGreen
+     * Utilise Google Gemini en priorité, puis OpenAI, puis fallback
+     */
+    public function generateNatureProtectionRecommendations(): array
+    {
+        // Essayer d'abord Google Gemini (gratuit)
+        try {
+            $apiKey = config('services.google.api_key', env('GOOGLE_API_KEY'));
+
+            if ($apiKey && $apiKey !== 'YOUR_GOOGLE_API_KEY_HERE') {
+                \Illuminate\Support\Facades\Log::info('Tentative avec Google Gemini', ['batiment_id' => $this->id]);
+                return $this->generateWithGoogleGemini();
+            }
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::warning('Échec Google Gemini, tentative avec OpenAI', [
+                'batiment_id' => $this->id,
+                'error' => $e->getMessage()
+            ]);
+        }
+
+        // Essayer ensuite OpenAI
+        try {
+            $apiKey = config('services.openai.api_key', env('OPENAI_API_KEY'));
+
+            if ($apiKey) {
+                \Illuminate\Support\Facades\Log::info('Tentative avec OpenAI', ['batiment_id' => $this->id]);
+                return $this->generateWithOpenAI();
+            }
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::warning('Échec OpenAI, utilisation du fallback', [
+                'batiment_id' => $this->id,
+                'error' => $e->getMessage()
+            ]);
+        }
+
+        // Fallback en dernier recours
+        return $this->getFallbackRecommendations();
+    }
+
+    /**
+     * Générer des recommandations avec Google Gemini
+     */
+    private function generateWithGoogleGemini(): array
+    {
+        $apiKey = config('services.google.api_key');
+        $model = config('services.google.model', 'gemini-2.0-flash-exp');
+        $url = 'https://generativelanguage.googleapis.com/v1beta/models/' . $model . ':generateContent?key=' . $apiKey;
+
+        $prompt = $this->buildNatureProtectionPrompt();
+
+        $client = new \GuzzleHttp\Client();
+
+        $response = $client->post($url, [
+            'headers' => [
+                'Content-Type' => 'application/json',
+            ],
+            'json' => [
+                'contents' => [
+                    [
+                        'parts' => [
+                            [
+                                'text' => $prompt
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+            'timeout' => 30,
+        ]);
+
+        $responseData = json_decode($response->getBody()->getContents(), true);
+
+        return $this->parseGoogleGeminiResponse($responseData);
+    }
+
+    /**
+     * Générer des recommandations avec OpenAI
+     */
+    private function generateWithOpenAI(): array
+    {
+        $apiKey = config('services.openai.api_key');
+        $apiUrl = 'https://api.openai.com/v1/chat/completions';
+
+        $prompt = $this->buildNatureProtectionPrompt();
+
+        $client = new \GuzzleHttp\Client();
+
+        $response = $client->post($apiUrl, [
+            'headers' => [
+                'Authorization' => 'Bearer ' . $apiKey,
+                'Content-Type' => 'application/json',
+            ],
+            'json' => [
+                'model' => 'gpt-3.5-turbo',
+                'messages' => [
+                    [
+                        'role' => 'user',
+                        'content' => $prompt
+                    ]
+                ],
+                'max_tokens' => 1000,
+                'temperature' => 0.7,
+            ],
+            'timeout' => 30,
+        ]);
+
+        $responseData = json_decode($response->getBody()->getContents(), true);
+
+        return $this->parseNatureRecommendationsResponse($responseData);
+    }
+
+    /**
+     * Parser la réponse de Google Gemini
+     */
+    private function parseGoogleGeminiResponse(array $response): array
+    {
+        if (!isset($response['candidates'][0]['content']['parts'][0]['text'])) {
+            throw new \Exception('Réponse Google Gemini invalide');
+        }
+
+        $content = $response['candidates'][0]['content']['parts'][0]['text'];
+
+        // Essayer de parser le JSON de la réponse
+        $recommendations = json_decode($content, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            // Si ce n'est pas du JSON valide, essayer d'extraire avec regex
+            $recommendations = $this->extractRecommendationsFromText($content);
+        }
+
+        // Valider et nettoyer les recommandations
+        $validated = $this->validateNatureRecommendations($recommendations);
+        $validated['source'] = 'google_gemini';
+
+        return $validated;
+    }
+
+    /**
+     * Parser la réponse des recommandations IA
+     */
+    private function parseNatureRecommendationsResponse(array $response): array
+    {
+        if (!isset($response['choices'][0]['message']['content'])) {
+            throw new \Exception('Réponse IA invalide - contenu manquant');
+        }
+
+        $content = $response['choices'][0]['message']['content'];
+
+        // Essayer de parser le JSON de la réponse
+        $recommendations = json_decode($content, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            // Si ce n'est pas du JSON valide, essayer d'extraire les valeurs avec regex
+            $recommendations = $this->extractRecommendationsFromText($content);
+        }
+
+        // Valider et nettoyer les recommandations
+        $validated = $this->validateNatureRecommendations($recommendations);
+        $validated['source'] = 'openai';
+
+        return $validated;
     }
 
     /**
@@ -373,56 +576,37 @@ class Batiment extends Model
     }
 
     /**
-     * Valider et nettoyer les prédictions
+     * Valider et nettoyer les recommandations
      */
-    private static function validatePredictions(array $predictions): array
+    private function validateNatureRecommendations(array $recommendations): array
     {
-        $defaults = self::getDefaultPredictions([]);
+        // Valeurs par défaut minimales en cas d'extraction incomplète
+        $defaults = [
+            'recommandations_principales' => ['Recommandations générées par IA'],
+            'actions_courte_terme' => ['Actions à court terme générées par IA'],
+            'actions_long_terme' => ['Actions à long terme générées par IA'],
+            'impact_estime' => 'Impact estimé par l\'IA',
+            'cout_estime' => 'Coût estimé par l\'IA en TND',
+            'duree_implementation' => 'Durée estimée par l\'IA',
+        ];
 
         return [
-            'emission_c_o2' => isset($predictions['emission_c_o2']) && is_numeric($predictions['emission_c_o2'])
-                ? max(0, (float) $predictions['emission_c_o2'])
-                : $defaults['emission_c_o2'],
+            'recommandations_principales' => isset($recommendations['recommandations_principales']) && is_array($recommendations['recommandations_principales']) && !empty($recommendations['recommandations_principales'])
+                ? $recommendations['recommandations_principales']
+                : $defaults['recommandations_principales'],
 
-            'pourcentage_renouvelable' => isset($predictions['pourcentage_renouvelable']) && is_numeric($predictions['pourcentage_renouvelable'])
-                ? max(0, min(100, (float) $predictions['pourcentage_renouvelable']))
-                : $defaults['pourcentage_renouvelable'],
+            'actions_courte_terme' => isset($recommendations['actions_courte_terme']) && is_array($recommendations['actions_courte_terme']) && !empty($recommendations['actions_courte_terme'])
+                ? $recommendations['actions_courte_terme']
+                : $defaults['actions_courte_terme'],
 
-            'emission_reelle' => isset($predictions['emission_reelle']) && is_numeric($predictions['emission_reelle'])
-                ? max(0, (float) $predictions['emission_reelle'])
-                : $defaults['emission_reelle'],
+            'actions_long_terme' => isset($recommendations['actions_long_terme']) && is_array($recommendations['actions_long_terme']) && !empty($recommendations['actions_long_terme'])
+                ? $recommendations['actions_long_terme']
+                : $defaults['actions_long_terme'],
+
+            'impact_estime' => $recommendations['impact_estime'] ?? $defaults['impact_estime'],
+            'cout_estime' => $recommendations['cout_estime'] ?? $defaults['cout_estime'],
+            'duree_implementation' => $recommendations['duree_implementation'] ?? $defaults['duree_implementation'],
         ];
-    }
-
-    /**
-     * Générer des recommandations IA pour protéger la nature et UrbanGreen
-     */
-    public function generateNatureProtectionRecommendations(): array
-    {
-        try {
-            // Configuration de l'API IA
-            $apiKey = config('services.openai.api_key', env('OPENAI_API_KEY'));
-            $apiUrl = 'https://api.openai.com/v1/chat/completions';
-
-            if (!$apiKey) {
-                throw new \Exception('Clé API OpenAI non configurée');
-            }
-
-            // Préparer le prompt pour l'IA
-            $prompt = $this->buildNatureProtectionPrompt();
-
-            // Appel à l'API OpenAI
-            $response = $this->callOpenAI($apiUrl, $apiKey, $prompt);
-
-            // Parser la réponse et retourner les recommandations
-            return $this->parseNatureRecommendationsResponse($response);
-
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Erreur lors de la génération des recommandations IA: ' . $e->getMessage());
-
-            // Fallback vers des recommandations adaptées au bâtiment
-            return $this->getFallbackRecommendations();
-        }
     }
 
     /**
@@ -481,139 +665,96 @@ class Batiment extends Model
     }
 
     /**
-     * Parser la réponse des recommandations IA
-     */
-    private function parseNatureRecommendationsResponse(array $response): array
-    {
-        if (!isset($response['choices'][0]['message']['content'])) {
-            throw new \Exception('Réponse IA invalide - contenu manquant');
-        }
-
-        $content = $response['choices'][0]['message']['content'];
-
-        // Essayer de parser le JSON de la réponse
-        $recommendations = json_decode($content, true);
-
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            // Si ce n'est pas du JSON valide, essayer d'extraire les valeurs avec regex
-            $recommendations = $this->extractRecommendationsFromText($content);
-        }
-
-        // Valider et nettoyer les recommandations
-        return $this->validateNatureRecommendations($recommendations);
-    }
-
-    /**
-     * Valider et nettoyer les recommandations
-     */
-    private function validateNatureRecommendations(array $recommendations): array
-    {
-        // Valeurs par défaut minimales en cas d'extraction incomplète
-        $defaults = [
-            'recommandations_principales' => ['Recommandations générées par IA'],
-            'actions_courte_terme' => ['Actions à court terme générées par IA'],
-            'actions_long_terme' => ['Actions à long terme générées par IA'],
-            'impact_estime' => 'Impact estimé par l\'IA',
-            'cout_estime' => 'Coût estimé par l\'IA en TND',
-            'duree_implementation' => 'Durée estimée par l\'IA',
-        ];
-
-        return [
-            'recommandations_principales' => isset($recommendations['recommandations_principales']) && is_array($recommendations['recommandations_principales']) && !empty($recommendations['recommandations_principales'])
-                ? $recommendations['recommandations_principales']
-                : $defaults['recommandations_principales'],
-
-            'actions_courte_terme' => isset($recommendations['actions_courte_terme']) && is_array($recommendations['actions_courte_terme']) && !empty($recommendations['actions_courte_terme'])
-                ? $recommendations['actions_courte_terme']
-                : $defaults['actions_courte_terme'],
-
-            'actions_long_terme' => isset($recommendations['actions_long_terme']) && is_array($recommendations['actions_long_terme']) && !empty($recommendations['actions_long_terme'])
-                ? $recommendations['actions_long_terme']
-                : $defaults['actions_long_terme'],
-
-            'impact_estime' => $recommendations['impact_estime'] ?? $defaults['impact_estime'],
-            'cout_estime' => $recommendations['cout_estime'] ?? $defaults['cout_estime'],
-            'duree_implementation' => $recommendations['duree_implementation'] ?? $defaults['duree_implementation'],
-        ];
-    }
-
-
-    /**
-     * Générer des recommandations de fallback adaptées au bâtiment
+     * Recommandations de fallback en cas d'échec des APIs IA
      */
     private function getFallbackRecommendations(): array
     {
-        $typeBatiment = $this->type_batiment ?? 'bâtiment';
-        $zoneUrbaine = $this->type_zone_urbaine ?? 'zone urbaine';
-        $emissions = $this->emission_c_o2 ?? 0;
-        $pourcentageRenouvelable = $this->pourcentage_renouvelable ?? 0;
+        $typeBatiment = $this->type_batiment ?? 'Maison';
 
-        // Recommandations adaptées selon le type de bâtiment
         $recommendationsBase = [
             'Maison' => [
                 'recommandations_principales' => [
-                    'Installer des panneaux solaires pour réduire les émissions de CO2 de ' . number_format($emissions, 1) . ' tonnes/an',
-                    'Créer un jardin potager pour favoriser la biodiversité locale',
+                    'Installer des panneaux solaires sur le toit',
+                    'Créer un jardin potager écologique',
                     'Mettre en place un système de récupération d\'eau de pluie'
                 ],
                 'actions_courte_terme' => [
-                    'Planter des arbres indigènes dans le jardin (besoin: ' . $this->nb_arbres_besoin . ' arbres)',
-                    'Installer des nichoirs à oiseaux',
-                    'Réduire la consommation d\'eau avec des économiseurs'
+                    'Planter des arbres indigènes dans le jardin',
+                    'Installer des ampoules LED économes en énergie',
+                    'Trier les déchets et recycler'
                 ],
                 'actions_long_terme' => [
-                    'Convertir complètement à l\'énergie solaire (actuellement ' . $pourcentageRenouvelable . '% renouvelable)',
-                    'Créer une zone de compostage communautaire',
-                    'Participer à un programme de reforestation urbaine'
+                    'Isoler thermiquement les murs et le toit',
+                    'Installer une pompe à chaleur géothermique',
+                    'Créer une toiture végétalisée'
                 ],
-                'impact_estime' => 'Réduction de 40-60% des émissions de CO2 et amélioration significative de la biodiversité locale',
-                'cout_estime' => '6,600 TND - 26,400 TND selon les installations choisies',
-                'duree_implementation' => '6-18 mois'
-            ],
-            'Usine' => [
-                'recommandations_principales' => [
-                    'Mettre en place un système de management environnemental ISO 14001',
-                    'Optimiser les processus industriels pour réduire les déchets',
-                    'Développer un programme de compensation carbone pour ' . number_format($emissions, 1) . ' tonnes/an d\'émissions'
-                ],
-                'actions_courte_terme' => [
-                    'Auditer les consommations énergétiques',
-                    'Mettre en place le tri sélectif des déchets',
-                    'Former le personnel aux pratiques écologiques'
-                ],
-                'actions_long_terme' => [
-                    'Investir dans des technologies propres',
-                    'Créer des partenariats avec des entreprises vertes',
-                    'Développer une stratégie de développement durable à long terme'
-                ],
-                'impact_estime' => 'Réduction de 30-50% des émissions industrielles et amélioration de l\'image environnementale',
-                'cout_estime' => '165,000 TND - 660,000 TND selon l\'échelle des changements',
-                'duree_implementation' => '12-36 mois'
+                'impact_estime' => 'Réduction de 30-40% des émissions CO2 et amélioration de la biodiversité locale',
+                'cout_estime' => '15,000 - 25,000 TND pour les améliorations de base',
+                'duree_implementation' => '6-12 mois selon les travaux choisis'
             ],
             'Immeuble' => [
                 'recommandations_principales' => [
-                    'Installer des panneaux solaires sur le toit pour ' . ($this->nb_habitants ?? 0) . ' habitants',
-                    'Mettre en place un système de gestion des déchets collectif',
-                    'Améliorer l\'isolation thermique du bâtiment'
+                    'Mettre en place un système de chauffage collectif écologique',
+                    'Créer des espaces verts partagés sur les toits-terrasses',
+                    'Installer des panneaux solaires pour l\'éclairage commun'
                 ],
                 'actions_courte_terme' => [
-                    'Sensibiliser les résidents aux économies d\'énergie',
-                    'Installer des composteurs collectifs',
-                    'Mettre en place un système de vélos partagés'
+                    'Organiser des campagnes de sensibilisation environnementale',
+                    'Mettre en place des composteurs collectifs',
+                    'Installer des récupérateurs d\'eau de pluie'
                 ],
                 'actions_long_terme' => [
-                    'Rénovation énergétique complète du bâtiment',
-                    'Créer des espaces verts sur les toits',
-                    'Développer un programme de mobilité durable'
+                    'Rénover l\'isolation thermique de l\'ensemble du bâtiment',
+                    'Installer un système de cogénération',
+                    'Créer des jardins verticaux sur les façades'
                 ],
-                'impact_estime' => 'Réduction de 35-55% des émissions collectives et amélioration de la qualité de vie',
-                'cout_estime' => '50,000 TND - 150,000 TND selon l\'ampleur des travaux',
-                'duree_implementation' => '8-24 mois'
+                'impact_estime' => 'Réduction de 25-35% des émissions CO2 collectives',
+                'cout_estime' => '50,000 - 150,000 TND selon la taille de l\'immeuble',
+                'duree_implementation' => '12-24 mois pour les travaux majeurs'
+            ],
+            'Bureau' => [
+                'recommandations_principales' => [
+                    'Adopter une politique de télétravail partiel',
+                    'Mettre en place un système de gestion énergétique intelligent',
+                    'Créer des espaces de coworking écologiques'
+                ],
+                'actions_courte_terme' => [
+                    'Sensibiliser les employés aux économies d\'énergie',
+                    'Mettre en place le tri sélectif des déchets',
+                    'Utiliser des matériaux recyclés pour les fournitures'
+                ],
+                'actions_long_terme' => [
+                    'Installer des panneaux solaires sur le toit',
+                    'Rénover avec des matériaux écologiques',
+                    'Créer un parking pour vélos et véhicules électriques'
+                ],
+                'impact_estime' => 'Réduction de 20-30% de l\'empreinte carbone professionnelle',
+                'cout_estime' => '30,000 - 80,000 TND pour les aménagements écologiques',
+                'duree_implementation' => '8-18 mois selon l\'ampleur des changements'
+            ],
+            'Usine' => [
+                'recommandations_principales' => [
+                    'Optimiser les processus de production pour réduire les déchets',
+                    'Installer des systèmes de récupération d\'énergie thermique',
+                    'Mettre en place une chaîne d\'approvisionnement durable'
+                ],
+                'actions_courte_terme' => [
+                    'Former le personnel aux pratiques écologiques',
+                    'Mettre en place un système de mesure des émissions',
+                    'Réduire les pertes énergétiques dans les processus'
+                ],
+                'actions_long_terme' => [
+                    'Investir dans des technologies de production propres',
+                    'Créer des bassins de rétention pour les eaux industrielles',
+                    'Développer des produits à base de matériaux recyclés'
+                ],
+                'impact_estime' => 'Réduction significative des émissions industrielles et amélioration de l\'efficacité énergétique',
+                'cout_estime' => '200,000 - 500,000 TND selon la taille et le secteur d\'activité',
+                'duree_implementation' => '18-36 mois pour les transformations majeures'
             ]
         ];
 
         // Retourner les recommandations adaptées ou des recommandations générales
         return $recommendationsBase[$typeBatiment] ?? $recommendationsBase['Maison'];
     }
-
 }

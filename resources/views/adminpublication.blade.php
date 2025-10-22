@@ -1,6 +1,10 @@
 @extends('layouts.layout')
 
 @section('content')
+    @php
+        // Passer les publications à la vue pour les statistiques
+        $publicationsForStats = $publications ?? collect([]);
+    @endphp
     <div class="container mt-4">
         <h1>Admin Publications</h1>
 

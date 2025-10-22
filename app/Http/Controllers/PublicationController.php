@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\NewPublicationNotification;
 use App\Models\User;
+use App\Helpers\BadWordsHelper;
 
 class PublicationController extends Controller
 {
@@ -23,6 +24,14 @@ class PublicationController extends Controller
             })
             ->orderBy('created_at', $sort)
             ->get();
+
+        // Ajouter les compteurs de likes, dislikes et commentaires pour chaque publication
+        $publications->transform(function ($publication) {
+            $publication->likes_count = $publication->getLikesCount();
+            $publication->dislikes_count = $publication->getDislikesCount();
+            $publication->comments_count = $publication->comments()->count();
+            return $publication;
+        });
 
         if ($request->header('X-Requested-With') === 'XMLHttpRequest') {
             // Retourner uniquement le fragment HTML de la liste des publications
@@ -52,7 +61,16 @@ class PublicationController extends Controller
         $request->validate([
             'content' => 'required|string|max:1000',
         ]);
-        $comment->content = $request->input('content');
+
+        $content = $request->input('content');
+
+        // Vérifier les bad words
+        if (BadWordsHelper::containsBadWords($content)) {
+            $badWords = BadWordsHelper::getBadWordsInText($content);
+            return redirect()->back()->with('error', 'Votre commentaire contient des mots inappropriés : ' . implode(', ', $badWords) . '. Veuillez reformuler votre commentaire.');
+        }
+
+        $comment->content = $content;
         $comment->save();
         return redirect()->back()->with('success', 'Commentaire modifié avec succès!');
     }
@@ -153,10 +171,19 @@ class PublicationController extends Controller
         if (!auth()->check()) {
             return redirect()->back()->with('error', 'Vous devez être connecté pour commenter.');
         }
+
+        $content = $request->input('content');
+
+        // Vérifier les bad words
+        if (BadWordsHelper::containsBadWords($content)) {
+            $badWords = BadWordsHelper::getBadWordsInText($content);
+            return redirect()->back()->with('error', 'Votre commentaire contient des mots inappropriés : ' . implode(', ', $badWords) . '. Veuillez reformuler votre commentaire.');
+        }
+
         $publication = \App\Models\Publication::findOrFail($id);
         $publication->comments()->create([
             'user_id' => auth()->id(),
-            'content' => $request->input('content'),
+            'content' => $content,
         ]);
         return redirect()->back()->with('success', 'Commentaire ajouté avec succès!');
     }

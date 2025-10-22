@@ -38,7 +38,6 @@ class Batiment extends Model
         'nb_employes' => 'integer',
         'recyclage_data' => 'array',
         'energies_renouvelables_data' => 'array',
-        'emission_data' => 'array',
     ];
 
     public function zone(): BelongsTo
@@ -163,7 +162,7 @@ class Batiment extends Model
         }
     }
 
-    // Accesseur pour s'assurer que energies_renouvelables_data retourne toujours un tableau
+    // Accesseur pour s'assurer que energies_renouvelables_data retourne toujours un tableau normalisé
     public function getEnergiesRenouvelablesDataAttribute()
     {
         $value = $this->attributes['energies_renouvelables_data'] ?? null;
@@ -173,15 +172,140 @@ class Batiment extends Model
         }
 
         if (is_array($value)) {
-            return $value;
+            return $this->normalizeEnergiesRenouvelablesData($value);
         }
 
         if (is_string($value)) {
             $decoded = json_decode($value, true);
-            return is_array($decoded) ? $decoded : [];
+            if (is_array($decoded)) {
+                return $this->normalizeEnergiesRenouvelablesData($decoded);
+            }
         }
 
         return [];
+    }
+
+    /**
+     * Normalise les données d'énergies renouvelables vers le format attendu
+     * Format attendu: {"type": {"check": boolean, "nb": number}}
+     */
+    private function normalizeEnergiesRenouvelablesData(array $data): array
+    {
+        $normalized = [];
+
+        // Types d'énergies renouvelables supportés
+        $energyTypes = [
+            'panneaux_solaires',
+            'voitures_electriques',
+            'camions_electriques',
+            'energie_eolienne',
+            'energie_hydroelectrique'
+        ];
+
+        foreach ($energyTypes as $type) {
+            if (isset($data[$type]) && is_array($data[$type])) {
+                $energyData = $data[$type];
+
+                // Si la structure a déjà check et nb, la garder telle quelle
+                if (isset($energyData['check']) && isset($energyData['nb'])) {
+                    $normalized[$type] = [
+                        'check' => (bool) $energyData['check'],
+                        'nb' => is_numeric($energyData['nb']) ? (float) $energyData['nb'] : 0
+                    ];
+                }
+                // Si la structure a type et nb (ancien format), convertir
+                elseif (isset($energyData['type']) && isset($energyData['nb'])) {
+                    $normalized[$type] = [
+                        'check' => true, // On considère que si c'est défini, c'est coché
+                        'nb' => is_numeric($energyData['nb']) ? (float) $energyData['nb'] : 0
+                    ];
+                }
+                // Si la structure a seulement nb, convertir
+                elseif (isset($energyData['nb'])) {
+                    $normalized[$type] = [
+                        'check' => true, // On considère que si nb est défini, c'est coché
+                        'nb' => is_numeric($energyData['nb']) ? (float) $energyData['nb'] : 0
+                    ];
+                }
+            }
+        }
+
+        return $normalized;
+    }
+
+    // Accesseur pour s'assurer que emission_data retourne toujours un tableau normalisé
+    public function getEmissionDataAttribute()
+    {
+        $value = $this->attributes['emission_data'] ?? null;
+
+        if (is_null($value)) {
+            return [];
+        }
+
+        if (is_array($value)) {
+            return $this->normalizeEmissionData($value);
+        }
+
+        if (is_string($value)) {
+            $decoded = json_decode($value, true);
+            if (is_array($decoded)) {
+                return $this->normalizeEmissionData($decoded);
+            }
+        }
+
+        return [];
+    }
+
+    /**
+     * Normalise les données d'émissions vers le format attendu
+     * Format attendu: {"type": {"check": boolean, "nb": number}}
+     */
+    private function normalizeEmissionData(array $data): array
+    {
+        $normalized = [];
+
+        // Types d'émissions supportés
+        $emissionTypes = [
+            'voiture',
+            'moto',
+            'bus',
+            'avion',
+            'fumeur',
+            'electricite',
+            'gaz',
+            'camion'
+        ];
+
+        foreach ($emissionTypes as $type) {
+            if (isset($data[$type]) && is_array($data[$type])) {
+                $emissionData = $data[$type];
+
+                // Si la structure a déjà check et nb, la garder telle quelle
+                if (isset($emissionData['check']) && isset($emissionData['nb'])) {
+                    $normalized[$type] = [
+                        'check' => (bool) $emissionData['check'],
+                        'nb' => is_numeric($emissionData['nb']) ? (float) $emissionData['nb'] : 0
+                    ];
+                }
+                // Si la structure a type et nb (ancien format), convertir
+                elseif (isset($emissionData['type']) && isset($emissionData['nb'])) {
+                    $normalized[$type] = [
+                        'check' => true, // On considère que si c'est défini, c'est coché
+                        'nb' => is_numeric($emissionData['nb']) ? (float) $emissionData['nb'] : 0
+                    ];
+                }
+                // Si la structure a seulement nb ou quantite, convertir
+                elseif (isset($emissionData['nb']) || isset($emissionData['quantite'])) {
+                    $nb = $emissionData['nb'] ?? $emissionData['quantite'] ?? 0;
+                    $normalized[$type] = [
+                        'check' => true, // On considère que si nb/quantite est défini, c'est coché
+                        'nb' => is_numeric($nb) ? (float) $nb : 0
+                    ];
+                }
+            }
+        }
+
+        return $normalized;
     }
 
     // Accesseur pour le type de zone urbaine formaté

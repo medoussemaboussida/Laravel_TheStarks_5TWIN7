@@ -378,7 +378,7 @@
                                         @csrf
                                     <div class="row">
                                         <div class="col-md-6 mb-3">
-                                            <label for="type_batiment" class="form-label">Type de Bâtiment</label>
+                                            <label for="type_batiment" class="form-label">Type de Bâtiment <span class="text-danger">*</span></label>
                                             <select name="type_batiment" id="type_batiment" class="form-select" required>
                                                 <option value="">Sélectionner un type</option>
                                                 <option value="Maison">Maison</option>
@@ -386,14 +386,14 @@
                                             </select>
                                         </div>
                                         <div class="col-md-6 mb-3">
-                                            <label for="adresse" class="form-label">Adresse</label>
+                                            <label for="adresse" class="form-label">Adresse <span class="text-danger">*</span></label>
                                             <input type="text" name="adresse" id="adresse" class="form-control" required>
                                         </div>
                                     </div>
 
                                     <div class="row">
                                         <div class="col-md-6 mb-3">
-                                            <label for="zone_id" class="form-label">État (Gouvernorat)</label>
+                                            <label for="zone_id" class="form-label">État (Gouvernorat) <span class="text-danger">*</span></label>
                                             <select name="zone_id" id="zone_id" class="form-select" required>
                                                 <option value="">Sélectionner un gouvernorat</option>
                                                 @foreach($zonesUrbaines as $zone)
@@ -402,8 +402,8 @@
                                             </select>
                                         </div>
                                         <div class="col-md-6 mb-3">
-                                            <label for="type_zone_urbaine" class="form-label">Zone Urbaine</label>
-                                            <select name="type_zone_urbaine" id="type_zone_urbaine" class="form-select">
+                                            <label for="type_zone_urbaine" class="form-label">Zone Urbaine <span class="text-danger">*</span></label>
+                                            <select name="type_zone_urbaine" id="type_zone_urbaine" class="form-select" required>
                                                 <option value="">Sélectionner une zone</option>
                                                 @foreach($typesZoneUrbaine as $key => $value)
                                                     <option value="{{ $key }}">{{ $value }}</option>
@@ -414,18 +414,18 @@
 
                                     <div class="row" id="maison-fields" style="display: none;">
                                         <div class="col-md-6 mb-3">
-                                            <label for="nbHabitants" class="form-label">Nombre d'Habitants</label>
+                                            <label for="nbHabitants" class="form-label">Nombre d'Habitants <span class="text-danger maison-required" id="maison-asterisk" style="display: none;">*</span></label>
                                             <input type="number" name="nbHabitants" id="nbHabitants" class="form-control">
                                         </div>
                                     </div>
 
                                     <div class="row" id="usine-fields" style="display: none;">
                                         <div class="col-md-6 mb-3">
-                                            <label for="nbEmployes" class="form-label">Nombre d'Employés</label>
+                                            <label for="nbEmployes" class="form-label">Nombre d'Employés <span class="text-danger usine-required" id="employes-asterisk" style="display: none;">*</span></label>
                                             <input type="number" name="nbEmployes" id="nbEmployes" class="form-control">
                                         </div>
                                         <div class="col-md-6 mb-3">
-                                            <label for="typeIndustrie" class="form-label">Type d'Industrie</label>
+                                            <label for="typeIndustrie" class="form-label">Type d'Industrie <span class="text-danger usine-required" id="industrie-asterisk" style="display: none;">*</span></label>
                                             <select name="typeIndustrie" id="typeIndustrie" class="form-control">
                                                 <option value="">Sélectionner un type d'industrie</option>
                                                 <option value="Alimentaire">Alimentaire</option>
@@ -703,6 +703,9 @@
 
                                                         </div>
                                                         <div class="ms-2 d-flex align-items-center">
+                                                            <button class="btn btn-sm btn-info me-1 detail-btn" data-id="{{ $batiment->id }}" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;" title="Voir détail">
+                                                                <i class="bi bi-eye"></i>
+                                                            </button>
                                                             @if($batiment->user_id === auth()->id())
                                                             <button class="btn btn-sm btn-warning me-1 edit-btn" data-id="{{ $batiment->id }}" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;" title="Modifier">
                                                                 <i class="bi bi-pencil"></i>
@@ -981,6 +984,24 @@
                         </div>
                     </div>
                 </section>
+
+                <!-- Modal Détails Bâtiment -->
+                <div class="modal fade" id="detailBatimentModal" tabindex="-1" aria-labelledby="detailBatimentModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header" style="background: #1cc88a; color: white;">
+                                <h5 class="modal-title" id="detailBatimentModalLabel">Détails du Bâtiment</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body" id="detailBatimentModalBody">
+                                <!-- Le contenu sera chargé dynamiquement -->
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- /Bâtiments Section -->
 
@@ -1502,12 +1523,100 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (this.value === 'Maison') {
                     maisonFields.style.display = 'block';
                     usineFields.style.display = 'none';
+                    // Rendre obligatoire le champ Nombre d'Habitants
+                    document.getElementById('nbHabitants').setAttribute('required', 'required');
+                    // Afficher l'astérisque pour le champ Maison
+                    document.getElementById('maison-asterisk').style.display = 'inline';
+                    // Retirer l'obligation des champs Usine
+                    document.getElementById('nbEmployes').removeAttribute('required');
+                    document.getElementById('typeIndustrie').removeAttribute('required');
+                    // Masquer les astérisques des champs Usine
+                    document.getElementById('employes-asterisk').style.display = 'none';
+                    document.getElementById('industrie-asterisk').style.display = 'none';
                 } else if (this.value === 'Usine') {
                     maisonFields.style.display = 'none';
                     usineFields.style.display = 'block';
+                    // Retirer l'obligation du champ Maison
+                    document.getElementById('nbHabitants').removeAttribute('required');
+                    // Masquer l'astérisque du champ Maison
+                    document.getElementById('maison-asterisk').style.display = 'none';
+                    // Rendre obligatoires les champs Usine
+                    document.getElementById('nbEmployes').setAttribute('required', 'required');
+                    document.getElementById('typeIndustrie').setAttribute('required', 'required');
+                    // Afficher les astérisques des champs Usine
+                    document.getElementById('employes-asterisk').style.display = 'inline';
+                    document.getElementById('industrie-asterisk').style.display = 'inline';
                 } else {
                     maisonFields.style.display = 'none';
                     usineFields.style.display = 'none';
+                    // Retirer toutes les obligations conditionnelles
+                    document.getElementById('nbHabitants').removeAttribute('required');
+                    document.getElementById('nbEmployes').removeAttribute('required');
+                    document.getElementById('typeIndustrie').removeAttribute('required');
+                    // Masquer tous les astérisques conditionnels
+                    document.getElementById('maison-asterisk').style.display = 'none';
+                    document.getElementById('employes-asterisk').style.display = 'none';
+                    document.getElementById('industrie-asterisk').style.display = 'none';
+                }
+            });
+
+            // Validation du formulaire de création
+            document.getElementById('batiment-form').addEventListener('submit', function(e) {
+                const typeBatiment = document.getElementById('type_batiment').value;
+                const typeZoneUrbaine = document.getElementById('type_zone_urbaine').value;
+                let isValid = true;
+                let missingFields = [];
+
+                // Vérifier les champs toujours obligatoires
+                if (!typeZoneUrbaine) {
+                    isValid = false;
+                    missingFields.push('Zone Urbaine');
+                }
+
+                // Vérifier les champs obligatoires selon le type de bâtiment
+                if (typeBatiment === 'Maison') {
+                    const nbHabitants = document.getElementById('nbHabitants').value.trim();
+                    if (!nbHabitants) {
+                        isValid = false;
+                        missingFields.push('Nombre d\'Habitants');
+                    }
+                } else if (typeBatiment === 'Usine') {
+                    const nbEmployes = document.getElementById('nbEmployes').value.trim();
+                    const typeIndustrie = document.getElementById('typeIndustrie').value.trim();
+                    
+                    if (!nbEmployes) {
+                        isValid = false;
+                        missingFields.push('Nombre d\'Employés');
+                    }
+                    if (!typeIndustrie) {
+                        isValid = false;
+                        missingFields.push('Type d\'Industrie');
+                    }
+                }
+
+                if (!isValid) {
+                    e.preventDefault();
+                    
+                    // Supprimer les anciens messages d'alerte
+                    const existingAlerts = document.querySelectorAll('.alert-danger');
+                    existingAlerts.forEach(alert => alert.remove());
+                    
+                    // Créer un nouveau message d'alerte
+                    const alertDiv = document.createElement('div');
+                    alertDiv.className = 'alert alert-danger alert-dismissible fade show';
+                    alertDiv.innerHTML = `
+                        <strong>Champs obligatoires manquants :</strong> ${missingFields.join(', ')}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    `;
+                    
+                    // Insérer l'alerte avant le formulaire
+                    const form = document.getElementById('batiment-form');
+                    form.parentNode.insertBefore(alertDiv, form);
+                    
+                    // Faire défiler vers l'alerte
+                    alertDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    
+                    return false;
                 }
             });
 
@@ -1706,19 +1815,19 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (batiment.type_batiment === 'Maison') {
                         editMaisonFields.style.display = 'block';
                         editUsineFields.style.display = 'none';
-                        document.getElementById('edit-nbHabitants').value = batiment.nbHabitants || '';
+                        document.getElementById('edit-nbHabitants').value = batiment.nb_habitants || '';
                     } else if (batiment.type_batiment === 'Usine') {
                         editMaisonFields.style.display = 'none';
                         editUsineFields.style.display = 'block';
-                        document.getElementById('edit-nbEmployes').value = batiment.nbEmployes || '';
-                        document.getElementById('edit-typeIndustrie').value = batiment.typeIndustrie || '';
+                        document.getElementById('edit-nbEmployes').value = batiment.nb_employes || '';
+                        document.getElementById('edit-typeIndustrie').value = batiment.type_industrie || '';
                     } else {
                         editMaisonFields.style.display = 'none';
                         editUsineFields.style.display = 'none';
                     }
 
                     // Remplir les émissions
-                    const emissions = batiment.emissions_data || {};
+                    const emissions = batiment.emission_data || {};
                     const emissionTypes = ['voiture', 'moto', 'bus', 'avion', 'fumeur', 'electricite', 'gaz', 'camion'];
 
                     emissionTypes.forEach(type => {
@@ -1726,7 +1835,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         const nbElement = document.getElementById(`edit-emissions-${type}-nb`);
 
                         if (emissions[type]) {
-                            checkElement.checked = emissions[type].check == 1;
+                            checkElement.checked = emissions[type].nb > 0;
                             nbElement.value = emissions[type].nb || '';
                         } else {
                             checkElement.checked = false;
@@ -1749,7 +1858,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         const nbElement = document.getElementById(`edit-${type.replace('_', '-')}-nb`);
 
                         if (energies[type]) {
-                            checkElement.checked = energies[type].check == 1;
+                            checkElement.checked = energies[type].check == 1 || energies[type].nb > 0;
                             nbElement.value = energies[type].nb || '';
                         } else {
                             checkElement.checked = false;
@@ -1804,6 +1913,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     const batimentId = e.target.getAttribute('data-id');
                     if (batimentId) {
                         openEditModal(batimentId);
+                    }
+                } else if (e.target.classList.contains('detail-btn')) {
+                    e.preventDefault();
+                    const batimentId = e.target.getAttribute('data-id');
+                    if (batimentId) {
+                        openDetailModal(batimentId);
                     }
                 }
             });
@@ -1996,13 +2111,13 @@ document.addEventListener('DOMContentLoaded', function() {
                                     <div class="d-flex justify-content-between align-items-start">
                                         <div class="flex-grow-1">
                                             <h6 class="mb-2" style="font-size: 1rem;">${batiment.type_batiment} - ${batiment.adresse}</h6>
-                                            <p class="mb-1 small"><strong>Émission CO2:</strong> ${batiment.emissionCO2} t/an</p>
-                                            <p class="mb-1 small"><strong>Émission Réelle:</strong> ${batiment.emissionReelle} t/an</p>
-                                            <p class="mb-1 small"><strong>% Renouvelable:</strong> ${batiment.pourcentageRenouvelable}%</p>
+                                            <p class="mb-1 small"><strong>Émission CO2:</strong> ${batiment.emission_c_o2} t/an</p>
+                                            <p class="mb-1 small"><strong>Émission Réelle:</strong> ${batiment.emission_reelle} t/an</p>
+                                            <p class="mb-1 small"><strong>% Renouvelable:</strong> ${batiment.pourcentage_renouvelable}%</p>
                                             <p class="mb-1 small"><strong>Arbres Besoin:</strong> ${batiment.nbArbresBesoin}</p>
                                             ${batiment.zone ? `<p class="mb-0 small"><strong>Zone:</strong> ${batiment.zone}</p>` : ''}
-                                            ${batiment.type_batiment === 'Maison' && batiment.nbHabitants ? `<p class="mb-0 small"><strong>Habitants:</strong> ${batiment.nbHabitants}</p>` : ''}
-                                            ${batiment.type_batiment === 'Usine' && batiment.nbEmployes ? `<p class="mb-0 small"><strong>Employés:</strong> ${batiment.nbEmployes} | <strong>Industrie:</strong> ${batiment.typeIndustrie}</p>` : ''}
+                                            ${batiment.type_batiment === 'Maison' && batiment.nb_habitants ? `<p class="mb-0 small"><strong>Habitants:</strong> ${batiment.nb_habitants}</p>` : ''}
+                                            ${batiment.type_batiment === 'Usine' && batiment.nb_employes ? `<p class="mb-0 small"><strong>Employés:</strong> ${batiment.nb_employes} | <strong>Industrie:</strong> ${batiment.type_industrie}</p>` : ''}
                                             ${batiment.recyclageExiste ? `<p class="mb-0 small"><strong>♻️ Recyclage:</strong> ${(() => {
                                                 const typeNames = {
                                                     papier: 'Papier/Carton',
@@ -2075,6 +2190,196 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
                 html += '</div>';
                 container.innerHTML = html;
+            }
+
+            // Fonction pour ouvrir le modal de détails
+            function openDetailModal(batimentId) {
+                // Récupérer les données du bâtiment via AJAX
+                fetch(`/client/batiment/${batimentId}`, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const batiment = data.batiment;
+
+                    // Créer le contenu HTML du modal
+                    let html = `
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="text-primary mb-3"><i class="bi bi-building me-2"></i>Informations Générales</h6>
+                                <table class="table table-sm">
+                                    <tr><td><strong>Type:</strong></td><td>${batiment.type_zone_urbaine} - ${batiment.type_batiment}</td></tr>
+                                    <tr><td><strong>Adresse:</strong></td><td>${batiment.adresse}</td></tr>
+                                    <tr><td><strong>Zone:</strong></td><td>${batiment.zone ? batiment.zone.nom : 'N/A'}</td></tr>
+                                    <tr><td><strong>Propriétaire:</strong></td><td>${batiment.user ? batiment.user.name : 'N/A'}</td></tr>
+                                    <tr><td><strong>Créé le:</strong></td><td>${new Date(batiment.created_at).toLocaleDateString('fr-FR')}</td></tr>
+                                </table>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-success mb-3"><i class="bi bi-graph-up me-2"></i>Émissions CO2</h6>
+                                <table class="table table-sm">
+                                    <tr><td><strong>Émission CO2:</strong></td><td>${batiment.emission_c_o2} t/an</td></tr>
+                                    <tr><td><strong>Émission Réelle:</strong></td><td>${batiment.emission_reelle} t/an</td></tr>
+                                    <tr><td><strong>% Renouvelable:</strong></td><td>${batiment.pourcentage_renouvelable}%</td></tr>
+                                    <tr><td><strong>Arbres Besoin:</strong></td><td>${batiment.nbArbresBesoin}</td></tr>
+                                </table>
+                            </div>
+                        </div>`;
+
+                    // Ajouter les informations spécifiques au type de bâtiment
+                    if (batiment.type_batiment === 'Maison' && batiment.nb_habitants) {
+                        html += `
+                            <div class="row mt-3">
+                                <div class="col-12">
+                                    <h6 class="text-info mb-3"><i class="bi bi-house me-2"></i>Informations Maison</h6>
+                                    <p><strong>Nombre d'Habitants:</strong> ${batiment.nb_habitants}</p>
+                                </div>
+                            </div>`;
+                    } else if (batiment.type_batiment === 'Usine' && (batiment.nb_employes || batiment.type_industrie)) {
+                        html += `
+                            <div class="row mt-3">
+                                <div class="col-12">
+                                    <h6 class="text-warning mb-3"><i class="bi bi-gear me-2"></i>Informations Usine</h6>
+                                    <div class="row">
+                                        ${batiment.nb_employes ? `<div class="col-md-6"><p><strong>Nombre d'Employés:</strong> ${batiment.nb_employes}</p></div>` : ''}
+                                        ${batiment.type_industrie ? `<div class="col-md-6"><p><strong>Type d'Industrie:</strong> ${batiment.type_industrie}</p></div>` : ''}
+                                    </div>
+                                </div>
+                            </div>`;
+                    }
+
+                    // Ajouter les émissions détaillées
+                    const emissionData = batiment.emission_data || {};
+                    if (Object.keys(emissionData).length > 0) {
+                        html += `
+                            <div class="row mt-3">
+                                <div class="col-12">
+                                    <h6 class="text-danger mb-3"><i class="bi bi-cloud me-2"></i>Émissions Détaillées (unités mensuelles)</h6>
+                                    <div class="row">`;
+
+                        const emissionLabels = {
+                            'voiture': 'Voiture',
+                            'moto': 'Moto',
+                            'bus': 'Bus',
+                            'avion': 'Avion',
+                            'fumeur': 'Fumeur',
+                            'electricite': 'Électricité',
+                            'gaz': 'Gaz',
+                            'camion': 'Camion'
+                        };
+
+                        Object.keys(emissionLabels).forEach(key => {
+                            if (emissionData[key] && emissionData[key].quantite > 0) {
+                                const unit = key === 'fumeur' ? 'paquets/mois' :
+                                           key === 'electricite' ? 'kWh/mois' :
+                                           key === 'gaz' ? 'm3/mois' : 'km/mois';
+                                html += `
+                                    <div class="col-md-3 mb-2">
+                                        <div class="border rounded p-2 text-center">
+                                            <strong>${emissionLabels[key]}</strong><br>
+                                            <small class="text-muted">${emissionData[key].quantite} ${unit}</small>
+                                        </div>
+                                    </div>`;
+                            }
+                        });
+
+                        html += `
+                                    </div>
+                                </div>
+                            </div>`;
+                    }
+
+                    // Ajouter les énergies renouvelables
+                    const energiesData = batiment.energies_renouvelables_data || {};
+                    if (Object.keys(energiesData).length > 0) {
+                        html += `
+                            <div class="row mt-3">
+                                <div class="col-12">
+                                    <h6 class="text-success mb-3"><i class="bi bi-sun me-2"></i>Énergies Renouvelables</h6>
+                                    <div class="row">`;
+
+                        const energyLabels = {
+                            'panneaux_solaires': ['Panneaux Solaires', 'kW'],
+                            'voitures_electriques': ['Voitures Électriques', 'km/mois'],
+                            'camions_electriques': ['Camions Électriques', 'km/mois'],
+                            'energie_eolienne': ['Énergie Éolienne', 'MW'],
+                            'energie_hydroelectrique': ['Énergie Hydroélectrique', 'TWh']
+                        };
+
+                        Object.keys(energyLabels).forEach(key => {
+                            if (energiesData[key] && energiesData[key].nb > 0) {
+                                const [label, unit] = energyLabels[key];
+                                html += `
+                                    <div class="col-md-4 mb-2">
+                                        <div class="border rounded p-2 text-center bg-light">
+                                            <strong>${label}</strong><br>
+                                            <small class="text-muted">${energiesData[key].nb} ${unit}</small>
+                                        </div>
+                                    </div>`;
+                            }
+                        });
+
+                        html += `
+                                    </div>
+                                </div>
+                            </div>`;
+                    }
+
+                    // Ajouter le recyclage
+                    const recyclageData = batiment.recyclage_data || {};
+                    if (recyclageData.existe && recyclageData.produit_recycle && recyclageData.quantites) {
+                        html += `
+                            <div class="row mt-3">
+                                <div class="col-12">
+                                    <h6 class="text-info mb-3"><i class="bi bi-recycle me-2"></i>Recyclage</h6>
+                                    <div class="row">`;
+
+                        const recycleLabels = {
+                            'papier': 'Papier/Carton',
+                            'plastique': 'Plastique',
+                            'verre': 'Verre',
+                            'metal': 'Métal',
+                            'organique': 'Déchets Organiques',
+                            'electronique': 'Électronique',
+                            'textile': 'Textile',
+                            'bois': 'Bois',
+                            'batteries': 'Batteries'
+                        };
+
+                        recyclageData.produit_recycle.forEach(produit => {
+                            const quantite = recyclageData.quantites[produit] || 0;
+                            if (quantite > 0) {
+                                const label = recycleLabels[produit] || produit;
+                                html += `
+                                    <div class="col-md-4 mb-2">
+                                        <div class="border rounded p-2 text-center">
+                                            <strong>${label}</strong><br>
+                                            <small class="text-muted">${quantite} kg/mois</small>
+                                        </div>
+                                    </div>`;
+                            }
+                        });
+
+                        html += `
+                                    </div>
+                                </div>
+                            </div>`;
+                    }
+
+                    // Mettre à jour le contenu du modal
+                    document.getElementById('detailBatimentModalBody').innerHTML = html;
+                    document.getElementById('detailBatimentModalLabel').textContent = `Détails du Bâtiment - ${batiment.type_batiment}`;
+
+                    // Ouvrir le modal
+                    const modal = new bootstrap.Modal(document.getElementById('detailBatimentModal'));
+                    modal.show();
+                })
+                .catch(error => {
+                    console.error('Erreur lors de la récupération des détails:', error);
+                    alert('Erreur lors de la récupération des détails du bâtiment');
+                });
             }
         });
     </script>

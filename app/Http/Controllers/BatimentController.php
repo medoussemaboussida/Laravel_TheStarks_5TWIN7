@@ -382,8 +382,20 @@ class BatimentController extends Controller
             'type_batiment' => 'required|in:Maison,Usine',
             'adresse' => 'required|string|max:255',
             'zone_id' => 'required|exists:zones_urbaines,id',
-            'type_zone_urbaine' => 'nullable|in:zone_industrielle,quartier_residentiel,centre_ville',
+            'type_zone_urbaine' => 'required|in:zone_industrielle,quartier_residentiel,centre_ville',
         ]);
+
+        // Validation conditionnelle selon le type de bâtiment
+        if ($request->type_batiment === 'Maison') {
+            $request->validate([
+                'nbHabitants' => 'required|integer|min:1',
+            ]);
+        } elseif ($request->type_batiment === 'Usine') {
+            $request->validate([
+                'nbEmployes' => 'required|integer|min:1',
+                'typeIndustrie' => 'required|string|max:255',
+            ]);
+        }
 
         $b = new Batiment();
 
@@ -897,12 +909,13 @@ class BatimentController extends Controller
         // Traitement des données d'énergies renouvelables
         $energiesRenouvelablesData = [];
         if ($request->input('energies_renouvelables.existe') == '1') {
+            $energiesInput = $request->input('energies_renouvelables', []);
             foreach (['panneaux_solaires', 'energie_eolienne', 'energie_hydroelectrique', 'voitures_electriques', 'camions_electriques'] as $type) {
-                $data = $request->input("energies_renouvelables.{$type}");
-                if (isset($data['check']) && $data['check'] == '1' && isset($data['nb']) && $data['nb'] > 0) {
+                if (isset($energiesInput[$type]['check']) && $energiesInput[$type]['check'] == '1' &&
+                    isset($energiesInput[$type]['nb']) && $energiesInput[$type]['nb'] > 0) {
                     $energiesRenouvelablesData[$type] = [
                         'type' => $type,
-                        'nb' => (float)$data['nb'],
+                        'nb' => (float)$energiesInput[$type]['nb'],
                     ];
                 }
             }
